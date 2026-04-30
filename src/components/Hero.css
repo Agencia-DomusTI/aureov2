@@ -1,0 +1,70 @@
+.hero {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  background-image: url('/AUREO.png');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  color: var(--white);
+  padding: 0;
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(0, 33, 63, 0.45), rgba(0, 33, 63, 0.1));
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+}
+
+.hero h1 {
+  font-size: 5rem;
+  margin-bottom: 20px;
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.hero h1 span {
+  color: var(--secondary);
+  font-style: italic;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  margin-bottom: 40px;
+  max-width: 600px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.hero-btns {
+  display: flex;
+  gap: 20px;
+}
+
+.hero-btns .btn-secondary {
+  border-color: var(--white);
+  color: var(--white);
+}
+
+.hero-btns .btn-secondary:hover {
+  background-color: var(--white);
+  color: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 3rem;
+  }
+  
+  .hero-btns {
+    flex-direction: column;
+  }
+}

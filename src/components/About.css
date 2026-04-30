@@ -1,0 +1,100 @@
+.about {
+  background-color: var(--white);
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.about-image {
+  position: relative;
+}
+
+.about-image img {
+  width: 100%;
+  border-radius: 20px;
+  box-shadow: 20px 20px 60px rgba(0, 0, 0, 0.05);
+}
+
+.experience-badge {
+  position: absolute;
+  bottom: 40px;
+  right: -30px;
+  background-color: var(--secondary);
+  color: var(--white);
+  padding: 25px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 10px 30px rgba(197, 140, 93, 0.3);
+}
+
+.experience-badge span {
+  font-family: var(--font-title);
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.experience-badge p {
+  font-size: 0.8rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.subtitle {
+  color: var(--secondary);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 15px;
+}
+
+.about-text h2 {
+  font-size: 3.5rem;
+  margin-bottom: 30px;
+}
+
+.about-text h2 span {
+  color: var(--secondary);
+  font-style: italic;
+}
+
+.content-blocks p {
+  margin-bottom: 20px;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.founder-info {
+  margin-top: 40px;
+  padding-left: 20px;
+  border-left: 3px solid var(--secondary);
+}
+
+.founder-info p {
+  font-style: italic;
+  font-size: 1rem;
+}
+
+@media (max-width: 992px) {
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: 60px;
+  }
+  
+  .about-image {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .experience-badge {
+    right: 0;
+  }
+}
