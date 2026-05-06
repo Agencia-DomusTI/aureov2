@@ -50,13 +50,14 @@ const Contact = () => {
               e.preventDefault();
               const name = e.target.nombre.value;
               const email = e.target.email.value;
+              const edad = e.target.edad.value;
               
               if (!selectedService.value) {
                 alert('Por favor selecciona un servicio');
                 return;
               }
               
-              const message = `Hola Áureo Clinique, mi nombre es ${name}, mi correo es ${email} y estoy interesado en el servicio de ${selectedService.label}.`;
+              const message = `Hola Áureo Clinique, mi nombre es ${name}, tengo ${edad} años, mi correo es ${email} y estoy interesado en el servicio de ${selectedService.label}.`;
               const encodedMessage = encodeURIComponent(message);
               window.open(`https://wa.me/524427217377?text=${encodedMessage}`, '_blank');
             }}
@@ -72,6 +73,12 @@ const Contact = () => {
                 Correo electrónico
               </label>
               <input id="email" name="email" type="email" placeholder="Correo electrónico" required />
+            </div>
+            <div className="form-group">
+              <label className="field-label" htmlFor="edad">
+                Edad
+              </label>
+              <input id="edad" name="edad" type="number" placeholder="Tu edad" required />
             </div>
             <div className="form-group">
               <label className="field-label">
