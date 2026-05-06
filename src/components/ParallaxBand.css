@@ -1,0 +1,94 @@
+.parallax-band {
+  position: relative;
+  width: 100%;
+  min-height: clamp(24rem, 58vh, 40rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Ocultamos el bleed del fondo que se mueve con translate */
+  overflow: hidden;
+}
+
+/* Capa de foto: grande respecto al corte para no ver bordes al desplazar con JS */
+.parallax-band__bg {
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  top: -22%;
+  bottom: -22%;
+  z-index: 0;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  will-change: transform;
+  pointer-events: none;
+  transform-origin: center center;
+}
+
+.parallax-band__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    165deg,
+    rgba(14, 33, 56, 0.58) 0%,
+    rgba(14, 33, 56, 0.42) 45%,
+    rgba(14, 33, 56, 0.68) 100%
+  );
+}
+
+.parallax-band__inner {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: clamp(3rem, 9vw, 5.25rem) 5%;
+  max-width: 48rem;
+  margin-inline: auto;
+}
+
+.parallax-band__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--secondary);
+  margin-bottom: 1.35rem;
+}
+
+.parallax-band__title {
+  font-family: var(--font-title);
+  font-size: clamp(2rem, 5vw, 3.35rem);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--bg-soft);
+  margin-bottom: 1.25rem;
+  text-shadow: 0 8px 40px rgba(0, 0, 0, 0.28);
+}
+
+.parallax-band__title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--secondary-soft);
+}
+
+.parallax-band__lead {
+  font-family: var(--font-body);
+  font-size: clamp(0.98rem, 2.4vw, 1.125rem);
+  line-height: 1.68;
+  font-weight: 400;
+  color: rgba(250, 246, 238, 0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parallax-band__bg {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transform: none !important;
+    will-change: auto;
+  }
+}

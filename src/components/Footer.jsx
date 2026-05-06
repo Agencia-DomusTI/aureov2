@@ -1,4 +1,3 @@
-import React from 'react';
 import './Footer.css';
 
 const Footer = () => {
@@ -16,10 +15,22 @@ const Footer = () => {
         <div className="footer-links">
           <h3>Enlaces</h3>
           <ul>
-            <li><a href="#wellness">Wellness</a></li>
-            <li><a href="#regenerativa">Regenerativa</a></li>
-            <li><a href="#estetica">Estética</a></li>
-            <li><a href="#nosotros">Nosotros</a></li>
+            <li>
+              <a href="#servicios">Tratamientos</a>
+            </li>
+            <li>
+              <a href="/WELLNESS.pdf" download>
+                Wellness (PDF)
+              </a>
+            </li>
+            <li>
+              <a href="/REGENERATIVA.pdf" download>
+                Regenerativa (PDF)
+              </a>
+            </li>
+            <li>
+              <a href="#nosotros">Nosotros</a>
+            </li>
           </ul>
         </div>
         

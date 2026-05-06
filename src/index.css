@@ -1,20 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Outfit:wght@100..900&display=swap');
-
 :root {
-  --primary: #00213F;
-  --secondary: #C58C5D;
-  --bg: #F5F3F0;
-  --text: #00213F;
-  --text-muted: rgba(0, 33, 63, 0.7);
+  /* Paleta editorial v4 */
+  --bg: #f7f2e8;
+  --bg-soft: #faf6ee;
+  --bg-alt: #efe7d5;
+  --primary: #0e2138;
+  --primary-deep: #08182a;
+  --secondary: #b89968;
+  --secondary-soft: #e8dcc4;
+  --line: #d9cfb8;
+
+  --text: #0e2138;
+  --text-muted: rgba(14, 33, 56, 0.72);
   --white: #ffffff;
-  
-  --font-title: 'Bodoni Moda', serif;
-  --font-body: 'Outfit', sans-serif;
-  
-  --section-padding: 100px 5%;
-  --section-padding-mobile: 60px 20px;
-  
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  --font-title: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Más repiro horizontal (tipo landing editorial ancha) */
+  --container: 1460px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -23,18 +29,26 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: var(--font-body);
   background-color: var(--bg);
   color: var(--text);
-  line-height: 1.6;
+  line-height: 1.62;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   font-family: var(--font-title);
   font-weight: 500;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 a {
@@ -52,59 +66,109 @@ button {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: var(--container);
+  width: 100%;
   margin: 0 auto;
+  padding-inline: clamp(1.25rem, 4vw, 3.5rem);
+}
+
+/* Eyebrow / subtítulos tipo v4 */
+.subtitle {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.subtitle::before {
+  content: '';
+  width: 1.5rem;
+  height: 1px;
+  background: var(--secondary);
+}
+
+/* Revelado al scroll (se activa con .is-visible desde useReveal) */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(1.75rem);
+  transition:
+    opacity 0.95s var(--ease-out),
+    transform 0.95s var(--ease-out);
+}
+
+.scroll-reveal.is-visible {
+  opacity: 1;
+  transform: none;
 }
 
 .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   background-color: var(--primary);
-  color: var(--white);
-  padding: 12px 30px;
-  border-radius: 50px;
-  font-weight: 500;
+  color: var(--bg-soft);
+  padding: 0.85rem 1.75rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.68rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  font-size: 0.9rem;
+  letter-spacing: 0.18em;
+  border: 1px solid transparent;
 }
 
 .btn-primary:hover {
   background-color: var(--secondary);
+  color: var(--primary);
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(197, 140, 93, 0.2);
+  box-shadow: 0 12px 28px rgba(184, 153, 104, 0.25);
 }
 
 .btn-secondary {
-  border: 1px solid var(--primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid currentColor;
   color: var(--primary);
-  padding: 12px 30px;
-  border-radius: 50px;
-  font-weight: 500;
+  padding: 0.85rem 1.75rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.68rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  font-size: 0.9rem;
+  letter-spacing: 0.18em;
 }
 
 .btn-secondary:hover {
   background-color: var(--primary);
-  color: var(--white);
+  color: var(--bg-soft);
 }
 
 section {
-  padding: var(--section-padding);
+  padding: 100px 0;
 }
 
 @media (max-width: 768px) {
   section {
-    padding: var(--section-padding-mobile);
+    padding: 60px 0;
   }
 }
 
-/* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade {
-  animation: fadeIn 1s ease forwards;
+  animation: fadeIn 0.9s var(--ease-out) forwards;
 }

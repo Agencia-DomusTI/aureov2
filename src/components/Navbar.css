@@ -4,15 +4,88 @@
   left: 0;
   width: 100%;
   z-index: 1000;
-  padding: 30px 0;
-  transition: var(--transition);
+  padding: 1.75rem 0;
+  transition:
+    padding 0.35s var(--ease-out),
+    background 0.35s var(--ease-out),
+    border-color 0.35s var(--ease-out),
+    box-shadow 0.35s var(--ease-out);
 }
 
-.navbar.scrolled {
-  padding: 15px 0;
-  background: rgba(245, 243, 240, 0.8);
+/* Sobre el hero (oscuro): texto claro y sombra suave para legibilidad */
+.navbar:not(.scrolled) .logo {
+  color: var(--bg-soft);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
+}
+
+.navbar:not(.scrolled) .logo span {
+  color: var(--secondary-soft);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.3);
+}
+
+.navbar:not(.scrolled) .nav-links a:not(.btn-primary) {
+  color: rgba(250, 246, 238, 0.95);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
+}
+
+.navbar:not(.scrolled) .nav-links a:not(.btn-primary):hover {
+  color: var(--secondary-soft);
+}
+
+.navbar:not(.scrolled) .nav-links .btn-primary {
+  background: rgba(250, 246, 238, 0.14);
+  color: var(--bg-soft);
+  border: 1px solid rgba(250, 246, 238, 0.55);
   backdrop-filter: blur(10px);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.navbar:not(.scrolled) .nav-links .btn-primary:hover {
+  background: var(--bg-soft);
+  color: var(--primary);
+  border-color: var(--bg-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+}
+
+/* Tras scroll: barra crema · contraste alto */
+.navbar.scrolled {
+  padding: 0.85rem 0;
+  background: rgba(247, 242, 232, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(217, 207, 184, 0.55);
+  box-shadow: 0 8px 32px rgba(14, 33, 56, 0.05);
+}
+
+.navbar.scrolled .logo {
+  color: var(--primary);
+  text-shadow: none;
+}
+
+.navbar.scrolled .logo span {
+  color: var(--secondary);
+  text-shadow: none;
+}
+
+.navbar.scrolled .nav-links a:not(.btn-primary) {
+  color: var(--primary);
+  text-shadow: none;
+}
+
+.navbar.scrolled .nav-links .btn-primary {
+  background-color: var(--primary);
+  color: var(--bg-soft);
+  border-color: transparent;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+.navbar.scrolled .nav-links .btn-primary:hover {
+  background-color: var(--secondary);
+  color: var(--primary);
+  box-shadow: 0 12px 28px rgba(184, 153, 104, 0.25);
 }
 
 .navbar-container {
@@ -25,40 +98,75 @@
   display: flex;
   flex-direction: column;
   font-family: var(--font-title);
-  font-size: 1.8rem;
-  font-weight: 700;
+  font-size: 1.65rem;
+  font-weight: 500;
   color: var(--primary);
-  line-height: 0.8;
-  letter-spacing: 2px;
+  line-height: 0.95;
+  letter-spacing: 0.18em;
 }
 
 .logo span {
-  font-size: 0.6rem;
-  font-family: var(--font-body);
-  letter-spacing: 4px;
-  font-weight: 300;
-  margin-top: 5px;
+  font-size: 0.55rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.32em;
+  font-weight: 500;
+  margin-top: 0.35rem;
+  color: var(--secondary);
+  text-transform: uppercase;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 40px;
+  gap: 2.25rem;
 }
 
 .nav-links a {
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 0.68rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.14em;
+  color: var(--primary);
+  position: relative;
+  padding: 0.2rem 0;
+}
+
+.nav-links a:not(.btn-primary)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--secondary);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.45s var(--ease-out);
+}
+
+.navbar:not(.scrolled) .nav-links a:not(.btn-primary)::after {
+  background: var(--secondary-soft);
+}
+
+.nav-links a:not(.btn-primary):hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
 }
 
 .nav-links a:not(.btn-primary):hover {
   color: var(--secondary);
 }
 
+.navbar.scrolled .nav-links a:not(.btn-primary):hover {
+  color: var(--secondary);
+}
+
+.nav-links .btn-primary {
+  padding: 0.7rem 1.35rem;
+}
+
 @media (max-width: 768px) {
   .nav-links {
-    display: none; /* For simplicity in this demo, I'll keep it hidden or could add a hamburger later */
+    display: none;
   }
 }

@@ -1,70 +1,153 @@
 .hero {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   background-image: url('/AUREO.png');
   background-size: cover;
-  background-position: center;
+  /* Prioriza zona derecha/al centro para que lo importante de la foto se vea con texto a la izquierda */
+  background-position: center right;
+  background-repeat: no-repeat;
   position: relative;
   color: var(--white);
-  padding: 0;
+  padding: 6rem 0 4rem;
 }
 
 .hero-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to right, rgba(0, 33, 63, 0.45), rgba(0, 33, 63, 0.1));
+  inset: 0;
+  /* Mantiene fuerte lectura abajo izquierda; abre derecha donde suele estar el retrato */
+  background: linear-gradient(
+    100deg,
+    rgba(14, 33, 56, 0.78) 0%,
+    rgba(14, 33, 56, 0.4) min(52%, 28rem),
+    rgba(14, 33, 56, 0.18) 70%,
+    rgba(14, 33, 56, 0.08) 100%
+  );
   z-index: 1;
 }
 
 .hero-content {
   position: relative;
   z-index: 2;
-  max-width: 800px;
+  box-sizing: border-box;
+  max-width: min(54rem, 100%);
+  width: min(54rem, calc(100% - clamp(1.25rem, 4vw, 3.5rem)));
+  margin-left: clamp(1.25rem, 4vw, 3.5rem);
+  margin-right: auto;
+  padding-inline: 0;
+  text-align: left;
 }
 
-.hero h1 {
-  font-size: 5rem;
-  margin-bottom: 20px;
-  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(250, 246, 238, 0.85);
+  margin-bottom: 1.5rem;
 }
 
-.hero h1 span {
+.hero-title {
+  font-family: var(--font-title);
+  font-size: clamp(2.75rem, 7vw, 4.75rem);
+  font-weight: 400;
+  line-height: 1.05;
+  margin-bottom: 1.25rem;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  letter-spacing: -0.02em;
+}
+
+.hero-title span {
   color: var(--secondary);
   font-style: italic;
+  font-weight: 400;
 }
 
-.hero p {
-  font-size: 1.2rem;
-  margin-bottom: 40px;
-  max-width: 600px;
-  color: rgba(255, 255, 255, 0.9);
+.hero-lead {
+  font-size: 1.05rem;
+  max-width: 28rem;
+  color: rgba(250, 246, 238, 0.92);
+  font-weight: 400;
+  line-height: 1.65;
+  margin-bottom: 2rem;
 }
 
 .hero-btns {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
 }
 
-.hero-btns .btn-secondary {
-  border-color: var(--white);
-  color: var(--white);
+.hero-arrow {
+  display: inline-block;
+  transition: transform 0.4s var(--ease-out);
 }
 
-.hero-btns .btn-secondary:hover {
-  background-color: var(--white);
+.hero-btns a:hover .hero-arrow {
+  transform: translateX(4px);
+}
+
+.hero-btn-outline {
+  color: var(--bg-soft);
+  border-color: rgba(250, 246, 238, 0.55);
+  background: rgba(250, 246, 238, 0.06);
+  backdrop-filter: blur(8px);
+}
+
+.hero-btn-outline:hover {
+  background: var(--bg-soft);
   color: var(--primary);
+  border-color: var(--bg-soft);
+}
+
+.hero-stats {
+  margin-top: 3.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(250, 246, 238, 0.22);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.5rem 3.5rem;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.hero-stat-num {
+  font-family: var(--font-title);
+  font-size: clamp(2.25rem, 4vw, 3rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.hero-stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.75;
 }
 
 @media (max-width: 768px) {
-  .hero h1 {
-    font-size: 3rem;
+  .hero {
+    padding-top: 7rem;
   }
-  
+
   .hero-btns {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-btns a {
+    justify-content: center;
+  }
+
+  .hero-stats {
+    gap: 1.5rem 2rem;
   }
 }

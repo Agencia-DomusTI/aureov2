@@ -5,7 +5,7 @@
 .about-grid {
   display: grid;
   grid-template-columns: 1fr 1.2fr;
-  gap: 80px;
+  gap: 5rem;
   align-items: center;
 }
 
@@ -15,85 +15,90 @@
 
 .about-image img {
   width: 100%;
-  border-radius: 20px;
-  box-shadow: 20px 20px 60px rgba(0, 0, 0, 0.05);
+  border-radius: 1.15rem;
+  box-shadow:
+    0 24px 48px rgba(14, 33, 56, 0.08),
+    0 0 0 1px rgba(14, 33, 56, 0.04);
 }
 
 .experience-badge {
   position: absolute;
-  bottom: 40px;
-  right: -30px;
-  background-color: var(--secondary);
-  color: var(--white);
-  padding: 25px;
-  border-radius: 15px;
+  bottom: 2rem;
+  right: -1.25rem;
+  background: linear-gradient(135deg, var(--secondary), #c9a876);
+  color: var(--primary);
+  padding: 1.35rem 1.25rem;
+  border-radius: 1rem;
   display: flex;
   align-items: center;
-  gap: 15px;
-  box-shadow: 0 10px 30px rgba(197, 140, 93, 0.3);
+  gap: 1rem;
+  box-shadow: 0 14px 40px rgba(184, 153, 104, 0.35);
 }
 
 .experience-badge span {
   font-family: var(--font-title);
-  font-size: 2.5rem;
+  font-size: 2.35rem;
   line-height: 1;
+  font-weight: 500;
 }
 
 .experience-badge p {
-  font-size: 0.8rem;
-  line-height: 1.2;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  line-height: 1.35;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.14em;
+  font-weight: 500;
 }
 
-.subtitle {
-  color: var(--secondary);
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  display: block;
-  margin-bottom: 15px;
+.about-eyebrow {
+  margin-bottom: 1rem;
 }
 
 .about-text h2 {
-  font-size: 3.5rem;
-  margin-bottom: 30px;
+  font-size: clamp(2.25rem, 4vw, 3.25rem);
+  font-weight: 400;
+  margin-bottom: 1.75rem;
+  letter-spacing: -0.02em;
+  color: var(--primary);
 }
 
 .about-text h2 span {
   color: var(--secondary);
   font-style: italic;
+  font-weight: 400;
 }
 
 .content-blocks p {
-  margin-bottom: 20px;
+  margin-bottom: 1.15rem;
   color: var(--text-muted);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
+  line-height: 1.65;
 }
 
 .founder-info {
-  margin-top: 40px;
-  padding-left: 20px;
+  margin-top: 2.25rem;
+  padding-left: 1.25rem;
   border-left: 3px solid var(--secondary);
 }
 
 .founder-info p {
   font-style: italic;
-  font-size: 1rem;
+  font-size: 0.98rem;
+  color: var(--text);
 }
 
 @media (max-width: 992px) {
   .about-grid {
     grid-template-columns: 1fr;
-    gap: 60px;
+    gap: 3.5rem;
   }
-  
+
   .about-image {
     max-width: 500px;
     margin: 0 auto;
   }
-  
+
   .experience-badge {
     right: 0;
   }
