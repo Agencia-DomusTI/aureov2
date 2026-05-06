@@ -5,13 +5,12 @@ const Footer = () => {
     <footer className="footer">
       <div className="container footer-grid">
         <div className="footer-brand">
-          <a href="/" className="logo">
-            ÁUREO
-            <span>CLINIQUE</span>
+          <a href="/" className="logo-container">
+            <img src="/logosin.png" alt="Áureo Clinique" className="logo-img" />
           </a>
           <p>Medicina estética y regenerativa de vanguardia.</p>
         </div>
-        
+
         <div className="footer-links">
           <h3>Enlaces</h3>
           <ul>
@@ -33,19 +32,26 @@ const Footer = () => {
             </li>
           </ul>
         </div>
-        
+
         <div className="footer-social">
           <h3>Síguenos</h3>
           <div className="social-icons">
-            <a href="#">IG</a>
-            <a href="#">FB</a>
-            <a href="#">WA</a>
+            <a href="https://www.instagram.com/aureoclinique_qro?igsh=MTRtbmVnbmNxNXJyZw==" target="_blank" rel="noopener noreferrer">IG</a>
+            <a href="https://www.facebook.com/share/18m7fLY1NS/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer">FB</a>
+            <a href="https://wa.me/524427217377?text=Hola%20%C3%81ureo%20Clinique%2C%20me%20gustar%C3%ADa%20recibir%20m%C3%A1s%20informaci%C3%B3n%20sobre%20sus%20tratamientos." target="_blank" rel="noopener noreferrer">WA</a>
           </div>
         </div>
       </div>
-      
+
       <div className="footer-bottom container">
-        <p>&copy; {new Date().getFullYear()} Aureo Clinique. Todos los derechos reservados.</p>
+        <p className="copyright">
+          &copy; {new Date().getFullYear()} Aureo Clinique. Todos los derechos reservados.
+        </p>
+        
+        <p className="attribution">
+          Hecho por <a href="https://d-mkt.com.mx/" target="_blank" rel="noopener noreferrer"><strong>DMKT</strong></a>
+        </p>
+
         <div className="legal-links">
           <a href="#">Aviso de Privacidad</a>
           <a href="#">Términos y Condiciones</a>

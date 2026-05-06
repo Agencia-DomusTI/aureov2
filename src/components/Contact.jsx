@@ -1,8 +1,17 @@
+import { useState } from 'react';
 import { useReveal } from '../hooks/useReveal';
 import './Contact.css';
 
 const Contact = () => {
   const revealRef = useReveal();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState({ value: '', label: 'Selecciona una opción' });
+
+  const services = [
+    { value: 'estetica', label: 'Medicina Estética' },
+    { value: 'regenerativa', label: 'Medicina Regenerativa' },
+    { value: 'wellness', label: 'Medicina Wellness' },
+  ];
 
   return (
     <section className="contact scroll-reveal" id="contacto" ref={revealRef}>
@@ -18,62 +27,81 @@ const Contact = () => {
 
           <div className="locations">
             <div className="location-item">
-              <h3>Guadalajara</h3>
-              <p>Dirección sucursal Guadalajara (Av. Principal #123)</p>
-            </div>
-            <div className="location-item">
-              <h3>Querétaro</h3>
-              <p>Dirección sucursal Querétaro (Plaza Médica #456)</p>
+              <h3>Ubicación</h3>
+              <p>Av. Paseo de las Pitahayas No. 55, Local 217, Plaza Xentric Anáhuac, Zibatá, El Marqués, Querétaro</p>
             </div>
           </div>
 
           <div className="contact-details">
             <p>
-              <strong>Tel:</strong> +52 (33) 1234 5678
+              <strong>Tel:</strong> +52 442 721 7377
             </p>
             <p>
-              <strong>Email:</strong> contacto@aureoclinique.com
+              <strong>Email:</strong> aureoqro@gmail.com
             </p>
           </div>
         </div>
 
         <div className="contact-form-container">
           <span className="form-kicker">Formulario</span>
-          <form className="contact-form" onSubmit={(e) => e.preventDefault()}>
+          <form 
+            className="contact-form" 
+            onSubmit={(e) => {
+              e.preventDefault();
+              const name = e.target.nombre.value;
+              const email = e.target.email.value;
+              
+              if (!selectedService.value) {
+                alert('Por favor selecciona un servicio');
+                return;
+              }
+              
+              const message = `Hola Áureo Clinique, mi nombre es ${name}, mi correo es ${email} y estoy interesado en el servicio de ${selectedService.label}.`;
+              const encodedMessage = encodeURIComponent(message);
+              window.open(`https://wa.me/524427217377?text=${encodedMessage}`, '_blank');
+            }}
+          >
             <div className="form-group">
               <label className="field-label" htmlFor="nombre">
                 Nombre completo
               </label>
-              <input id="nombre" type="text" placeholder="Nombre completo" required />
+              <input id="nombre" name="nombre" type="text" placeholder="Nombre completo" required />
             </div>
             <div className="form-group">
               <label className="field-label" htmlFor="email">
                 Correo electrónico
               </label>
-              <input id="email" type="email" placeholder="Correo electrónico" required />
+              <input id="email" name="email" type="email" placeholder="Correo electrónico" required />
             </div>
             <div className="form-group">
-              <label className="field-label" htmlFor="tel">
-                Teléfono
-              </label>
-              <input id="tel" type="tel" placeholder="Teléfono" required />
-            </div>
-            <div className="form-group">
-              <label className="field-label" htmlFor="servicio">
+              <label className="field-label">
                 Servicio de interés
               </label>
-              <select id="servicio" required>
-                <option value="">Selecciona una opción</option>
-                <option value="estetica">Medicina Estética</option>
-                <option value="regenerativa">Medicina Regenerativa</option>
-                <option value="wellness">Medicina Wellness</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="field-label" htmlFor="mensaje">
-                Mensaje (opcional)
-              </label>
-              <textarea id="mensaje" placeholder="Cuéntanos tu objetivo" />
+              <div className={`custom-dropdown ${isDropdownOpen ? 'is-open' : ''}`}>
+                <div 
+                  className="dropdown-trigger" 
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  <span>{selectedService.label}</span>
+                  <span className="dropdown-arrow"></span>
+                </div>
+                {isDropdownOpen && (
+                  <div className="dropdown-menu">
+                    {services.map((service) => (
+                      <div 
+                        key={service.value} 
+                        className={`dropdown-option ${selectedService.value === service.value ? 'is-selected' : ''}`}
+                        onClick={() => {
+                          setSelectedService(service);
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        {service.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <button type="submit" className="btn-primary w-full">
               Solicitar información

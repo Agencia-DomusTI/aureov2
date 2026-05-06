@@ -221,8 +221,10 @@ const Services = () => {
                 <h2 id="modal-title">{selectedService.name}</h2>
                 <p>{selectedService.desc}</p>
                 <a
-                  href="#contacto"
+                  href={`https://wa.me/524427217377?text=${encodeURIComponent(`Hola Áureo Clinique, me gustaría agendar una valoración para el servicio de ${selectedService.name}.`)}`}
                   className="btn-primary"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={() => setSelectedService(null)}
                 >
                   Agendar valoración

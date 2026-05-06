@@ -15,11 +15,10 @@ const Navbar = () => {
   return (
     <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
       <div className="navbar-container container">
-        <a href="/" className="logo">
-          ÁUREO
-          <span>CLINIQUE</span>
+        <a href="/" className="logo-container">
+          <img src="/logosin.png" alt="Áureo Clinique" className="logo-img" />
         </a>
-        
+
         <div className="nav-links">
           <a href="/WELLNESS.pdf" download="Wellness_Aureo.pdf">Wellness</a>
           <a href="/REGENERATIVA.pdf" download="Regenerativa_Aureo.pdf">Regenerativa</a>
