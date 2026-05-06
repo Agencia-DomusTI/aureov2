@@ -154,9 +154,8 @@ const Services = () => {
         </div>
 
         <div
-          className={`services-collage ${expanded ? 'services-collage--expanded' : ''} ${
-            items.length <= PREVIEW_COUNT ? 'services-collage--few' : ''
-          }`}
+          className={`services-collage ${expanded ? 'services-collage--expanded' : ''} ${items.length <= PREVIEW_COUNT ? 'services-collage--few' : ''
+            }`}
           key={activeTab}
         >
           {visibleItems.map((service, index) => (

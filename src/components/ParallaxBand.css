@@ -1,7 +1,7 @@
 .parallax-band {
   position: relative;
   width: 100%;
-  min-height: clamp(24rem, 58vh, 40rem);
+  min-height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,17 +12,13 @@
 /* Capa de foto: grande respecto al corte para no ver bordes al desplazar con JS */
 .parallax-band__bg {
   position: absolute;
-  left: -12%;
-  right: -12%;
-  top: -22%;
-  bottom: -22%;
+  inset: 0;
   z-index: 0;
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  will-change: transform;
+  background-attachment: fixed;
   pointer-events: none;
-  transform-origin: center center;
 }
 
 .parallax-band__veil {
@@ -32,9 +28,9 @@
   pointer-events: none;
   background: linear-gradient(
     165deg,
-    rgba(14, 33, 56, 0.58) 0%,
-    rgba(14, 33, 56, 0.42) 45%,
-    rgba(14, 33, 56, 0.68) 100%
+    rgba(14, 33, 56, 0.45) 0%,
+    rgba(14, 33, 56, 0.25) 45%,
+    rgba(14, 33, 56, 0.75) 100%
   );
 }
 
@@ -42,7 +38,7 @@
   position: relative;
   z-index: 2;
   text-align: center;
-  padding: clamp(3rem, 9vw, 5.25rem) 5%;
+  padding: 1.5rem 5%;
   max-width: 48rem;
   margin-inline: auto;
 }
@@ -54,32 +50,34 @@
   text-transform: uppercase;
   font-weight: 500;
   color: var(--secondary);
-  margin-bottom: 1.35rem;
+  margin-bottom: 0.4rem;
 }
 
 .parallax-band__title {
   font-family: var(--font-title);
-  font-size: clamp(2rem, 5vw, 3.35rem);
+  font-size: clamp(1.8rem, 5vw, 3rem);
   font-weight: 400;
-  line-height: 1.08;
+  line-height: 1.1;
   letter-spacing: -0.02em;
-  color: var(--bg-soft);
-  margin-bottom: 1.25rem;
-  text-shadow: 0 8px 40px rgba(0, 0, 0, 0.28);
+  color: var(--white);
+  margin-bottom: 0.6rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.2);
 }
 
 .parallax-band__title em {
   font-style: italic;
   font-weight: 400;
-  color: var(--secondary-soft);
+  color: var(--secondary);
 }
 
 .parallax-band__lead {
   font-family: var(--font-body);
-  font-size: clamp(0.98rem, 2.4vw, 1.125rem);
-  line-height: 1.68;
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
+  line-height: 1.4;
   font-weight: 400;
   color: rgba(250, 246, 238, 0.9);
+  max-width: 40rem;
+  margin-inline: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {
