@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "optimize:images": "node scripts/optimize-images.mjs",
-    "prebuild": "npm run optimize:images",
+    "prebuild": "node scripts/optimize-images.mjs",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -14,6 +14,9 @@
   "dependencies": {
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["sharp"]
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
