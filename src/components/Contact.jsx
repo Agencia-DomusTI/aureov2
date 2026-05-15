@@ -2,19 +2,19 @@ import { useEffect } from 'react';
 import { useReveal } from '../hooks/useReveal';
 import './Contact.css';
 
-const BOOKING_EMBED_SRC = 'https://api.lead.dcontrol.com.mx/js/form_embed.js';
-const BOOKING_IFRAME_ID = 'FBFdUr657QzD68aAR4sf_1778872754156';
-const BOOKING_IFRAME_SRC =
-  'https://api.lead.dcontrol.com.mx/widget/booking/FBFdUr657QzD68aAR4sf';
+const LEAD_EMBED_SCRIPT_SRC = 'https://api.lead.dcontrol.com.mx/js/form_embed.js';
+const SERVICE_MENU_IFRAME_ID = '6a077883e531247aa622aa62_1778874522721';
+const SERVICE_MENU_IFRAME_SRC =
+  'https://api.lead.dcontrol.com.mx/widget/service-menu/6a077883e531247aa622aa62';
 
 const Contact = () => {
   const revealRef = useReveal();
 
   useEffect(() => {
-    if (document.querySelector(`script[src="${BOOKING_EMBED_SRC}"]`)) return;
+    if (document.querySelector(`script[src="${LEAD_EMBED_SCRIPT_SRC}"]`)) return;
 
     const script = document.createElement('script');
-    script.src = BOOKING_EMBED_SRC;
+    script.src = LEAD_EMBED_SCRIPT_SRC;
     script.type = 'text/javascript';
     script.async = true;
     document.body.appendChild(script);
@@ -53,12 +53,12 @@ const Contact = () => {
         </div>
 
         <div className="contact-form-container contact-booking-wrap">
-          <span className="form-kicker">Agenda en línea</span>
+          <span className="form-kicker">Tratamientos y servicios</span>
           <div className="contact-booking-frame">
             <iframe
-              src={BOOKING_IFRAME_SRC}
-              title="Reservar cita — Áureo Clinique"
-              id={BOOKING_IFRAME_ID}
+              src={SERVICE_MENU_IFRAME_SRC}
+              title="Menú de servicios — Áureo Clinique"
+              id={SERVICE_MENU_IFRAME_ID}
               scrolling="no"
               className="contact-booking-iframe"
             />
