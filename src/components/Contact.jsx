@@ -1,17 +1,24 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useReveal } from '../hooks/useReveal';
 import './Contact.css';
 
+const BOOKING_EMBED_SRC = 'https://api.lead.dcontrol.com.mx/js/form_embed.js';
+const BOOKING_IFRAME_ID = 'FBFdUr657QzD68aAR4sf_1778872754156';
+const BOOKING_IFRAME_SRC =
+  'https://api.lead.dcontrol.com.mx/widget/booking/FBFdUr657QzD68aAR4sf';
+
 const Contact = () => {
   const revealRef = useReveal();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState({ value: '', label: 'Selecciona una opción' });
 
-  const services = [
-    { value: 'estetica', label: 'Medicina Estética' },
-    { value: 'regenerativa', label: 'Medicina Regenerativa' },
-    { value: 'wellness', label: 'Medicina Wellness' },
-  ];
+  useEffect(() => {
+    if (document.querySelector(`script[src="${BOOKING_EMBED_SRC}"]`)) return;
+
+    const script = document.createElement('script');
+    script.src = BOOKING_EMBED_SRC;
+    script.type = 'text/javascript';
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
 
   return (
     <section className="contact scroll-reveal" id="contacto" ref={revealRef}>
@@ -28,7 +35,10 @@ const Contact = () => {
           <div className="locations">
             <div className="location-item">
               <h3>Ubicación</h3>
-              <p>Av. Paseo de las Pitahayas No. 55, Local 217, Plaza Xentric Anáhuac, Zibatá, El Marqués, Querétaro</p>
+              <p>
+                Av. Paseo de las Pitahayas No. 55, Local 217, Plaza Xentric Anáhuac, Zibatá, El Marqués,
+                Querétaro
+              </p>
             </div>
           </div>
 
@@ -42,78 +52,17 @@ const Contact = () => {
           </div>
         </div>
 
-        <div className="contact-form-container">
-          <span className="form-kicker">Formulario</span>
-          <form 
-            className="contact-form" 
-            onSubmit={(e) => {
-              e.preventDefault();
-              const name = e.target.nombre.value;
-              const email = e.target.email.value;
-              const edad = e.target.edad.value;
-              
-              if (!selectedService.value) {
-                alert('Por favor selecciona un servicio');
-                return;
-              }
-              
-              const message = `Hola Áureo Clinique, mi nombre es ${name}, tengo ${edad} años, mi correo es ${email} y estoy interesado en el servicio de ${selectedService.label}.`;
-              const encodedMessage = encodeURIComponent(message);
-              window.open(`https://wa.me/524427217377?text=${encodedMessage}`, '_blank');
-            }}
-          >
-            <div className="form-group">
-              <label className="field-label" htmlFor="nombre">
-                Nombre completo
-              </label>
-              <input id="nombre" name="nombre" type="text" placeholder="Nombre completo" required />
-            </div>
-            <div className="form-group">
-              <label className="field-label" htmlFor="email">
-                Correo electrónico
-              </label>
-              <input id="email" name="email" type="email" placeholder="Correo electrónico" required />
-            </div>
-            <div className="form-group">
-              <label className="field-label" htmlFor="edad">
-                Edad
-              </label>
-              <input id="edad" name="edad" type="number" placeholder="Tu edad" required />
-            </div>
-            <div className="form-group">
-              <label className="field-label">
-                Servicio de interés
-              </label>
-              <div className={`custom-dropdown ${isDropdownOpen ? 'is-open' : ''}`}>
-                <div 
-                  className="dropdown-trigger" 
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                >
-                  <span>{selectedService.label}</span>
-                  <span className="dropdown-arrow"></span>
-                </div>
-                {isDropdownOpen && (
-                  <div className="dropdown-menu">
-                    {services.map((service) => (
-                      <div 
-                        key={service.value} 
-                        className={`dropdown-option ${selectedService.value === service.value ? 'is-selected' : ''}`}
-                        onClick={() => {
-                          setSelectedService(service);
-                          setIsDropdownOpen(false);
-                        }}
-                      >
-                        {service.label}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-            <button type="submit" className="btn-primary w-full">
-              Solicitar información
-            </button>
-          </form>
+        <div className="contact-form-container contact-booking-wrap">
+          <span className="form-kicker">Agenda en línea</span>
+          <div className="contact-booking-frame">
+            <iframe
+              src={BOOKING_IFRAME_SRC}
+              title="Reservar cita — Áureo Clinique"
+              id={BOOKING_IFRAME_ID}
+              scrolling="no"
+              className="contact-booking-iframe"
+            />
+          </div>
         </div>
       </div>
     </section>
