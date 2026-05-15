@@ -14,7 +14,7 @@ export default function OptimizedImage({
   const webpSrc = src.replace(/\.(png|jpe?g)$/i, '.webp');
 
   return (
-    <picture>
+    <picture className="optimized-image-picture">
       <source srcSet={webpSrc} type="image/webp" />
       <img
         src={src}

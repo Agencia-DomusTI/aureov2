@@ -23,8 +23,6 @@ const Navbar = () => {
             className="logo-img"
             loading="eager"
             fetchPriority="high"
-            width={200}
-            height={60}
           />
         </a>
 

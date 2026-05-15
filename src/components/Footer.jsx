@@ -12,8 +12,6 @@ const Footer = () => {
               alt="Áureo Clinique"
               className="logo-img"
               loading="lazy"
-              width={200}
-              height={60}
             />
           </a>
           <p>Medicina estética y regenerativa de vanguardia.</p>
