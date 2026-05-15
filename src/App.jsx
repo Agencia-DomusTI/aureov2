@@ -7,7 +7,6 @@ import Services from './components/Services';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import FloatingWhatsApp from './components/FloatingWhatsApp';
-import FloatingChatbot from './components/FloatingChatbot';
 
 function App() {
   return (
@@ -22,7 +21,6 @@ function App() {
         <Contact />
       </main>
       <FloatingWhatsApp />
-      <FloatingChatbot />
       <Footer />
     </div>
   );

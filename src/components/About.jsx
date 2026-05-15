@@ -1,4 +1,5 @@
 import { useReveal } from '../hooks/useReveal';
+import OptimizedImage from './OptimizedImage';
 import './About.css';
 
 const About = () => {
@@ -8,7 +9,14 @@ const About = () => {
     <section className="about scroll-reveal" id="nosotros" ref={revealRef}>
       <div className="container about-grid">
         <div className="about-image">
-          <img src="/doctor_official.png" alt="Dr. Demetrio Quintero Mármol Cisneros" />
+          <OptimizedImage
+            src="/doctor_official.png"
+            alt="Dr. Demetrio Quintero Mármol Cisneros"
+            loading="lazy"
+            sizes="(max-width: 768px) 100vw, 45vw"
+            width={691}
+            height={813}
+          />
           <div className="experience-badge">
             <span>+11</span>
             <p>

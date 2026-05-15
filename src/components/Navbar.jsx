@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import OptimizedImage from './OptimizedImage';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -16,7 +17,15 @@ const Navbar = () => {
     <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
       <div className="navbar-container container">
         <a href="/" className="logo-container">
-          <img src="/logosin.png" alt="Áureo Clinique" className="logo-img" />
+          <OptimizedImage
+            src="/logosin.png"
+            alt="Áureo Clinique"
+            className="logo-img"
+            loading="eager"
+            fetchPriority="high"
+            width={200}
+            height={60}
+          />
         </a>
 
         <div className="nav-links">

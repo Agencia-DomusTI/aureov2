@@ -1,11 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useReveal } from '../hooks/useReveal';
+import OptimizedImage from './OptimizedImage';
 import './ParallaxBand.css';
 
 const PARALLAX_BG_URL = '/multimedia/fondo3.jpg';
-
-/** 0 → fondo igual que el bloque · ~0.5 → sensación muy clara · ~1 casi pegado al viewport */
-const SPEED = 0.45;
 
 export default function ParallaxBand() {
   const sectionRef = useRef(null);
@@ -17,12 +15,15 @@ export default function ParallaxBand() {
       className="parallax-band"
       aria-labelledby="parallax-band-heading"
     >
-      <div
-        className="parallax-band__bg"
-        style={{ backgroundImage: `url(${PARALLAX_BG_URL})` }}
-        role="presentation"
-        aria-hidden="true"
-      />
+      <div className="parallax-band__bg" role="presentation" aria-hidden="true">
+        <OptimizedImage
+          src={PARALLAX_BG_URL}
+          alt=""
+          className="parallax-band__bg-img"
+          loading="lazy"
+          sizes="100vw"
+        />
+      </div>
       <div className="parallax-band__veil" aria-hidden="true" />
       <div
         ref={contentRevealRef}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useReveal } from '../hooks/useReveal';
+import OptimizedImage from './OptimizedImage';
 import './Services.css';
 
 const servicesData = {
@@ -170,7 +171,12 @@ const Services = () => {
               }}
             >
               <div className="card-image">
-                <img src={service.img} alt="" decoding="async" />
+                <OptimizedImage
+                  src={service.img}
+                  alt={service.name}
+                  loading="lazy"
+                  sizes="(max-width: 768px) 50vw, 280px"
+                />
               </div>
               <div className="card-content card-content--collage">
                 <span className="service-number">{(index + 1).toString().padStart(2, '0')}</span>
@@ -214,7 +220,12 @@ const Services = () => {
             </button>
             <div className="modal-grid">
               <div className="modal-image">
-                <img src={selectedService.img} alt="" />
+                <OptimizedImage
+                  src={selectedService.img}
+                  alt={selectedService.name}
+                  loading="eager"
+                  sizes="(max-width: 768px) 100vw, 480px"
+                />
               </div>
               <div className="modal-text">
                 <span className="subtitle">{servicesData[activeTab].title}</span>

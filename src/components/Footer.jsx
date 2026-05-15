@@ -1,3 +1,4 @@
+import OptimizedImage from './OptimizedImage';
 import './Footer.css';
 
 const Footer = () => {
@@ -6,7 +7,14 @@ const Footer = () => {
       <div className="container footer-grid">
         <div className="footer-brand">
           <a href="/" className="logo-container">
-            <img src="/logosin.png" alt="Áureo Clinique" className="logo-img" />
+            <OptimizedImage
+              src="/logosin.png"
+              alt="Áureo Clinique"
+              className="logo-img"
+              loading="lazy"
+              width={200}
+              height={60}
+            />
           </a>
           <p>Medicina estética y regenerativa de vanguardia.</p>
         </div>

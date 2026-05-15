@@ -14,11 +14,16 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  overflow: hidden;
   pointer-events: none;
+}
+
+.parallax-band__bg-img,
+.parallax-band__bg-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .parallax-band__veil {

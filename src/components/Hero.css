@@ -4,6 +4,7 @@
   align-items: center;
   justify-content: flex-start;
   background-image: url('/AUREO.png');
+  background-image: image-set(url('/AUREO.webp') type('image/webp'), url('/AUREO.png') type('image/png'));
   background-size: cover;
   /* Prioriza zona derecha/al centro para que lo importante de la foto se vea con texto a la izquierda */
   background-position: center right;
