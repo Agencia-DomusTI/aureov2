@@ -2,7 +2,11 @@
   background: var(--primary);
   color: var(--bg-soft);
   padding: 1.25rem 0;
+  width: 100%;
+  max-width: 100%;
   overflow: hidden;
+  overflow-x: clip;
+  contain: layout paint;
   border-top: 1px solid rgba(184, 153, 104, 0.22);
   border-bottom: 1px solid rgba(184, 153, 104, 0.22);
 }
@@ -13,6 +17,7 @@
   width: max-content;
   animation: ticker-marquee 45s linear infinite;
   white-space: nowrap;
+  will-change: transform;
 }
 
 .ticker-item {

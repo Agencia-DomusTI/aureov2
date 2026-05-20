@@ -36,6 +36,8 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 body {
@@ -44,7 +46,17 @@ body {
   color: var(--text);
   line-height: 1.62;
   overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
   -webkit-font-smoothing: antialiased;
+}
+
+#root,
+.App,
+.App > main {
+  overflow-x: clip;
+  max-width: 100%;
+  width: 100%;
 }
 
 h1,
@@ -75,6 +87,8 @@ button {
   width: 100%;
   margin: 0 auto;
   padding-inline: clamp(1.25rem, 4vw, 3.5rem);
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* Eyebrow / subtítulos tipo v4 */
@@ -100,7 +114,7 @@ button {
 /* Revelado al scroll (se activa con .is-visible desde useReveal) */
 .scroll-reveal {
   opacity: 0;
-  transform: translateY(1.75rem);
+  transform: translate3d(0, 1.75rem, 0);
   transition:
     opacity 0.95s var(--ease-out),
     transform 0.95s var(--ease-out);
@@ -108,7 +122,7 @@ button {
 
 .scroll-reveal.is-visible {
   opacity: 1;
-  transform: none;
+  transform: translate3d(0, 0, 0);
 }
 
 .btn-primary {
@@ -155,11 +169,19 @@ button {
 
 section {
   padding: 100px 0;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 @media (max-width: 768px) {
   section {
     padding: 60px 0;
+  }
+
+  html,
+  body {
+    overscroll-behavior-x: none;
+    touch-action: pan-y pinch-zoom;
   }
 }
 

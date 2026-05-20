@@ -1,5 +1,7 @@
 .services {
   background-color: var(--bg-soft);
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 .services-header {
@@ -418,7 +420,7 @@
 .modal-content {
   background: var(--bg-soft);
   width: 100%;
-  max-width: 900px;
+  max-width: min(900px, 100%);
   max-height: 85vh;
   border-radius: 1.5rem;
   overflow-y: auto;

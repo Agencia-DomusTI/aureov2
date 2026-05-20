@@ -1,6 +1,8 @@
 .contact {
   background-color: var(--bg-alt);
   padding: 60px 0;
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 .contact-container {

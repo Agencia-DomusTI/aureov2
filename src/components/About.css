@@ -30,7 +30,7 @@
 .experience-badge {
   position: absolute;
   bottom: 2rem;
-  right: -1.25rem;
+  right: 0;
   background: linear-gradient(135deg, var(--secondary), #c9a876);
   color: var(--primary);
   padding: 1.35rem 1.25rem;

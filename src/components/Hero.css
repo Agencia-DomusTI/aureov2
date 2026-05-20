@@ -3,6 +3,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  overflow-x: clip;
+  max-width: 100%;
   background-image: url('/AUREO.png');
   background-image: image-set(url('/AUREO.webp') type('image/webp'), url('/AUREO.png') type('image/png'));
   background-size: cover;
