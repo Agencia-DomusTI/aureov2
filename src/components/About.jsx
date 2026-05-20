@@ -11,11 +11,10 @@ const About = () => {
         <div className="about-image">
           <OptimizedImage
             src="/doctor_official.png"
-            alt="Dr. Demetrio Quintero Mármol Cisneros"
+            alt="Dr. Demetrio Quintero Mármol Cisneros — Aureo Clinique"
+            className="about-image__photo"
             loading="lazy"
-            sizes="(max-width: 768px) 100vw, 45vw"
-            width={691}
-            height={813}
+            sizes="(max-width: 768px) 92vw, 42vw"
           />
           <div className="experience-badge">
             <span>+11</span>

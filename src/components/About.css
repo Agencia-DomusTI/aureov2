@@ -1,20 +1,26 @@
 .about {
   background-color: var(--white);
+  overflow-x: clip;
 }
 
 .about-grid {
   display: grid;
-  grid-template-columns: 1fr 1.2fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
   gap: 5rem;
   align-items: center;
 }
 
 .about-image {
   position: relative;
+  min-width: 0;
 }
 
+.about-image__photo,
 .about-image img {
+  display: block;
   width: 100%;
+  height: auto;
+  max-width: 100%;
   border-radius: 1.15rem;
   box-shadow:
     0 24px 48px rgba(14, 33, 56, 0.08),
@@ -33,6 +39,7 @@
   align-items: center;
   gap: 1rem;
   box-shadow: 0 14px 40px rgba(184, 153, 104, 0.35);
+  z-index: 2;
 }
 
 .experience-badge span {
@@ -53,6 +60,10 @@
 
 .about-eyebrow {
   margin-bottom: 1rem;
+}
+
+.about-text {
+  min-width: 0;
 }
 
 .about-text h2 {
@@ -91,15 +102,62 @@
 @media (max-width: 992px) {
   .about-grid {
     grid-template-columns: 1fr;
-    gap: 3.5rem;
+    gap: 2.5rem;
+  }
+
+  /* Texto primero en móvil; la tarjeta gráfica va debajo */
+  .about-text {
+    order: 1;
   }
 
   .about-image {
-    max-width: 500px;
-    margin: 0 auto;
+    order: 2;
+    width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+    padding-bottom: 0.5rem;
+  }
+
+  .about-image__photo,
+  .about-image img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    object-position: center top;
+    border-radius: 1rem;
+  }
+
+  /* Badge debajo de la imagen, sin tapar al doctor ni al WhatsApp */
+  .experience-badge {
+    position: static;
+    margin: 1rem auto 0;
+    width: fit-content;
+    max-width: 100%;
+    padding: 1rem 1.15rem;
+    right: auto;
+  }
+
+  .experience-badge span {
+    font-size: 1.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-image {
+    max-width: 100%;
   }
 
   .experience-badge {
-    right: 0;
+    margin-top: 0.75rem;
+    padding: 0.85rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .experience-badge span {
+    font-size: 1.6rem;
+  }
+
+  .experience-badge p {
+    font-size: 0.55rem;
   }
 }
