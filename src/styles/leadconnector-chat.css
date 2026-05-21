@@ -1,0 +1,43 @@
+/**
+ * LeadConnector / GoHighLevel — chat flotante
+ * Evita el “fantasma” invisible que ensancha la página en el eje X.
+ */
+
+chat-widget,
+[data-chat-widget],
+#lc_text-widget,
+#chat-widget-container {
+  z-index: 10050 !important;
+  max-width: 100vw !important;
+  max-height: 100dvh !important;
+  box-sizing: border-box !important;
+  pointer-events: auto !important;
+}
+
+iframe[src*='leadconnectorhq.com'] {
+  max-width: 100vw !important;
+  border: none !important;
+}
+
+/* Contenedor temporal que crea loader.js */
+body > div[style*='position: fixed'][style*='z-index: 9999']:not(#root) {
+  max-width: 100vw !important;
+  width: auto !important;
+  overflow: hidden !important;
+  left: auto !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  pointer-events: none;
+}
+
+body > div[style*='position: fixed'][style*='z-index: 9999']:not(#root) chat-widget,
+body > div[style*='position: fixed'][style*='z-index: 9999']:not(#root) [data-chat-widget] {
+  pointer-events: auto;
+}
+
+@media (max-width: 768px) {
+  chat-widget,
+  [data-chat-widget] {
+    max-width: min(100vw, 100%) !important;
+  }
+}

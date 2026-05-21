@@ -24,13 +24,18 @@ const Footer = () => {
               <a href="#servicios">Tratamientos</a>
             </li>
             <li>
-              <a href="/WELLNESS.pdf" download>
+              <a href="/WELLNESS.pdf" download="Wellness_Aureo.pdf">
                 Wellness (PDF)
               </a>
             </li>
             <li>
-              <a href="/REGENERATIVA.pdf" download>
+              <a href="/REGENERATIVA.pdf" download="Regenerativa_Aureo.pdf">
                 Regenerativa (PDF)
+              </a>
+            </li>
+            <li>
+              <a href="/ESTETICA.pdf" download="Estetica_Aureo.pdf">
+                Estética (PDF)
               </a>
             </li>
             <li>

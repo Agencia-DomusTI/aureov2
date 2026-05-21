@@ -13,6 +13,8 @@ export default defineConfig({
       webp: { quality: 82 },
       svg: false,
       avif: false,
+      /* No tocar PDFs en public/ */
+      exclude: /\.pdf$/i,
     }),
   ],
 })
