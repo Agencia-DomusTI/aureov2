@@ -9,7 +9,7 @@ const SERVICE_MENU_IFRAME_SRC =
   'https://api.lead.dcontrol.com.mx/widget/service-menu/6a077883e531247aa622aa62';
 
 const { qro, gdl } = CLINICS;
-const gdlWhatsAppHref = `https://wa.me/${gdl.phoneWa}?text=${encodeURIComponent('Hola Áureo Clinique Guadalajara, me gustaría agendar una valoración.')}`;
+const gdlWhatsAppHref = `https://wa.me/${gdl.phoneWa}?text=${encodeURIComponent('Hola Áureo Clinique Zapopan, me gustaría agendar una valoración.')}`;
 
 const Contact = () => {
   const revealRef = useReveal();
@@ -34,7 +34,7 @@ const Contact = () => {
           </h2>
           <p className="contact-lead">
             Agenda una valoración personalizada y descubre el tratamiento ideal para ti en nuestras
-            sucursales de Querétaro y Guadalajara.
+            sucursales de Querétaro y Zapopan.
           </p>
 
           <div className="locations">
@@ -68,10 +68,10 @@ const Contact = () => {
           </div>
 
           <div className="contact-gdl-booking">
-            <h3>¿Prefieres agendar en Guadalajara?</h3>
+            <h3>¿Prefieres agendar en Zapopan?</h3>
             <p>
-              Las citas en línea de este sitio son exclusivamente para Querétaro. Para Zapopan, agenda
-              por WhatsApp o en el calendario del doctor.
+              Las citas en línea de este sitio son exclusivamente para Querétaro. Para Zapopan, Jalisco,
+              agenda por WhatsApp o en el calendario del doctor.
             </p>
             <div className="contact-gdl-actions">
               {gdl.googleCalendarUrl ? (
@@ -81,7 +81,7 @@ const Contact = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Agendar en Guadalajara
+                  Agendar en Zapopan
                 </a>
               ) : null}
               <a
@@ -90,7 +90,7 @@ const Contact = () => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                WhatsApp Guadalajara
+                WhatsApp Zapopan
               </a>
             </div>
           </div>

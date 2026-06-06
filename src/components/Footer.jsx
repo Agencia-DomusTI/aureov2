@@ -53,7 +53,7 @@ const Footer = () => {
             <a href={qro.instagram} target="_blank" rel="noopener noreferrer" title="Instagram Querétaro">
               IG QRO
             </a>
-            <a href={gdl.instagram} target="_blank" rel="noopener noreferrer" title="Instagram Guadalajara">
+            <a href={gdl.instagram} target="_blank" rel="noopener noreferrer" title="Instagram Zapopan">
               IG GDL
             </a>
             <a href="https://www.facebook.com/share/18m7fLY1NS/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer">
@@ -68,10 +68,10 @@ const Footer = () => {
               WA QRO
             </a>
             <a
-              href={`https://wa.me/${gdl.phoneWa}?text=${encodeURIComponent('Hola Áureo Clinique Guadalajara, me gustaría recibir más información sobre sus tratamientos.')}`}
+              href={`https://wa.me/${gdl.phoneWa}?text=${encodeURIComponent('Hola Áureo Clinique Zapopan, me gustaría recibir más información sobre sus tratamientos.')}`}
               target="_blank"
               rel="noopener noreferrer"
-              title="WhatsApp Guadalajara"
+              title="WhatsApp Zapopan"
             >
               WA GDL
             </a>

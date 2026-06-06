@@ -9,7 +9,7 @@ export const CLINICS = {
     instagram: 'https://www.instagram.com/aureoclinique_qro?igsh=MTRtbmVnbmNxNXJyZw==',
   },
   gdl: {
-    label: 'Zapopan, Guadalajara',
+    label: 'Zapopan, Jalisco',
     address: 'Av. William Shakespeare 4978, Patria Universidad, 45119 Zapopan, Jal.',
     phone: '+52 33 2784 7251',
     phoneWa: '523327847251',
