@@ -1,5 +1,8 @@
+import { CLINICS } from '../constants/clinics';
 import OptimizedImage from './OptimizedImage';
 import './Footer.css';
+
+const { qro, gdl } = CLINICS;
 
 const Footer = () => {
   return (
@@ -47,9 +50,31 @@ const Footer = () => {
         <div className="footer-social">
           <h3>Síguenos</h3>
           <div className="social-icons">
-            <a href="https://www.instagram.com/aureoclinique_qro?igsh=MTRtbmVnbmNxNXJyZw==" target="_blank" rel="noopener noreferrer">IG</a>
-            <a href="https://www.facebook.com/share/18m7fLY1NS/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer">FB</a>
-            <a href="https://wa.me/524427217377?text=Hola%20%C3%81ureo%20Clinique%2C%20me%20gustar%C3%ADa%20recibir%20m%C3%A1s%20informaci%C3%B3n%20sobre%20sus%20tratamientos." target="_blank" rel="noopener noreferrer">WA</a>
+            <a href={qro.instagram} target="_blank" rel="noopener noreferrer" title="Instagram Querétaro">
+              IG QRO
+            </a>
+            <a href={gdl.instagram} target="_blank" rel="noopener noreferrer" title="Instagram Guadalajara">
+              IG GDL
+            </a>
+            <a href="https://www.facebook.com/share/18m7fLY1NS/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer">
+              FB
+            </a>
+            <a
+              href={`https://wa.me/${qro.phoneWa}?text=${encodeURIComponent('Hola Áureo Clinique, me gustaría recibir más información sobre sus tratamientos.')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="WhatsApp Querétaro"
+            >
+              WA QRO
+            </a>
+            <a
+              href={`https://wa.me/${gdl.phoneWa}?text=${encodeURIComponent('Hola Áureo Clinique Guadalajara, me gustaría recibir más información sobre sus tratamientos.')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="WhatsApp Guadalajara"
+            >
+              WA GDL
+            </a>
           </div>
         </div>
       </div>
