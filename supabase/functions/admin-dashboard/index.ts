@@ -56,6 +56,38 @@ function serviceFromTitle(title: string) {
   return parseEventTitle(title).service;
 }
 
+/** Eventos que el propio sitio creó en Google (espejo de una reserva del sitio). */
+function isSiteCreatedGoogleEvent(e: { description?: string }) {
+  const d = (e.description ?? '').toLowerCase();
+  return d.includes('aureoclinique.com') || d.includes('reservado desde');
+}
+
+function isGoogleEventDuplicate(
+  e: { id: string; title?: string; start?: string; description?: string },
+  siteBookings: ReturnType<typeof mapBooking>[],
+  linkedEventIds: Set<string>,
+) {
+  if (linkedEventIds.has(e.id)) return true;
+  // Espejo creado por create-booking → nunca mostrar aparte en el panel.
+  if (isSiteCreatedGoogleEvent(e)) return true;
+
+  if (!e.start) return false;
+  const eventStart = new Date(e.start).getTime();
+  const titleLower = (e.title ?? '').toLowerCase();
+
+  for (const b of siteBookings) {
+    const bookingStart = new Date(b.start as string).getTime();
+    if (Math.abs(eventStart - bookingStart) <= 5 * 60 * 1000) return true;
+
+    const patient = String(b.patient.name ?? '').toLowerCase().trim();
+    const service = String(b.service ?? '').toLowerCase().trim();
+    if (patient && titleLower.includes(patient)) return true;
+    if (service && titleLower.includes(service)) return true;
+  }
+
+  return false;
+}
+
 Deno.serve(async (req) => {
   const cors = handleCors(req);
   if (cors) return cors;
@@ -101,7 +133,14 @@ Deno.serve(async (req) => {
   const bookings = (bookingsRes.data ?? []).map(mapBooking);
   const rangeBookings = (rangeBookingsRes.data ?? []).map(mapBooking);
 
-  let googleEvents: Array<{ id: string; title: string; start: string; end: string; source: string }> = [];
+  let googleEvents: Array<{
+    id: string;
+    title: string;
+    description?: string;
+    start: string;
+    end: string;
+    source: string;
+  }> = [];
   if (calendar.connected) {
     googleEvents = await fetchCalendarEvents(supabase, rangeStartIso, rangeEndIso);
   }
@@ -110,17 +149,9 @@ Deno.serve(async (req) => {
   const linkedEventIds = new Set(
     allRangeRows.map((b) => b.event_id as string | null).filter(Boolean),
   );
-  // También deduplicamos por hora de inicio: un evento de Google que coincide
-  // con una reserva (aunque el event_id no empate) no debe mostrarse aparte.
-  const bookedStartTimes = new Set(
-    allRangeRows
-      .map((b) => (b.start_at ? new Date(b.start_at as string).getTime() : null))
-      .filter((t): t is number => t !== null),
-  );
 
-  const isGoogleDuplicate = (e: { id: string; start?: string }) =>
-    linkedEventIds.has(e.id) ||
-    (Boolean(e.start) && bookedStartTimes.has(new Date(e.start as string).getTime()));
+  const isGoogleDuplicate = (e: { id: string; title?: string; start?: string; description?: string }) =>
+    isGoogleEventDuplicate(e, rangeBookings, linkedEventIds);
 
   const unlinkedGoogle = googleEvents.filter((e) => !isGoogleDuplicate(e));
 

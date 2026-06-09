@@ -200,11 +200,13 @@ export async function fetchCalendarEvents(
   return (data.items ?? []).map((ev: {
     id: string;
     summary?: string;
+    description?: string;
     start?: { dateTime?: string; date?: string };
     end?: { dateTime?: string; date?: string };
   }) => ({
     id: ev.id,
     title: ev.summary ?? 'Sin título',
+    description: ev.description ?? '',
     start: ev.start?.dateTime ?? ev.start?.date,
     end: ev.end?.dateTime ?? ev.end?.date,
     source: 'google' as const,
