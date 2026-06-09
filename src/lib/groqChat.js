@@ -20,8 +20,10 @@ export async function sendGroqMessage(messages) {
     body: JSON.stringify({
       model: MODEL,
       messages,
-      temperature: 0.6,
-      max_tokens: 800,
+      temperature: 0.2,
+      max_tokens: 280,
+      top_p: 0.85,
+      frequency_penalty: 0.3,
     }),
   });
 

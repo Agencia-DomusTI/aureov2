@@ -1,54 +1,137 @@
-import { BOOKING_CONFIG } from './booking';
+import { BOOKING_CONFIG, SERVICE_DURATIONS, formatDuration } from './booking';
 import { CLINICS } from './clinics';
-import { getAllBookableServices } from '../utils/bookableServices';
+import { SERVICE_PROMOTIONS, servicesData } from './services';
 
-function buildServicesList() {
-  const services = getAllBookableServices();
-  const byCategory = new Map();
-  services.forEach((s) => {
-    if (!byCategory.has(s.category)) byCategory.set(s.category, []);
-    byCategory.get(s.category).push(`- ${s.name} (${s.durationLabel}) · ${s.price}`);
+function normalize(text) {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function shortDesc(desc, max = 100) {
+  const clean = desc.replace(/\s+/g, ' ').trim();
+  return clean.length <= max ? clean : `${clean.slice(0, max - 1)}…`;
+}
+
+/** Catálogo oficial — única fuente de verdad del asistente */
+export function buildOfficialCatalog() {
+  const items = [];
+  Object.values(servicesData).forEach((category) => {
+    category.items.forEach((item) => {
+      const duration = SERVICE_DURATIONS[item.name];
+      items.push({
+        name: item.name,
+        category: category.title,
+        price: item.price,
+        duration: duration ? formatDuration(duration) : null,
+        desc: shortDesc(item.desc, 140),
+        keywords: normalize(`${item.name} ${item.price} ${item.desc} ${category.title}`),
+      });
+    });
   });
-  return [...byCategory.entries()]
-    .map(([cat, items]) => `${cat}:\n${items.join('\n')}`)
-    .join('\n\n');
+  items.unshift({
+    name: 'Valoración médica',
+    category: 'Consulta',
+    price: 'Sin costo inicial · según tratamiento',
+    duration: formatDuration(SERVICE_DURATIONS['Valoración médica']),
+    desc: 'Primera consulta para definir el tratamiento ideal. Requerida en varios protocolos.',
+    keywords: normalize('valoracion consulta primera cita'),
+  });
+  return items;
+}
+
+const CATALOG = buildOfficialCatalog();
+
+const CATEGORY_INDEX = [...new Set(CATALOG.map((s) => s.category))].map((cat) => {
+  const names = CATALOG.filter((s) => s.category === cat).map((s) => s.name);
+  return `${cat} (${names.length}): ${names.join(', ')}`;
+}).join('\n');
+
+function findRelevantServices(query, limit = 5) {
+  const q = normalize(query);
+  if (!q || q.length < 2) return [];
+
+  const terms = q.split(/\s+/).filter((t) => t.length > 2);
+  const scored = CATALOG.map((item) => {
+    let score = 0;
+    const nameNorm = normalize(item.name);
+    if (nameNorm.includes(q) || q.includes(nameNorm.split('(')[0].trim())) score += 30;
+    for (const t of terms) {
+      if (item.keywords.includes(t)) score += t.length;
+    }
+    return { item, score };
+  });
+
+  return scored
+    .filter((s) => s.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map((s) => s.item);
+}
+
+function formatServiceBlock(s) {
+  const dur = s.duration ? ` · ${s.duration}` : '';
+  return `• ${s.name} — ${s.price}${dur}\n  ${s.desc}`;
+}
+
+function buildPromotionsBlock() {
+  if (!SERVICE_PROMOTIONS?.length) return 'Sin promociones activas registradas.';
+  return SERVICE_PROMOTIONS.map((p) => `• ${p.product}: ${p.promo}`).join('\n');
 }
 
 export const CHAT_WELCOME =
-  '¡Hola! Soy el asistente de Áureo Clinique. Puedo ayudarte con tratamientos, precios orientativos, horarios y cómo agendar tu cita. ¿En qué te apoyo?';
+  '¡Hola! Soy el asistente de Áureo Clinique. Con gusto te oriento sobre tratamientos, precios y citas. ¿Qué te gustaría saber?';
 
 export const CHAT_QUICK_ACTIONS = [
-  { id: 'book', label: 'Agendar cita', message: 'Quiero agendar una cita' },
-  { id: 'services', label: 'Tratamientos', message: '¿Qué tratamientos ofrecen?' },
-  { id: 'hours', label: 'Horarios', message: '¿Cuáles son sus horarios?' },
-  { id: 'locations', label: 'Ubicaciones', message: '¿Dónde están ubicados?' },
+  { id: 'book', label: 'Agendar cita', message: 'Quiero agendar una cita en Querétaro' },
+  { id: 'services', label: 'Tratamientos', message: '¿Qué áreas de tratamiento manejan?' },
+  { id: 'hours', label: 'Horarios', message: '¿Cuál es su horario?' },
+  { id: 'locations', label: 'Ubicaciones', message: '¿Dónde están sus clínicas?' },
 ];
 
-export function buildChatSystemPrompt() {
+export function buildChatSystemPrompt(userMessage = '') {
   const { qro, gdl } = CLINICS;
-  return `Eres el asistente virtual de Áureo Clinique, clínica de medicina estética y bienestar en Querétaro y Zapopan, México.
-Responde SIEMPRE en español, con tono cálido, profesional y conciso (máximo 3 párrafos cortos).
-No inventes precios ni tratamientos que no estén en la lista. Si no sabes algo, invita a agendar valoración o contactar por WhatsApp.
+  const relevant = findRelevantServices(userMessage);
+  const relevantBlock = relevant.length
+    ? relevant.map(formatServiceBlock).join('\n')
+    : '(Usa solo el índice de categorías; no listes todo el catálogo salvo que lo pidan.)';
 
-## Sucursales
-- Querétaro: ${qro.address}. Tel: ${qro.phone}. Email: ${qro.email}
-- Zapopan: ${gdl.address}. Tel: ${gdl.phone}
+  return `IDENTIDAD
+Eres el asistente virtual oficial de Áureo Clinique — medicina estética y regenerativa en Querétaro y Zapopan.
+Personalidad: cálida, elegante y profesional, como la recepción de una clínica boutique. Tutea con respeto.
+Marca: resultados naturales, atención médica personalizada, Dr. Demetrio Quintero (+11 años de experiencia).
 
-## Horarios (hora Ciudad de México)
-${BOOKING_CONFIG.scheduleSummary}
+REGLAS ESTRICTAS (obligatorias)
+1. Respuestas CORTAS: máximo 3 oraciones o 60 palabras. Sin párrafos largos ni listas enormes.
+2. SOLO usa información del CATÁLOGO y datos de esta guía. NUNCA inventes precios, tratamientos, promociones ni resultados.
+3. Si no encuentras un dato en el catálogo, di: "No tengo ese dato en nuestro catálogo; te recomiendo una valoración médica" — no adivines.
+4. No des diagnósticos ni garantices resultados. Para dudas médicas: valoración presencial.
+5. No menciones otros doctores, clínicas ni competencia.
+6. No uses markdown pesado; texto simple y directo.
+7. Si preguntan por algo que no ofrecemos, dilo con amabilidad y sugiere alternativa del catálogo si aplica.
+8. Promociones: SOLO las listadas en PROMOCIONES. No inventes descuentos.
 
-## Reservas en línea
-- Querétaro: calendario en el sitio web, sección Contacto. Anticipo de $250 MXN (o según tratamiento) al confirmar.
-- Zapopan: agendar por WhatsApp al ${gdl.phone}, no hay calendario en línea en el sitio.
-- Valoración médica: sin costo inicial; duración según tratamiento.
+CÓMO RESPONDER
+- Pregunta general de tratamientos → menciona 3–4 categorías, no enumeres todo.
+- Pregunta por un tratamiento específico → usa SERVICIOS RELACIONADOS + precio exacto del catálogo.
+- Agendar Querétaro → calendario en sección Contacto del sitio; anticipo $250 MXN (puede variar por tratamiento).
+- Agendar Zapopan → WhatsApp ${gdl.phone}.
+- Valoración médica → sin costo inicial.
 
-## Tratamientos y precios orientativos
-${buildServicesList()}
+SUCURSALES
+• Querétaro: ${qro.address} · ${qro.phone}
+• Zapopan: ${gdl.address} · ${gdl.phone}
+• Email: ${qro.email}
 
-## Instrucciones
-- Si quieren agendar en Querétaro, indícales que usen el calendario del sitio (sección Contacto) o que puedes guiarlos.
-- Si quieren Zapopan, recomienda WhatsApp.
-- Para dudas médicas específicas, sugiere valoración presencial.
-- No des diagnósticos ni recomendaciones médicas definitivas.
-- Puedes mencionar que tras confirmar cita recibirán mensaje por WhatsApp.`;
+HORARIOS (CDMX): ${BOOKING_CONFIG.scheduleSummary}
+
+PROMOCIONES VIGENTES
+${buildPromotionsBlock()}
+
+ÍNDICE DE CATEGORÍAS Y TRATAMIENTOS (nombres oficiales)
+${CATEGORY_INDEX}
+
+SERVICIOS RELACIONADOS A ESTA PREGUNTA
+${relevantBlock}`;
 }

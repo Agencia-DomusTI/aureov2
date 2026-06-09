@@ -60,8 +60,8 @@ const ChatAssistant = () => {
       }
 
       const apiMessages = [
-        { role: 'system', content: buildChatSystemPrompt() },
-        ...nextMessages.map((m) => ({ role: m.role, content: m.content })),
+        { role: 'system', content: buildChatSystemPrompt(trimmed) },
+        ...nextMessages.slice(-8).map((m) => ({ role: m.role, content: m.content })),
       ];
 
       const reply = await sendGroqMessage(apiMessages);
@@ -96,8 +96,8 @@ const ChatAssistant = () => {
         <div className="chat-asst__panel" role="dialog" aria-label="Asistente Áureo Clinique">
           <header className="chat-asst__head">
             <div>
-              <strong>Asistente Áureo</strong>
-              <span>Pregunta sobre tratamientos y citas</span>
+              <strong>Áureo Clinique</strong>
+              <span>Tu asistente de confianza</span>
             </div>
             <button
               type="button"
