@@ -7,7 +7,7 @@ const AdminServicesTab = ({ settings, setSettings, onSave, saveMsg }) => {
 
   const servicesConfig = settings?.servicesConfig ?? {};
 
-  const grouped = useMemo(() => {
+  const categories = useMemo(() => {
     const q = filter.trim().toLowerCase();
     const list = q
       ? allServices.filter((s) => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q))
@@ -19,6 +19,13 @@ const AdminServicesTab = ({ settings, setSettings, onSave, saveMsg }) => {
     });
     return map;
   }, [allServices, filter]);
+
+  const activeCount = useMemo(() => {
+    return allServices.filter((s) => {
+      const cfg = servicesConfig[s.id];
+      return cfg?.active !== false;
+    }).length;
+  }, [allServices, servicesConfig]);
 
   const updateService = (id, patch) => {
     setSettings((prev) => ({
@@ -40,70 +47,97 @@ const AdminServicesTab = ({ settings, setSettings, onSave, saveMsg }) => {
   };
 
   return (
-    <div className="adm-services">
-      <header className="adm-services__head">
+    <div className="adm-svc-apple">
+      <header className="adm-svc-apple__head">
         <div>
-          <h2>Precios y servicios</h2>
-          <p>Activa o desactiva tratamientos y edita precios visibles en el sitio.</p>
+          <h2>Servicios</h2>
+          <p>{activeCount} activos · edita precios y disponibilidad en reservas</p>
         </div>
-        <button type="button" className="btn-primary" onClick={onSave}>Guardar cambios</button>
+        <button type="button" className="adm-svc-apple__save" onClick={onSave}>
+          Guardar
+        </button>
       </header>
-      {saveMsg ? <p className={`admin-toast ${saveMsg.includes('Error') ? 'admin-toast--err' : 'admin-toast--ok'}`}>{saveMsg}</p> : null}
 
-      <input
-        type="search"
-        className="admin-input adm-services__search"
-        placeholder="Buscar servicio…"
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-      />
+      {saveMsg ? (
+        <p className={`admin-toast ${saveMsg.includes('Error') ? 'admin-toast--err' : 'admin-toast--ok'}`}>
+          {saveMsg}
+        </p>
+      ) : null}
 
-      <p className="adm-muted adm-services__hint">
-        Anticipo base: <strong>${settings?.depositAmountMxn ?? 250} MXN</strong> (cambiar en Configuración)
-      </p>
+      <div className="adm-svc-apple__search-wrap">
+        <input
+          type="search"
+          className="adm-svc-apple__search"
+          placeholder="Buscar tratamiento"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        />
+      </div>
 
-      {[...grouped.entries()].map(([category, items]) => (
-        <section key={category} className="adm-svc-group">
+      <div className="adm-svc-apple__banner">
+        Anticipo base <strong>${settings?.depositAmountMxn ?? 250} MXN</strong>
+        <span>— configurable en Configuración</span>
+      </div>
+
+      {[...categories.entries()].map(([category, items]) => (
+        <section key={category} className="adm-svc-apple__section">
           <h3>{category}</h3>
-          <div className="adm-svc-table">
-            {items.map((service) => {
+          <div className="adm-svc-apple__group">
+            {items.map((service, idx) => {
               const cfg = getConfig(service);
               return (
-                <div key={service.id} className={`adm-svc-row ${cfg.active ? '' : 'is-off'}`}>
-                  <label className="adm-svc-toggle">
-                    <input
-                      type="checkbox"
-                      checked={cfg.active}
-                      onChange={(e) => updateService(service.id, { active: e.target.checked })}
-                    />
-                    <span />
-                  </label>
-                  <div className="adm-svc-info">
-                    <strong>{service.name}</strong>
-                    <span>{service.durationLabel}</span>
+                <div
+                  key={service.id}
+                  className={`adm-svc-apple__row ${cfg.active ? '' : 'is-off'} ${idx < items.length - 1 ? 'has-divider' : ''}`}
+                >
+                  <div className="adm-svc-apple__main">
+                    <div className="adm-svc-apple__text">
+                      <strong>{service.name}</strong>
+                      <span>{service.durationLabel}</span>
+                    </div>
+                    <label className="adm-ios-toggle">
+                      <input
+                        type="checkbox"
+                        checked={cfg.active}
+                        onChange={(e) => updateService(service.id, { active: e.target.checked })}
+                      />
+                      <span />
+                    </label>
                   </div>
-                  <input
-                    className="admin-input adm-svc-price"
-                    value={cfg.priceLabel}
-                    placeholder="Precio visible"
-                    onChange={(e) => updateService(service.id, { priceLabel: e.target.value })}
-                  />
-                  <input
-                    type="number"
-                    className="admin-input adm-svc-deposit"
-                    placeholder="Anticipo"
-                    min="0"
-                    value={cfg.depositMxn}
-                    onChange={(e) => updateService(service.id, {
-                      depositMxn: e.target.value ? parseInt(e.target.value, 10) : undefined,
-                    })}
-                  />
+                  <div className="adm-svc-apple__fields">
+                    <label>
+                      <span>Precio visible</span>
+                      <input
+                        className="adm-svc-apple__input"
+                        value={cfg.priceLabel}
+                        placeholder="Ej. Desde $1,200"
+                        onChange={(e) => updateService(service.id, { priceLabel: e.target.value })}
+                      />
+                    </label>
+                    <label>
+                      <span>Anticipo MXN</span>
+                      <input
+                        type="number"
+                        className="adm-svc-apple__input adm-svc-apple__input--short"
+                        placeholder="250"
+                        min="0"
+                        value={cfg.depositMxn}
+                        onChange={(e) => updateService(service.id, {
+                          depositMxn: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                        })}
+                      />
+                    </label>
+                  </div>
                 </div>
               );
             })}
           </div>
         </section>
       ))}
+
+      {!categories.size ? (
+        <p className="adm-apple-empty">No hay servicios que coincidan con tu búsqueda</p>
+      ) : null}
     </div>
   );
 };

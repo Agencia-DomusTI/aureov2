@@ -550,12 +550,16 @@
   max-width: 1100px;
 }
 
-/* ─── Dashboard calendario ─── */
+/* ─── Dashboard calendario (Apple-style) ─── */
 
 .adm-dash {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
+}
+
+.adm-dash--apple {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
 }
 
 .adm-stats {
@@ -601,9 +605,130 @@
   color: var(--secondary);
 }
 
-.adm-toolbar {
+.adm-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+}
+
+.adm-nav__range {
   display: flex;
   flex-direction: column;
+  gap: 0.15rem;
+}
+
+.adm-nav__range strong {
+  font-family: var(--font-title);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--primary);
+  text-transform: capitalize;
+}
+
+.adm-nav__actions {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.adm-nav__btn {
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.adm-nav__btn:hover:not(:disabled) {
+  border-color: var(--secondary);
+  background: var(--white);
+}
+
+.adm-nav__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.adm-nav__btn--text {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  min-width: auto;
+  padding: 0 0.85rem;
+}
+
+.adm-nav__btn--refresh {
+  font-size: 1.1rem;
+}
+
+.adm-span-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.adm-span-toggle__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-right: 0.15rem;
+}
+
+.adm-span-toggle button {
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--white);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.adm-span-toggle button.is-active {
+  background: var(--secondary);
+  border-color: var(--secondary);
+  color: var(--white);
+}
+
+.adm-span-toggle button:disabled {
+  opacity: 0.5;
+}
+
+.adm-weeks-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.adm-week-block__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.adm-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
 }
 
@@ -770,10 +895,19 @@
 }
 
 .adm-timeline__event {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
   padding: 0.55rem 0.75rem;
   border-radius: 0.5rem;
   border-left: 3px solid var(--secondary);
   background: rgba(184, 153, 104, 0.1);
+}
+
+.adm-timeline__event-main {
+  flex: 1;
+  min-width: 0;
 }
 
 .adm-timeline__event--google {
@@ -835,6 +969,39 @@
   border-radius: 0.6rem;
   background: var(--bg-soft);
   border-left: 3px solid var(--secondary);
+}
+
+.adm-apt__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+
+.adm-del {
+  width: 1.65rem;
+  height: 1.65rem;
+  padding: 0;
+  border: 1px solid rgba(180, 60, 60, 0.25);
+  border-radius: 0.35rem;
+  background: rgba(180, 60, 60, 0.06);
+  color: #b43c3c;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.adm-del:hover:not(:disabled) {
+  background: rgba(180, 60, 60, 0.14);
+  border-color: #b43c3c;
+}
+
+.adm-del:disabled {
+  opacity: 0.5;
+  cursor: wait;
 }
 
 .adm-apt--google {
@@ -1149,9 +1316,794 @@
   margin-bottom: 0.5rem;
 }
 
+/* Apple calendar */
+
+.adm-apple-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.adm-apple-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.65rem 0.9rem;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(14, 33, 56, 0.08);
+  border-radius: 12px;
+  min-width: 5.5rem;
+  backdrop-filter: blur(8px);
+}
+
+.adm-apple-chip--wide {
+  flex: 1;
+  min-width: 12rem;
+}
+
+.adm-apple-chip__val {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--primary);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.adm-apple-chip__val--text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-apple-chip__lbl {
+  font-size: 0.68rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.adm-apple-chip__sub {
+  font-size: 0.72rem;
+  color: var(--secondary);
+}
+
+.adm-apple-cal {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(14, 33, 56, 0.08);
+  box-shadow: 0 4px 24px rgba(14, 33, 56, 0.06);
+  overflow: hidden;
+}
+
+.adm-apple-cal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem 0.65rem;
+  flex-wrap: wrap;
+}
+
+.adm-apple-cal__nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.adm-apple-cal__chev {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 50%;
+  background: rgba(14, 33, 56, 0.06);
+  color: var(--primary);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.adm-apple-cal__chev:hover:not(:disabled) {
+  background: rgba(14, 33, 56, 0.1);
+}
+
+.adm-apple-cal__chev:disabled {
+  opacity: 0.4;
+}
+
+.adm-apple-cal__title {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+}
+
+.adm-apple-cal__title strong {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-transform: capitalize;
+  letter-spacing: -0.02em;
+}
+
+.adm-apple-cal__title span {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.adm-apple-cal__tools {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.adm-apple-cal__today,
+.adm-apple-cal__refresh {
+  height: 2rem;
+  padding: 0 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background: rgba(14, 33, 56, 0.06);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.adm-apple-cal__refresh {
+  width: 2rem;
+  padding: 0;
+  font-size: 1rem;
+}
+
+.adm-apple-cal__today:disabled {
+  opacity: 0.4;
+}
+
+.adm-seg {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  margin: 0 1.1rem 0.85rem;
+  background: rgba(14, 33, 56, 0.06);
+  border-radius: 10px;
+}
+
+.adm-seg--panel {
+  margin: 0 0 0.85rem;
+}
+
+.adm-seg button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.adm-seg button.is-active {
+  background: #fff;
+  color: var(--primary);
+  box-shadow: 0 1px 4px rgba(14, 33, 56, 0.1);
+}
+
+.adm-seg button:disabled {
+  opacity: 0.5;
+}
+
+.adm-apple-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  border-top: 1px solid rgba(14, 33, 56, 0.06);
+}
+
+.adm-apple-grid-wrap {
+  padding: 0.5rem 1rem 1.25rem;
+}
+
+.adm-apple-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 0.35rem;
+}
+
+.adm-apple-weekdays span {
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.adm-apple-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.adm-apple-week + .adm-apple-week {
+  margin-top: 2px;
+}
+
+.adm-apple-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-height: 3.25rem;
+  padding: 0.35rem 0;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.adm-apple-day:hover {
+  background: rgba(14, 33, 56, 0.04);
+}
+
+.adm-apple-day__num {
+  width: 1.85rem;
+  height: 1.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--primary);
+  border-radius: 50%;
+  line-height: 1;
+}
+
+.adm-apple-day.is-today .adm-apple-day__num {
+  box-shadow: inset 0 0 0 2px var(--secondary);
+  font-weight: 700;
+}
+
+.adm-apple-day.is-selected .adm-apple-day__num {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.adm-apple-day.is-selected.is-today .adm-apple-day__num {
+  box-shadow: none;
+}
+
+.adm-apple-day__dots {
+  display: flex;
+  gap: 3px;
+  min-height: 5px;
+}
+
+.adm-apple-day__dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--secondary);
+  opacity: 0;
+}
+
+.adm-apple-day.has-events .adm-apple-day__dots i {
+  opacity: 1;
+}
+
+.adm-apple-day.is-selected.has-events .adm-apple-day__dots i {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.adm-apple-side {
+  border-left: 1px solid rgba(14, 33, 56, 0.06);
+  padding: 1rem;
+  background: rgba(249, 246, 240, 0.45);
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+  max-height: 520px;
+}
+
+.adm-apple-side__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.adm-apple-side__head h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-transform: capitalize;
+  letter-spacing: -0.01em;
+}
+
+.adm-apple-side__head span {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.adm-apple-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 2rem 1rem;
+}
+
+.adm-apple-events,
+.adm-apple-period {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.adm-apple-period__day h4 {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin: 0.75rem 0 0.35rem;
+}
+
+.adm-apple-period__day h4.is-today {
+  color: var(--secondary);
+}
+
+.adm-apple-period__day:first-child h4 {
+  margin-top: 0;
+}
+
+.adm-event {
+  display: flex;
+  align-items: stretch;
+  gap: 0.65rem;
+  background: #fff;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(14, 33, 56, 0.06);
+  box-shadow: 0 1px 3px rgba(14, 33, 56, 0.04);
+}
+
+.adm-event__stripe {
+  width: 4px;
+  border-radius: 4px;
+  background: var(--secondary);
+  flex-shrink: 0;
+}
+
+.adm-event--google .adm-event__stripe {
+  background: #4285f4;
+}
+
+.adm-event__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.adm-event__time {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.15rem;
+}
+
+.adm-event__title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--primary);
+  line-height: 1.3;
+}
+
+.adm-event__meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.adm-event__detail {
+  opacity: 0.85;
+}
+
+.adm-del--text {
+  width: auto;
+  height: auto;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #c0392b;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.adm-del--text:hover:not(:disabled) {
+  background: rgba(192, 57, 43, 0.08);
+  border-color: transparent;
+}
+
+.adm-apple-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.adm-apple-card {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid rgba(14, 33, 56, 0.08);
+  padding: 1rem 1.1rem;
+}
+
+.adm-apple-card h4 {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 0.65rem;
+}
+
+.adm-apple-rank {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.adm-apple-rank li {
+  display: grid;
+  grid-template-columns: 1.25rem 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.82rem;
+}
+
+.adm-apple-rank__pos {
+  font-weight: 700;
+  color: var(--secondary);
+  font-size: 0.72rem;
+}
+
+.adm-apple-rank__name {
+  color: var(--primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-apple-rank__count {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.adm-gcal {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.adm-gcal__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ccc;
+  flex-shrink: 0;
+}
+
+.adm-gcal--on .adm-gcal__dot {
+  background: #34c759;
+}
+
+.adm-gcal__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.adm-gcal__info strong {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--primary);
+}
+
+.adm-gcal__info p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-gcal__btn {
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.adm-gcal__btn--primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+/* Apple servicios */
+
+.adm-svc-apple {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.adm-svc-apple__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.adm-svc-apple__head h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--primary);
+}
+
+.adm-svc-apple__head p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.adm-svc-apple__save {
+  padding: 0.5rem 1.1rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.adm-svc-apple__search-wrap {
+  padding: 0 0.15rem;
+}
+
+.adm-svc-apple__search {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  border: none;
+  border-radius: 10px;
+  background: rgba(14, 33, 56, 0.06);
+  font-size: 0.9rem;
+  color: var(--primary);
+}
+
+.adm-svc-apple__search::placeholder {
+  color: var(--text-muted);
+}
+
+.adm-svc-apple__search:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(184, 153, 104, 0.35);
+}
+
+.adm-svc-apple__banner {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  padding: 0.55rem 0.85rem;
+  background: rgba(184, 153, 104, 0.12);
+  border-radius: 10px;
+}
+
+.adm-svc-apple__banner strong {
+  color: var(--primary);
+}
+
+.adm-svc-apple__section h3 {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: 0.5rem 0 0.4rem 0.85rem;
+}
+
+.adm-svc-apple__group {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid rgba(14, 33, 56, 0.08);
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(14, 33, 56, 0.04);
+}
+
+.adm-svc-apple__row {
+  padding: 0.85rem 1rem;
+}
+
+.adm-svc-apple__row.has-divider {
+  border-bottom: 1px solid rgba(14, 33, 56, 0.06);
+}
+
+.adm-svc-apple__row.is-off {
+  opacity: 0.5;
+}
+
+.adm-svc-apple__main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.adm-svc-apple__text strong {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--primary);
+  letter-spacing: -0.01em;
+}
+
+.adm-svc-apple__text span {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+  display: block;
+}
+
+.adm-ios-toggle {
+  position: relative;
+  width: 2.65rem;
+  height: 1.55rem;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.adm-ios-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.adm-ios-toggle span {
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 33, 56, 0.15);
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+.adm-ios-toggle span::after {
+  content: '';
+  position: absolute;
+  width: 1.25rem;
+  height: 1.25rem;
+  left: 2px;
+  top: 2px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+.adm-ios-toggle input:checked + span {
+  background: #34c759;
+}
+
+.adm-ios-toggle input:checked + span::after {
+  transform: translateX(1.1rem);
+}
+
+.adm-svc-apple__fields {
+  display: grid;
+  grid-template-columns: 1fr 7rem;
+  gap: 0.65rem;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(14, 33, 56, 0.05);
+}
+
+.adm-svc-apple__fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.adm-svc-apple__fields label span {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.adm-svc-apple__input {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid rgba(14, 33, 56, 0.1);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  background: rgba(249, 246, 240, 0.5);
+  color: var(--primary);
+}
+
+.adm-svc-apple__input:focus {
+  outline: none;
+  border-color: var(--secondary);
+  background: #fff;
+}
+
+@media (max-width: 900px) {
+  .adm-apple-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .adm-apple-side {
+    border-left: none;
+    border-top: 1px solid rgba(14, 33, 56, 0.06);
+    max-height: none;
+  }
+
+  .adm-apple-footer {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .adm-stats {
     grid-template-columns: 1fr;
+  }
+
+  .adm-nav {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .adm-nav__actions {
+    justify-content: center;
+  }
+
+  .adm-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .adm-view-toggle {
+    align-self: stretch;
+    justify-content: center;
   }
 
   .adm-week {
@@ -1174,6 +2126,23 @@
 
   .adm-services__head {
     flex-direction: column;
+  }
+
+  .adm-svc-apple__head {
+    flex-direction: column;
+  }
+
+  .adm-svc-apple__fields {
+    grid-template-columns: 1fr;
+  }
+
+  .adm-apple-cal__head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .adm-apple-cal__tools {
+    justify-content: center;
   }
 }
 

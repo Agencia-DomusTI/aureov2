@@ -1,7 +1,12 @@
 import { useMemo, useState } from 'react';
 
 const TZ = 'America/Mexico_City';
-const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+const WEEK_HEADERS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+const SPAN_OPTIONS = [
+  { value: 1, label: '1 semana' },
+  { value: 2, label: '2 semanas' },
+  { value: 4, label: 'Mes' },
+];
 
 function formatTime(iso) {
   return new Date(iso).toLocaleTimeString('es-MX', {
@@ -11,21 +16,39 @@ function formatTime(iso) {
   });
 }
 
-function hourInMexico(iso) {
-  return Number(
-    new Date(iso).toLocaleString('en-US', { hour: 'numeric', hour12: false, timeZone: TZ }),
+function formatTimeRange(start, end) {
+  return `${formatTime(start)} – ${formatTime(end)}`;
+}
+
+function DeleteBtn({ apt, deletingId, onDelete, variant = 'icon' }) {
+  if (!apt.canDelete) return null;
+  const busy = deletingId === apt.id;
+  return (
+    <button
+      type="button"
+      className={`adm-del adm-del--${variant}`}
+      title="Eliminar cita"
+      disabled={busy}
+      onClick={() => onDelete(apt)}
+    >
+      {busy ? 'Eliminando…' : variant === 'text' ? 'Eliminar' : '✕'}
+    </button>
   );
 }
 
-function AptCard({ apt }) {
+function EventRow({ apt, deletingId, onDelete }) {
   return (
-    <article className={`adm-apt adm-apt--${apt.source}`}>
-      <time>{formatTime(apt.start)}</time>
-      <div>
-        <strong>{apt.title}</strong>
-        <span>{apt.subtitle}</span>
+    <article className={`adm-event adm-event--${apt.source}`}>
+      <div className="adm-event__stripe" aria-hidden />
+      <div className="adm-event__body">
+        <div className="adm-event__time">{formatTimeRange(apt.start, apt.end)}</div>
+        <div className="adm-event__title">{apt.title}</div>
+        <div className="adm-event__meta">
+          {apt.subtitle}
+          {apt.detail ? <span className="adm-event__detail"> · {apt.detail}</span> : null}
+        </div>
       </div>
-      <span className="adm-apt__tag">{apt.source === 'google' ? 'Google' : 'Sitio'}</span>
+      <DeleteBtn apt={apt} deletingId={deletingId} onDelete={onDelete} variant="text" />
     </article>
   );
 }
@@ -36,11 +59,18 @@ const AdminCalendarTab = ({
   urlConnected,
   urlError,
   oauthCallbackUrl,
+  weekOffset = 0,
+  weeks = 2,
+  refreshing = false,
+  deletingId = null,
   onConnect,
   onDisconnect,
+  onRangeChange,
+  onRefresh,
+  onDelete,
 }) => {
   const [selectedDay, setSelectedDay] = useState(null);
-  const [view, setView] = useState('calendario');
+  const [panel, setPanel] = useState('dia');
 
   const weekDays = status?.weekDays ?? [];
   const activeDay = useMemo(() => {
@@ -48,171 +78,268 @@ const AdminCalendarTab = ({
     return weekDays.find((d) => d.isToday) ?? weekDays[0];
   }, [weekDays, selectedDay]);
 
-  const weekList = useMemo(
+  const weekGroups = useMemo(() => {
+    const groups = [];
+    weekDays.forEach((day) => {
+      const idx = day.weekIndex ?? 0;
+      if (!groups[idx]) groups[idx] = [];
+      groups[idx].push(day);
+    });
+    return groups.filter(Boolean);
+  }, [weekDays]);
+
+  const periodList = useMemo(
     () => weekDays.filter((d) => d.count > 0),
     [weekDays],
   );
 
-  const maxTop = Math.max(1, ...(status?.topServices?.map((s) => s.count) ?? [1]));
+  const monthTitle = useMemo(() => {
+    if (!weekDays.length) return '';
+    const mid = weekDays[Math.floor(weekDays.length / 2)];
+    return mid?.monthLabel ?? status?.rangeLabel ?? '';
+  }, [weekDays, status?.rangeLabel]);
+
+  const topService = status?.topServices?.[0];
+
+  const handleDelete = (apt) => {
+    const label = apt.subtitle ? `${apt.title} — ${apt.subtitle}` : apt.title;
+    if (!window.confirm(`¿Eliminar la cita de ${label}?\n\nSe quitará del calendario.`)) return;
+    onDelete?.(apt);
+  };
+
+  const goToday = () => {
+    setSelectedDay(null);
+    onRangeChange?.({ weekOffset: 0 });
+  };
 
   return (
-    <div className="adm-dash">
+    <div className="adm-dash adm-dash--apple">
       {urlConnected === '1' ? <p className="admin-toast admin-toast--ok">✓ Calendario conectado</p> : null}
       {urlError ? <p className="admin-toast admin-toast--err">Error: {decodeURIComponent(urlError)}</p> : null}
       {statusError ? <p className="admin-toast admin-toast--err">{statusError}</p> : null}
 
-      <div className="adm-stats">
-        <article className="adm-stat">
-          <span className="adm-stat__num">{status?.stats?.today ?? '—'}</span>
-          <span className="adm-stat__label">Citas hoy</span>
-        </article>
-        <article className="adm-stat">
-          <span className="adm-stat__num">{status?.stats?.week ?? '—'}</span>
-          <span className="adm-stat__label">Esta semana</span>
-        </article>
-        <article className="adm-stat adm-stat--wide">
-          <span className="adm-stat__label">Servicio más solicitado</span>
-          <strong>{status?.topServices?.[0]?.name ?? '—'}</strong>
-          {status?.topServices?.[0] ? (
-            <span className="adm-stat__sub">{status.topServices[0].count} citas</span>
-          ) : null}
-        </article>
+      <div className="adm-apple-summary">
+        <div className="adm-apple-chip">
+          <span className="adm-apple-chip__val">{status?.stats?.today ?? '—'}</span>
+          <span className="adm-apple-chip__lbl">Hoy</span>
+        </div>
+        <div className="adm-apple-chip">
+          <span className="adm-apple-chip__val">{status?.stats?.range ?? '—'}</span>
+          <span className="adm-apple-chip__lbl">En periodo</span>
+        </div>
+        {topService ? (
+          <div className="adm-apple-chip adm-apple-chip--wide">
+            <span className="adm-apple-chip__lbl">Más solicitado</span>
+            <span className="adm-apple-chip__val adm-apple-chip__val--text">{topService.name}</span>
+            <span className="adm-apple-chip__sub">{topService.count} citas</span>
+          </div>
+        ) : null}
       </div>
 
-      <div className="adm-toolbar">
-        <div className="adm-week">
-          {weekDays.map((day) => (
+      <section className="adm-apple-cal">
+        <header className="adm-apple-cal__head">
+          <div className="adm-apple-cal__nav">
             <button
-              key={day.date}
               type="button"
-              className={`adm-week__day ${day.isToday ? 'is-today' : ''} ${activeDay?.date === day.date ? 'is-active' : ''}`}
-              onClick={() => { setSelectedDay(day.date); setView('calendario'); }}
+              className="adm-apple-cal__chev"
+              onClick={() => onRangeChange?.({ weekOffset: weekOffset - 1 })}
+              disabled={refreshing}
+              aria-label="Periodo anterior"
             >
-              <span className="adm-week__label">{day.label}</span>
-              <span className={`adm-week__count ${day.count > 0 ? 'has-citas' : ''}`}>{day.count}</span>
+              ‹
+            </button>
+            <div className="adm-apple-cal__title">
+              <strong>{monthTitle || 'Calendario'}</strong>
+              <span>{status?.rangeLabel}</span>
+            </div>
+            <button
+              type="button"
+              className="adm-apple-cal__chev"
+              onClick={() => onRangeChange?.({ weekOffset: weekOffset + 1 })}
+              disabled={refreshing}
+              aria-label="Periodo siguiente"
+            >
+              ›
+            </button>
+          </div>
+
+          <div className="adm-apple-cal__tools">
+            <button
+              type="button"
+              className="adm-apple-cal__today"
+              onClick={goToday}
+              disabled={refreshing || weekOffset === 0}
+            >
+              Hoy
+            </button>
+            <button
+              type="button"
+              className="adm-apple-cal__refresh"
+              onClick={onRefresh}
+              disabled={refreshing}
+              aria-label="Actualizar"
+            >
+              {refreshing ? '…' : '↻'}
+            </button>
+          </div>
+        </header>
+
+        <div className="adm-seg adm-seg--span">
+          {SPAN_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              className={weeks === opt.value ? 'is-active' : ''}
+              onClick={() => onRangeChange?.({ weeks: opt.value, weekOffset: 0 })}
+              disabled={refreshing}
+            >
+              {opt.label}
             </button>
           ))}
         </div>
 
-        <div className="adm-view-toggle">
-          <button
-            type="button"
-            className={view === 'calendario' ? 'is-active' : ''}
-            onClick={() => setView('calendario')}
-          >
-            Calendario
-          </button>
-          <button
-            type="button"
-            className={view === 'lista' ? 'is-active' : ''}
-            onClick={() => setView('lista')}
-          >
-            Lista
-          </button>
-        </div>
-      </div>
-
-      {view === 'calendario' ? (
-        <section className="adm-agenda adm-agenda--timeline">
-          <header className="adm-agenda__head">
-            <h3>{activeDay ? activeDay.label : 'Agenda'}</h3>
-            <span>{activeDay?.appointments?.length ?? 0} citas</span>
-          </header>
-          {!activeDay?.appointments?.length ? (
-            <p className="adm-agenda__empty">Sin citas este día</p>
-          ) : (
-            <div className="adm-timeline">
-              {HOURS.map((h) => {
-                const apts = activeDay.appointments.filter((a) => hourInMexico(a.start) === h);
-                return (
-                  <div key={h} className={`adm-timeline__row ${apts.length ? 'has-events' : ''}`}>
-                    <span className="adm-timeline__hour">{h}:00</span>
-                    <div className="adm-timeline__body">
-                      {apts.length ? (
-                        apts.map((apt) => (
-                          <div key={`${apt.source}-${apt.id}`} className={`adm-timeline__event adm-timeline__event--${apt.source}`}>
-                            <time>{formatTime(apt.start)}</time>
-                            <strong>{apt.title}</strong>
-                            <span>{apt.subtitle}</span>
-                          </div>
-                        ))
-                      ) : (
-                        <span className="adm-timeline__free" />
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-      ) : (
-        <section className="adm-agenda adm-agenda--list">
-          <header className="adm-agenda__head">
-            <h3>Semana completa</h3>
-            <span>{status?.stats?.week ?? 0} citas</span>
-          </header>
-          {!weekList.length ? (
-            <p className="adm-agenda__empty">Sin citas esta semana</p>
-          ) : (
-            <div className="adm-week-list">
-              {weekList.map((day) => (
-                <div key={day.date} className="adm-week-list__day">
-                  <h4 className={day.isToday ? 'is-today' : ''}>{day.label}</h4>
-                  <div className="adm-agenda__list">
-                    {day.appointments.map((apt) => (
-                      <AptCard key={`${apt.source}-${apt.id}`} apt={apt} />
-                    ))}
-                  </div>
-                </div>
+        <div className="adm-apple-layout">
+          <div className="adm-apple-grid-wrap">
+            <div className="adm-apple-weekdays">
+              {WEEK_HEADERS.map((h) => (
+                <span key={h}>{h}</span>
               ))}
             </div>
-          )}
-        </section>
-      )}
 
-      <div className="adm-grid-2">
-        <section className="adm-card-sm">
+            {weekGroups.map((group, wi) => (
+              <div key={wi} className="adm-apple-week">
+                {group.map((day) => {
+                  const isSelected = activeDay?.date === day.date;
+                  const dots = Math.min(day.count, 3);
+                  return (
+                    <button
+                      key={day.date}
+                      type="button"
+                      className={[
+                        'adm-apple-day',
+                        day.isToday ? 'is-today' : '',
+                        isSelected ? 'is-selected' : '',
+                        day.count > 0 ? 'has-events' : '',
+                      ].filter(Boolean).join(' ')}
+                      onClick={() => { setSelectedDay(day.date); setPanel('dia'); }}
+                    >
+                      <span className="adm-apple-day__num">{day.dayNum ?? day.date.split('-')[2]}</span>
+                      <span className="adm-apple-day__dots" aria-hidden>
+                        {Array.from({ length: dots }).map((_, i) => (
+                          <i key={i} />
+                        ))}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+
+          <aside className="adm-apple-side">
+            <div className="adm-seg adm-seg--panel">
+              <button
+                type="button"
+                className={panel === 'dia' ? 'is-active' : ''}
+                onClick={() => setPanel('dia')}
+              >
+                Día
+              </button>
+              <button
+                type="button"
+                className={panel === 'lista' ? 'is-active' : ''}
+                onClick={() => setPanel('lista')}
+              >
+                Lista
+              </button>
+            </div>
+
+            {panel === 'dia' ? (
+              <>
+                <header className="adm-apple-side__head">
+                  <h3>{activeDay?.label ?? 'Selecciona un día'}</h3>
+                  <span>{activeDay?.appointments?.length ?? 0} citas</span>
+                </header>
+                {!activeDay?.appointments?.length ? (
+                  <p className="adm-apple-empty">Sin citas este día</p>
+                ) : (
+                  <div className="adm-apple-events">
+                    {activeDay.appointments.map((apt) => (
+                      <EventRow
+                        key={`${apt.source}-${apt.id}`}
+                        apt={apt}
+                        deletingId={deletingId}
+                        onDelete={handleDelete}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <header className="adm-apple-side__head">
+                  <h3>Todas las citas</h3>
+                  <span>{status?.stats?.range ?? 0} en total</span>
+                </header>
+                {!periodList.length ? (
+                  <p className="adm-apple-empty">Sin citas en este periodo</p>
+                ) : (
+                  <div className="adm-apple-period">
+                    {periodList.map((day) => (
+                      <section key={day.date} className="adm-apple-period__day">
+                        <h4 className={day.isToday ? 'is-today' : ''}>{day.label}</h4>
+                        {day.appointments.map((apt) => (
+                          <EventRow
+                            key={`${apt.source}-${apt.id}`}
+                            apt={apt}
+                            deletingId={deletingId}
+                            onDelete={handleDelete}
+                          />
+                        ))}
+                      </section>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </aside>
+        </div>
+      </section>
+
+      <div className="adm-apple-footer">
+        <section className="adm-apple-card">
           <h4>Servicios populares</h4>
           {!status?.topServices?.length ? (
-            <p className="adm-muted">Sin datos aún — incluye citas de Google Calendar</p>
+            <p className="adm-muted">Aún no hay suficientes datos</p>
           ) : (
-            <ul className="adm-rank">
+            <ul className="adm-apple-rank">
               {status.topServices.map((s, i) => (
                 <li key={s.name}>
-                  <span className="adm-rank__pos">{i + 1}</span>
-                  <span className="adm-rank__name">{s.name}</span>
-                  <span className="adm-rank__bar-wrap">
-                    <span className="adm-rank__bar" style={{ width: `${(s.count / maxTop) * 100}%` }} />
-                  </span>
-                  <span className="adm-rank__count">{s.count}</span>
+                  <span className="adm-apple-rank__pos">{i + 1}</span>
+                  <span className="adm-apple-rank__name">{s.name}</span>
+                  <span className="adm-apple-rank__count">{s.count}</span>
                 </li>
               ))}
             </ul>
           )}
         </section>
 
-        <section className="adm-card-sm">
+        <section className="adm-apple-card">
           <h4>Google Calendar</h4>
-          <div className={`gcal-pill ${status?.calendar?.connected ? 'gcal-pill--on' : 'gcal-pill--off'}`}>
-            <span className="gcal-pill__dot" />
-            <div>
+          <div className={`adm-gcal ${status?.calendar?.connected ? 'adm-gcal--on' : ''}`}>
+            <span className="adm-gcal__dot" />
+            <div className="adm-gcal__info">
               <strong>{status?.calendar?.connected ? 'Conectado' : 'Sin conectar'}</strong>
-              <p>{status?.calendar?.connected ? status.calendar.email : 'Sincroniza tus citas'}</p>
+              <p>{status?.calendar?.connected ? status.calendar.email : 'Sincroniza citas automáticamente'}</p>
             </div>
             {status?.calendar?.connected ? (
-              <button type="button" className="gcal-pill__btn" onClick={onDisconnect}>Desconectar</button>
+              <button type="button" className="adm-gcal__btn" onClick={onDisconnect}>Desconectar</button>
             ) : status?.googleOAuthReady ? (
-              <button type="button" className="gcal-pill__btn gcal-pill__btn--primary" onClick={onConnect}>Conectar</button>
+              <button type="button" className="adm-gcal__btn adm-gcal__btn--primary" onClick={onConnect}>Conectar</button>
             ) : (
               <span className="adm-muted">Faltan credenciales</span>
             )}
           </div>
-          {status?.calendar?.connected && status?.stats ? (
-            <p className="adm-muted adm-sync-note">
-              {status.stats.fromGoogle ?? 0} de Google · {status.stats.fromSite ?? 0} del sitio
-            </p>
-          ) : null}
           {!status?.calendar?.connected ? (
             <details className="gcal-help gcal-help--compact">
               <summary>Configurar OAuth</summary>

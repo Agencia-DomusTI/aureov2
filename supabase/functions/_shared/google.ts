@@ -205,6 +205,21 @@ export async function fetchCalendarEvents(
   }));
 }
 
+export async function deleteCalendarEvent(supabase: SupabaseClient, eventId: string) {
+  const auth = await refreshAccessToken(supabase);
+  if (!auth) throw new Error('Google Calendar no conectado');
+
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(auth.calendarId)}/events/${encodeURIComponent(eventId)}`,
+    { method: 'DELETE', headers: { Authorization: `Bearer ${auth.token}` } },
+  );
+
+  if (!res.ok && res.status !== 404) {
+    throw new Error(await res.text());
+  }
+  return true;
+}
+
 export async function getCalendarStatus(supabase: SupabaseClient) {
   const stored = await getStoredConnection(supabase);
   if (!stored?.refresh_token) return { connected: false };

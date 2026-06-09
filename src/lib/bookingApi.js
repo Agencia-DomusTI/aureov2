@@ -13,8 +13,18 @@ export async function createBooking(payload) {
   return invokeFunction('create-booking', { body: payload });
 }
 
-export async function getAdminDashboard() {
-  return adminInvoke('admin-dashboard');
+export async function getAdminDashboard({ weekOffset = 0, weeks = 2 } = {}) {
+  return adminFetch('admin-dashboard', {
+    weekOffset: String(weekOffset),
+    weeks: String(weeks),
+  });
+}
+
+export async function deleteAdminBooking({ source, id }) {
+  return adminInvoke('admin-delete-booking', {
+    method: 'POST',
+    body: { source, id },
+  });
 }
 
 export async function getAdminSettings() {

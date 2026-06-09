@@ -50,6 +50,9 @@ verify_jwt = false
 [functions.admin-dashboard]
 verify_jwt = false
 
+[functions.admin-delete-booking]
+verify_jwt = false
+
 [functions.admin-settings]
 verify_jwt = false
 

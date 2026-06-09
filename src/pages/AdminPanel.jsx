@@ -3,6 +3,7 @@ import AdminCalendarTab from '../components/admin/AdminCalendarTab';
 import AdminConfigTab from '../components/admin/AdminConfigTab';
 import AdminServicesTab from '../components/admin/AdminServicesTab';
 import {
+  deleteAdminBooking,
   disconnectGoogleCalendar,
   getAdminDashboard,
   getAdminSettings,
@@ -41,6 +42,10 @@ const AdminPanel = () => {
   const [settings, setSettings] = useState(null);
   const [saveMsg, setSaveMsg] = useState('');
   const [statusError, setStatusError] = useState('');
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [weeks, setWeeks] = useState(2);
+  const [refreshing, setRefreshing] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   const urlParams = new URLSearchParams(window.location.search);
   const urlError = urlParams.get('error');
@@ -48,15 +53,55 @@ const AdminPanel = () => {
 
   const supabaseReady = isSupabaseConfigured();
 
-  const loadStatus = useCallback(async () => {
+  const loadStatus = useCallback(async (opts = {}) => {
+    const wo = opts.weekOffset ?? weekOffset;
+    const w = opts.weeks ?? weeks;
     try {
       setStatusError('');
-      const data = await getAdminDashboard();
+      const data = await getAdminDashboard({ weekOffset: wo, weeks: w });
       setStatus(data);
     } catch (err) {
       setStatusError(err.message || 'No se pudo cargar el panel');
     }
-  }, []);
+  }, [weekOffset, weeks]);
+
+  const handleRangeChange = useCallback(async ({ weekOffset: nextOffset, weeks: nextWeeks }) => {
+    const wo = nextOffset ?? weekOffset;
+    const w = nextWeeks ?? weeks;
+    if (nextOffset !== undefined) setWeekOffset(wo);
+    if (nextWeeks !== undefined) setWeeks(w);
+    setRefreshing(true);
+    try {
+      setStatusError('');
+      const data = await getAdminDashboard({ weekOffset: wo, weeks: w });
+      setStatus(data);
+    } catch (err) {
+      setStatusError(err.message || 'No se pudo cargar el panel');
+    } finally {
+      setRefreshing(false);
+    }
+  }, [weekOffset, weeks]);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await loadStatus();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [loadStatus]);
+
+  const handleDeleteBooking = useCallback(async (apt) => {
+    setDeletingId(apt.id);
+    try {
+      await deleteAdminBooking({ source: apt.source, id: apt.id });
+      await loadStatus();
+    } catch (err) {
+      alert(err.message || 'No se pudo eliminar la cita');
+    } finally {
+      setDeletingId(null);
+    }
+  }, [loadStatus]);
 
   const loadSettings = useCallback(async () => {
     const data = await getAdminSettings();
@@ -222,8 +267,15 @@ const AdminPanel = () => {
             urlConnected={urlConnected}
             urlError={urlError}
             oauthCallbackUrl={oauthCallbackUrl}
+            weekOffset={weekOffset}
+            weeks={weeks}
+            refreshing={refreshing}
+            deletingId={deletingId}
             onConnect={connectCalendar}
             onDisconnect={disconnectCalendar}
+            onRangeChange={handleRangeChange}
+            onRefresh={handleRefresh}
+            onDelete={handleDeleteBooking}
           />
         )}
 
