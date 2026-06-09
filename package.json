@@ -9,6 +9,7 @@
     "prebuild": "node scripts/optimize-images.mjs",
     "build": "vite build",
     "deploy": "wrangler pages deploy dist --project-name=aureov2",
+    "cf:deploy": "wrangler pages deploy dist --project-name=aureov2",
     "lint": "eslint .",
     "preview": "vite preview"
   },
