@@ -56,11 +56,6 @@ export async function verifyAdminRequest(req: Request, supabase: SupabaseClient)
   return user;
 }
 
-export function getSetupSecret() {
-  return Deno.env.get('ADMIN_SETUP_SECRET') ?? '';
-}
-
-export function assertJwtSecretConfigured() {
   const secret = Deno.env.get('ADMIN_JWT_SECRET');
   if (!secret || secret.length < 32) {
     throw new Error('ADMIN_JWT_SECRET no configurado (mínimo 32 caracteres)');

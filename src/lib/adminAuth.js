@@ -59,14 +59,6 @@ export async function adminLogin(email, password) {
   return data;
 }
 
-export async function adminSetup({ email, password, name, setupSecret }) {
-  const data = await publicRequest('admin-setup', {
-    body: { email, password, name, setupSecret },
-  });
-  setAdminToken(data.token);
-  return data;
-}
-
 export async function adminMe() {
   if (!getAdminToken()) return null;
   try {
