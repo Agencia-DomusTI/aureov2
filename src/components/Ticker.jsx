@@ -38,10 +38,11 @@ const Ticker = () => {
   }, [servicesConfig]);
 
   const doubled = [...items, ...items];
+  const durationSec = Math.max(80, items.length * 6);
 
   return (
     <div className="ticker" aria-hidden="true">
-      <div className="ticker-track">
+      <div className="ticker-track" style={{ '--ticker-duration': `${durationSec}s` }}>
         {doubled.map((label, i) => (
           <span key={`${label}-${i}`} className="ticker-item">
             {label}

@@ -198,6 +198,7 @@ const AdminCalendarTab = ({
 }) => {
   const [modalApt, setModalApt] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   const calendarDays = status?.weekDays ?? [];
 
@@ -210,6 +211,39 @@ const AdminCalendarTab = ({
   }, [calendarDays]);
 
   const monthTitle = status?.rangeLabel ?? calendarDays[0]?.monthLabel ?? 'Calendario';
+
+  const inMonthDays = useMemo(
+    () => calendarDays.filter((d) => d.inMonth !== false),
+    [calendarDays],
+  );
+
+  useEffect(() => {
+    if (!inMonthDays.length) {
+      setSelectedDate(null);
+      return;
+    }
+    setSelectedDate((current) => {
+      if (current && inMonthDays.some((d) => d.date === current)) return current;
+      const today = inMonthDays.find((d) => d.isToday);
+      if (today) return today.date;
+      const firstWithEvents = inMonthDays.find((d) => (d.count ?? 0) > 0);
+      return (firstWithEvents ?? inMonthDays[0]).date;
+    });
+  }, [inMonthDays]);
+
+  const selectedDay = useMemo(
+    () => calendarDays.find((d) => d.date === selectedDate) ?? null,
+    [calendarDays, selectedDate],
+  );
+
+  const selectedAppointments = useMemo(() => {
+    const list = selectedDay?.appointments ?? [];
+    return [...list].sort((a, b) => new Date(a.start) - new Date(b.start));
+  }, [selectedDay]);
+
+  const selectedDayLabel = selectedDay
+    ? formatDateLong(`${selectedDay.date}T12:00:00`)
+    : '';
 
   const requestDelete = (apt) => {
     setModalApt(null);
@@ -252,7 +286,12 @@ const AdminCalendarTab = ({
 
       <section className="adm-apple-cal adm-apple-cal--month">
         <header className="adm-apple-cal__head">
-          <div className="adm-apple-cal__side adm-apple-cal__side--left">
+          <div className="adm-apple-cal__title">
+            <strong>{monthTitle}</strong>
+            <span>{status?.stats?.range ?? 0} citas este mes</span>
+          </div>
+
+          <div className="adm-apple-cal__controls">
             <button
               type="button"
               className="adm-apple-cal__chev"
@@ -262,14 +301,14 @@ const AdminCalendarTab = ({
             >
               ‹
             </button>
-          </div>
-
-          <div className="adm-apple-cal__title">
-            <strong>{monthTitle}</strong>
-            <span>{status?.stats?.range ?? 0} citas este mes</span>
-          </div>
-
-          <div className="adm-apple-cal__side adm-apple-cal__side--right">
+            <button
+              type="button"
+              className="adm-apple-cal__today"
+              onClick={goToday}
+              disabled={refreshing || monthOffset === 0}
+            >
+              Hoy
+            </button>
             <button
               type="button"
               className="adm-apple-cal__chev"
@@ -278,14 +317,6 @@ const AdminCalendarTab = ({
               aria-label="Mes siguiente"
             >
               ›
-            </button>
-            <button
-              type="button"
-              className="adm-apple-cal__today"
-              onClick={goToday}
-              disabled={refreshing || monthOffset === 0}
-            >
-              Hoy
             </button>
             <button
               type="button"
@@ -299,53 +330,102 @@ const AdminCalendarTab = ({
           </div>
         </header>
 
-        <div className="adm-apple-month">
-          <div className="adm-apple-weekdays">
-            {WEEK_HEADERS.map((h) => <span key={h}>{h}</span>)}
+        <div className="adm-apple-layout adm-apple-layout--split">
+          <div className="adm-apple-month">
+            <div className="adm-apple-weekdays">
+              {WEEK_HEADERS.map((h) => <span key={h}>{h}</span>)}
+            </div>
+
+            <div className="adm-apple-grid-body">
+              {weekRows.map((row, wi) => (
+                <div key={wi} className="adm-apple-week">
+                  {row.map((day) => {
+                    const preview = day.appointments?.slice(0, 3) ?? [];
+                    const extra = Math.max(0, (day.count ?? 0) - preview.length);
+                    const isSelectable = day.inMonth !== false;
+                    return (
+                      <button
+                        key={day.date}
+                        type="button"
+                        className={[
+                          'adm-apple-day',
+                          day.inMonth === false ? 'is-outside' : '',
+                          day.isToday ? 'is-today' : '',
+                          day.count > 0 ? 'has-events' : '',
+                          day.date === selectedDate ? 'is-selected' : '',
+                        ].filter(Boolean).join(' ')}
+                        onClick={() => { if (isSelectable) setSelectedDate(day.date); }}
+                        disabled={!isSelectable}
+                      >
+                        <span className="adm-apple-day__num">{day.dayNum}</span>
+                        {preview.length > 0 ? (
+                          <div className="adm-apple-day__events">
+                            {preview.map((apt) => (
+                              <span
+                                key={aptKey(apt)}
+                                className={[
+                                  'adm-apple-day__chip',
+                                  `adm-apple-day__chip--${apt.source}`,
+                                ].join(' ')}
+                              >
+                                {formatTime(apt.start)}{' '}
+                                {apt.patientName || (apt.subtitle !== 'Sin paciente' ? apt.subtitle : apt.title)}
+                              </span>
+                            ))}
+                            {extra > 0 ? <span className="adm-apple-day__more">+{extra} más</span> : null}
+                          </div>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="adm-apple-grid-body">
-            {weekRows.map((row, wi) => (
-              <div key={wi} className="adm-apple-week">
-                {row.map((day) => {
-                  const preview = day.appointments?.slice(0, 3) ?? [];
-                  const extra = Math.max(0, (day.count ?? 0) - preview.length);
+          <aside className="adm-apple-side">
+            <div className="adm-apple-side__head">
+              <h3>{selectedDayLabel || 'Selecciona un día'}</h3>
+              <span>
+                {selectedAppointments.length
+                  ? `${selectedAppointments.length} cita${selectedAppointments.length === 1 ? '' : 's'}`
+                  : ''}
+              </span>
+            </div>
+
+            {selectedAppointments.length === 0 ? (
+              <p className="adm-apple-empty">
+                {selectedDay ? 'Sin citas este día.' : 'Elige un día del calendario para ver sus citas.'}
+              </p>
+            ) : (
+              <div className="adm-apple-events">
+                {selectedAppointments.map((apt) => {
+                  const patient = apt.patientName
+                    || (apt.subtitle && apt.subtitle !== 'Sin paciente' ? apt.subtitle : null);
                   return (
-                    <div
-                      key={day.date}
-                      className={[
-                        'adm-apple-day',
-                        day.inMonth === false ? 'is-outside' : '',
-                        day.isToday ? 'is-today' : '',
-                        day.count > 0 ? 'has-events' : '',
-                      ].filter(Boolean).join(' ')}
+                    <button
+                      key={aptKey(apt)}
+                      type="button"
+                      className={`adm-event adm-event--${apt.source}`}
+                      onClick={() => setModalApt(apt)}
                     >
-                      <span className="adm-apple-day__num">{day.dayNum}</span>
-                      {preview.length > 0 ? (
-                        <div className="adm-apple-day__events">
-                          {preview.map((apt) => (
-                            <button
-                              key={aptKey(apt)}
-                              type="button"
-                              className={[
-                                'adm-apple-day__chip',
-                                `adm-apple-day__chip--${apt.source}`,
-                              ].join(' ')}
-                              onClick={() => setModalApt(apt)}
-                            >
-                              {formatTime(apt.start)}{' '}
-                              {apt.patientName || (apt.subtitle !== 'Sin paciente' ? apt.subtitle : apt.title)}
-                            </button>
-                          ))}
-                          {extra > 0 ? <span className="adm-apple-day__more">+{extra} más</span> : null}
-                        </div>
-                      ) : null}
-                    </div>
+                      <span className="adm-event__stripe" aria-hidden />
+                      <span className="adm-event__body">
+                        <span className="adm-event__top">
+                          <span className="adm-event__time">{formatTimeRange(apt.start, apt.end)}</span>
+                          <span className="adm-event__badge">
+                            {apt.source === 'google' ? 'Google' : 'Sitio'}
+                          </span>
+                        </span>
+                        <span className="adm-event__title">{apt.title}</span>
+                        {patient ? <span className="adm-event__service">{patient}</span> : null}
+                      </span>
+                    </button>
                   );
                 })}
               </div>
-            ))}
-          </div>
+            )}
+          </aside>
         </div>
       </section>
     </div>
