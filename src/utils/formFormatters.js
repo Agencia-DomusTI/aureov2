@@ -30,14 +30,23 @@ export function isValidEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
 }
 
-/** Parámetros en hash: #contacto?pago=ok&codigo=AUREO-XXXX */
+/**
+ * Lee parámetros tanto del query string real (?pago=ok&codigo=…#contacto)
+ * como del hash (#contacto?pago=ok&codigo=…). El query real es más fiable
+ * porque sobrevive a redirecciones y al scroll por ancla.
+ */
 export function parseHashParams() {
+  const out = {};
+
+  const search = new URLSearchParams(window.location.search);
+  search.forEach((v, k) => { out[k] = v; });
+
   const raw = window.location.hash.replace(/^#/, '');
   const q = raw.indexOf('?');
-  if (q === -1) return {};
-  const params = new URLSearchParams(raw.slice(q + 1));
-  const out = {};
-  params.forEach((v, k) => { out[k] = v; });
+  if (q !== -1) {
+    new URLSearchParams(raw.slice(q + 1)).forEach((v, k) => { out[k] = v; });
+  }
+
   return out;
 }
 

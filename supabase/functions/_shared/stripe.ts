@@ -22,8 +22,8 @@ export async function createDepositCheckout(opts: {
 
   const params = new URLSearchParams({
     mode: 'payment',
-    success_url: `${siteUrl}/#contacto?pago=ok&codigo=${code}`,
-    cancel_url: `${siteUrl}/#contacto?pago=cancel&codigo=${code}`,
+    success_url: `${siteUrl}/?pago=ok&codigo=${code}#contacto`,
+    cancel_url: `${siteUrl}/?pago=cancel&codigo=${code}#contacto`,
     client_reference_id: opts.confirmationCode,
     'line_items[0][price_data][currency]': 'mxn',
     'line_items[0][price_data][unit_amount]': String(amount * 100),
