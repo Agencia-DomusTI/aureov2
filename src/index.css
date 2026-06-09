@@ -21,6 +21,11 @@
   --container: 1460px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Botones flotantes (chat + WhatsApp) */
+  --float-size: 56px;
+  --float-bottom: 32px;
+  --float-side: 32px;
 }
 
 /* El <picture> no crea caja propia: el <img> hereda el layout del contenedor */

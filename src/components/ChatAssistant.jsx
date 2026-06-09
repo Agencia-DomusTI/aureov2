@@ -17,6 +17,56 @@ function wantsBooking(text) {
   return /agendar|reservar|cita|appointment|calendario/.test(t);
 }
 
+function IconChat() {
+  return (
+    <svg className="chat-asst__icon" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M7 18.5l-3.5 1.5 1.5-3.5C3.5 15.2 3 13.1 3 11 3 6.03 7.03 2 12 2s9 4.03 9 9-4.03 9-9 9c-2.1 0-4.1-.7-5.5-2z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <circle cx="9" cy="11" r="1" fill="currentColor" />
+      <circle cx="12" cy="11" r="1" fill="currentColor" />
+      <circle cx="15" cy="11" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+function IconClose() {
+  return (
+    <svg className="chat-asst__icon" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconSend() {
+  return (
+    <svg className="chat-asst__icon chat-asst__icon--send" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 19V5M12 5l-5 5M12 5l5 5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function TypingIndicator() {
+  return (
+    <div className="chat-asst__msg chat-asst__msg--assistant chat-asst__typing" aria-label="Escribiendo">
+      <span className="chat-asst__dots">
+        <i />
+        <i />
+        <i />
+      </span>
+    </div>
+  );
+}
+
 const ChatAssistant = () => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -105,7 +155,7 @@ const ChatAssistant = () => {
               onClick={() => setOpen(false)}
               aria-label="Cerrar chat"
             >
-              ✕
+              <IconClose />
             </button>
           </header>
 
@@ -137,11 +187,7 @@ const ChatAssistant = () => {
                 {msg.content}
               </div>
             ))}
-            {loading ? (
-              <div className="chat-asst__msg chat-asst__msg--assistant chat-asst__typing">
-                Escribiendo…
-              </div>
-            ) : null}
+            {loading ? <TypingIndicator /> : null}
           </div>
 
           <form className="chat-asst__form" onSubmit={handleSubmit}>
@@ -155,8 +201,8 @@ const ChatAssistant = () => {
               disabled={loading}
               maxLength={500}
             />
-            <button type="submit" className="chat-asst__send" disabled={loading || !input.trim()}>
-              ↑
+            <button type="submit" className="chat-asst__send" disabled={loading || !input.trim()} aria-label="Enviar">
+              <IconSend />
             </button>
           </form>
         </div>
@@ -169,7 +215,7 @@ const ChatAssistant = () => {
         aria-label={open ? 'Cerrar asistente' : 'Abrir asistente'}
         aria-expanded={open}
       >
-        {open ? '✕' : '💬'}
+        {open ? <IconClose /> : <IconChat />}
       </button>
     </div>
   );
