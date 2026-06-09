@@ -1,21 +1,18 @@
 import { createServiceClient, getClinicSettings, handleCors, json, verifyAdmin } from '../_shared/utils.ts';
 import { fetchCalendarEvents, getCalendarStatus } from '../_shared/google.ts';
 import { isStripeConfigured } from '../_shared/stripe.ts';
-
-const TZ = 'America/Mexico_City';
-
-function mxDateKey(d: Date) {
-  return d.toLocaleDateString('en-CA', { timeZone: TZ });
-}
-
-function startOfWeek(d: Date) {
-  const copy = new Date(d);
-  const day = copy.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  copy.setDate(copy.getDate() + diff);
-  copy.setHours(0, 0, 0, 0);
-  return copy;
-}
+import {
+  addMxDays,
+  formatMxLabel,
+  formatMxMonthYear,
+  formatMxRangeLabel,
+  mxDateKey,
+  mxDayEndIso,
+  mxDayNum,
+  mxDayStartIso,
+  mxKeyToDate,
+  startOfWeekMx,
+} from '../_shared/mxTime.ts';
 
 function mapBooking(b: Record<string, unknown>) {
   return {
@@ -69,16 +66,14 @@ Deno.serve(async (req) => {
   const now = new Date();
   const todayKey = mxDateKey(now);
 
-  const rangeStart = startOfWeek(now);
-  rangeStart.setDate(rangeStart.getDate() + weekOffset * 7);
+  const rangeStartKey = addMxDays(startOfWeekMx(now), weekOffset * 7);
+  const totalDays = weeks * 7;
+  const rangeEndKey = addMxDays(rangeStartKey, totalDays - 1);
 
-  const rangeEnd = new Date(rangeStart);
-  rangeEnd.setDate(rangeEnd.getDate() + weeks * 7);
+  const rangeStartIso = mxDayStartIso(rangeStartKey);
+  const rangeEndIso = mxDayEndIso(addMxDays(rangeStartKey, totalDays));
 
-  const rangeStartIso = rangeStart.toISOString();
-  const rangeEndIso = rangeEnd.toISOString();
-
-  const rangeLabel = `${rangeStart.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', timeZone: TZ })} – ${new Date(rangeEnd.getTime() - 86400000).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', timeZone: TZ })}`;
+  const rangeLabel = formatMxRangeLabel(rangeStartKey, rangeEndKey);
 
   const [calendar, schedule, bookingsRes, rangeBookingsRes, allBookingsRes] = await Promise.all([
     getCalendarStatus(supabase),
@@ -123,11 +118,9 @@ Deno.serve(async (req) => {
     .slice(0, 6)
     .map(([name, count]) => ({ name, count }));
 
-  const totalDays = weeks * 7;
   const weekDays = Array.from({ length: totalDays }, (_, i) => {
-    const d = new Date(rangeStart);
-    d.setDate(d.getDate() + i);
-    const key = mxDateKey(d);
+    const key = addMxDays(rangeStartKey, i);
+    const d = mxKeyToDate(key);
     const dayBookings = rangeBookings.filter((b) => mxDateKey(new Date(b.start as string)) === key);
     const dayGoogleRaw = googleEvents.filter((e) => e.start && mxDateKey(new Date(e.start)) === key);
     const dayLinkedIds = new Set(
@@ -135,14 +128,12 @@ Deno.serve(async (req) => {
     );
     const dayGoogle = dayGoogleRaw.filter((e) => !dayLinkedIds.has(e.id));
     const weekIndex = Math.floor(i / 7);
-    const dayNum = d.getDate();
-    const monthLabel = d.toLocaleDateString('es-MX', { month: 'long', year: 'numeric', timeZone: TZ });
     return {
       date: key,
-      dayNum,
-      monthLabel,
-      label: d.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', timeZone: TZ }),
-      shortLabel: d.toLocaleDateString('es-MX', { weekday: 'short', timeZone: TZ }),
+      dayNum: mxDayNum(d),
+      monthLabel: formatMxMonthYear(key),
+      label: formatMxLabel(key, 'long'),
+      shortLabel: formatMxLabel(key, 'short'),
       isToday: key === todayKey,
       weekIndex,
       count: dayBookings.length + dayGoogle.length,
@@ -190,6 +181,7 @@ Deno.serve(async (req) => {
     rangeLabel,
     weekOffset,
     weeks,
+    todayKey,
     todayBookings,
     stats: {
       today: todayBookings.length + todayGoogle.length,

@@ -206,34 +206,47 @@ const AdminCalendarTab = ({
               ))}
             </div>
 
-            {weekGroups.map((group, wi) => (
-              <div key={wi} className="adm-apple-week">
-                {group.map((day) => {
-                  const isSelected = activeDay?.date === day.date;
-                  const dots = Math.min(day.count, 3);
-                  return (
-                    <button
-                      key={day.date}
-                      type="button"
-                      className={[
-                        'adm-apple-day',
-                        day.isToday ? 'is-today' : '',
-                        isSelected ? 'is-selected' : '',
-                        day.count > 0 ? 'has-events' : '',
-                      ].filter(Boolean).join(' ')}
-                      onClick={() => { setSelectedDay(day.date); setPanel('dia'); }}
-                    >
-                      <span className="adm-apple-day__num">{day.dayNum ?? day.date.split('-')[2]}</span>
-                      <span className="adm-apple-day__dots" aria-hidden>
-                        {Array.from({ length: dots }).map((_, i) => (
-                          <i key={i} />
-                        ))}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            ))}
+            <div className="adm-apple-grid-body">
+              {weekGroups.map((group, wi) => (
+                <div key={wi} className="adm-apple-week">
+                  {group.map((day) => {
+                    const isSelected = activeDay?.date === day.date;
+                    const preview = day.appointments?.slice(0, 3) ?? [];
+                    const extra = Math.max(0, (day.count ?? 0) - preview.length);
+                    return (
+                      <button
+                        key={day.date}
+                        type="button"
+                        className={[
+                          'adm-apple-day',
+                          day.isToday ? 'is-today' : '',
+                          isSelected ? 'is-selected' : '',
+                          day.count > 0 ? 'has-events' : '',
+                        ].filter(Boolean).join(' ')}
+                        onClick={() => { setSelectedDay(day.date); setPanel('dia'); }}
+                      >
+                        <span className="adm-apple-day__num">{day.dayNum ?? Number(day.date.split('-')[2])}</span>
+                        {preview.length > 0 ? (
+                          <span className="adm-apple-day__events">
+                            {preview.map((apt) => (
+                              <span
+                                key={`${apt.source}-${apt.id}`}
+                                className={`adm-apple-day__chip adm-apple-day__chip--${apt.source}`}
+                              >
+                                {formatTime(apt.start)} {apt.title}
+                              </span>
+                            ))}
+                            {extra > 0 ? (
+                              <span className="adm-apple-day__more">+{extra} más</span>
+                            ) : null}
+                          </span>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
 
           <aside className="adm-apple-side">
