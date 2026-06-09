@@ -117,11 +117,11 @@ Deno.serve(async (req) => {
       }
     }
 
-    const paymentNote = paymentRequired && paymentUrl
-      ? ` Tu código es ${confirmationCode}. Completa el anticipo de $${deposit} MXN en línea.`
+    const message = paymentRequired && paymentUrl
+      ? `Tu horario quedó apartado. Completa el anticipo de $${deposit} MXN para confirmar tu cita de ${service}.`
       : paymentRequired && !paymentUrl
-        ? ` Tu código es ${confirmationCode}. Te contactaremos para el anticipo de $${deposit} MXN.`
-        : ` Tu código de confirmación es ${confirmationCode}.`;
+        ? `Tu horario quedó apartado. Código ${confirmationCode}. Te contactaremos para el anticipo de $${deposit} MXN.`
+        : `¡Tu cita de ${service} quedó confirmada! Tu código es ${confirmationCode}.`;
 
     return json({
       success: true,
@@ -130,8 +130,9 @@ Deno.serve(async (req) => {
       paymentUrl,
       depositAmountMxn: deposit,
       paymentRequired,
+      confirmed: !paymentRequired || !paymentUrl,
       ghlSynced: ghlSync.synced,
-      message: `¡Tu cita de ${service} quedó confirmada!${paymentNote}`,
+      message,
     });
   } catch (err) {
     return json({ success: false, message: (err as Error).message }, 500);

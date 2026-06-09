@@ -5,6 +5,15 @@ import { createBooking, getAvailability, getBookingConfig } from '../lib/booking
 import { getAllBookableServices } from '../utils/bookableServices';
 import { formatDepositLabel, getDepositForService } from '../utils/deposit';
 import {
+  clearHashQuery,
+  formatEmailInput,
+  formatMxPhoneInput,
+  isValidEmail,
+  isValidMxPhone,
+  parseHashParams,
+  phoneForApi,
+} from '../utils/formFormatters';
+import {
   generateTimeSlots,
   getMonthDays,
   getTodayInMexico,
@@ -72,6 +81,8 @@ const BookingCalendar = () => {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [form, setForm] = useState({ name: '', phone: '', email: '', notes: '' });
+  const [touched, setTouched] = useState({ phone: false, email: false });
+  const [redirectingPayment, setRedirectingPayment] = useState(false);
 
   const servicesConfig = bookingConfig.servicesConfig ?? {};
 
@@ -104,6 +115,28 @@ const BookingCalendar = () => {
     getBookingConfig()
       .then((data) => { if (data) setBookingConfig(data); })
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const params = parseHashParams();
+    if (params.pago === 'ok' && params.codigo) {
+      setStep(4);
+      setResult({
+        type: 'success',
+        paid: true,
+        confirmationCode: decodeURIComponent(params.codigo),
+        message: 'Tu pago fue recibido correctamente. Tu cita quedó confirmada.',
+      });
+      clearHashQuery();
+    } else if (params.pago === 'cancel' && params.codigo) {
+      setStep(4);
+      setResult({
+        type: 'pending_payment',
+        confirmationCode: decodeURIComponent(params.codigo),
+        message: 'El pago no se completó. Tu horario sigue apartado — completa el anticipo para confirmar tu cita.',
+      });
+      clearHashQuery();
+    }
   }, []);
 
   const filteredServices = useMemo(() => {
@@ -163,9 +196,18 @@ const BookingCalendar = () => {
     setStep(2);
   };
 
+  const phoneValid = isValidMxPhone(form.phone);
+  const emailValid = isValidEmail(form.email);
+  const nameValid = form.name.trim().length >= 2;
+  const canSubmit = nameValid && phoneValid && emailValid && !submitting && !redirectingPayment;
+  const needsPayment = selectedDeposit > 0;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedService || !selectedSlot) return;
+    if (!selectedService || !selectedSlot || !canSubmit) {
+      setTouched({ phone: true, email: true });
+      return;
+    }
 
     setSubmitting(true);
     setResult(null);
@@ -175,7 +217,12 @@ const BookingCalendar = () => {
       durationMinutes: selectedService.durationMinutes,
       start: selectedSlot.start,
       end: selectedSlot.end,
-      patient: form,
+      patient: {
+        name: form.name.trim(),
+        phone: phoneForApi(form.phone),
+        email: formatEmailInput(form.email) || undefined,
+        notes: form.notes.trim() || undefined,
+      },
       timezone: BOOKING_CONFIG.timezone,
     };
 
@@ -183,8 +230,15 @@ const BookingCalendar = () => {
       const data = await createBooking(payload);
 
       if (data.success) {
+        if (data.paymentUrl && data.paymentRequired) {
+          setRedirectingPayment(true);
+          window.location.href = data.paymentUrl;
+          return;
+        }
+
         setResult({
           type: 'success',
+          paid: !data.paymentRequired,
           message: data.message,
           confirmationCode: data.confirmationCode,
           paymentUrl: data.paymentUrl,
@@ -230,6 +284,8 @@ const BookingCalendar = () => {
     setSlots([]);
     setResult(null);
     setForm({ name: '', phone: '', email: '', notes: '' });
+    setTouched({ phone: false, email: false });
+    setRedirectingPayment(false);
   };
 
   const goToStep = (index) => {
@@ -265,15 +321,36 @@ const BookingCalendar = () => {
     }
   };
 
+  if (redirectingPayment) {
+    return (
+      <div className="bk-widget bk-widget--result">
+        <div className="bk-result bk-result--pending">
+          <div className="bk-loading">
+            <span className="bk-loading__spinner" />
+            Redirigiendo al pago seguro…
+          </div>
+          <p className="bk-result__wa-hint">No cierres esta ventana.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (step === 4 && result) {
+    const isConfirmed = result.type === 'success' && (result.paid || !result.paymentRequired);
+    const title = isConfirmed
+      ? '¡Cita confirmada!'
+      : result.type === 'pending_payment'
+        ? 'Completa tu anticipo'
+        : 'Confirma por WhatsApp';
+
     return (
       <div className="bk-widget bk-widget--result">
         <div className={`bk-result bk-result--${result.type}`}>
           <div className="bk-result__ring">
-            <span className="bk-result__icon">{result.type === 'success' ? '✓' : '!'}</span>
+            <span className="bk-result__icon">{isConfirmed ? '✓' : result.type === 'pending_payment' ? '◷' : '!'}</span>
           </div>
-          <h3>{result.type === 'success' ? '¡Cita confirmada!' : 'Confirma por WhatsApp'}</h3>
-          {result.confirmationCode ? (
+          <h3>{title}</h3>
+          {result.confirmationCode && isConfirmed ? (
             <div className="bk-result__code">
               <span className="bk-result__code-label">Código de confirmación</span>
               <button
@@ -288,9 +365,14 @@ const BookingCalendar = () => {
             </div>
           ) : null}
           <p>{result.message}</p>
-          {result.type === 'success' ? (
+          {isConfirmed ? (
             <p className="bk-result__wa-hint">
               Te enviaremos un mensaje de confirmación al WhatsApp que indicaste.
+            </p>
+          ) : null}
+          {result.type === 'pending_payment' && result.confirmationCode ? (
+            <p className="bk-result__wa-hint">
+              Referencia: <strong>{result.confirmationCode}</strong>
             </p>
           ) : null}
           {selectedService && selectedSlot ? (
@@ -527,8 +609,12 @@ const BookingCalendar = () => {
         {step === 3 && selectedService && selectedSlot && (
           <form className="bk-panel bk-form" key="details" onSubmit={handleSubmit}>
             <header className="bk-panel__head">
-              <h3>Confirma tu cita</h3>
-              <p>Último paso — te contactamos por WhatsApp al confirmar.</p>
+              <h3>Tus datos</h3>
+              <p>
+                {needsPayment
+                  ? 'Siguiente paso: anticipo en línea. La cita se confirma al completar el pago.'
+                  : 'Último paso — te contactamos por WhatsApp al confirmar.'}
+              </p>
             </header>
 
             <div className="bk-confirm-summary">
@@ -570,24 +656,39 @@ const BookingCalendar = () => {
                 <label className="bk-label" htmlFor="bk-phone">Teléfono / WhatsApp *</label>
                 <input
                   id="bk-phone"
-                  className="bk-input"
+                  className={`bk-input ${touched.phone && !phoneValid ? 'bk-input--error' : ''}`}
                   type="tel"
                   required
+                  inputMode="numeric"
                   autoComplete="tel"
+                  placeholder="(442) 123-4567"
                   value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  onChange={(e) => setForm({ ...form, phone: formatMxPhoneInput(e.target.value) })}
+                  onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
                 />
+                {touched.phone && !phoneValid ? (
+                  <span className="bk-field-error">Ingresa un celular de 10 dígitos (México).</span>
+                ) : null}
               </div>
               <div className="bk-form-row">
                 <label className="bk-label" htmlFor="bk-email">Email</label>
                 <input
                   id="bk-email"
-                  className="bk-input"
+                  className={`bk-input ${touched.email && !emailValid ? 'bk-input--error' : ''}`}
                   type="email"
+                  inputMode="email"
                   autoComplete="email"
+                  placeholder="nombre@correo.com"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  onBlur={() => {
+                    setTouched((t) => ({ ...t, email: true }));
+                    setForm((f) => ({ ...f, email: formatEmailInput(f.email) }));
+                  }}
                 />
+                {touched.email && !emailValid ? (
+                  <span className="bk-field-error">Escribe un correo válido (ej. nombre@correo.com).</span>
+                ) : null}
               </div>
               <div className="bk-form-row">
                 <label className="bk-label" htmlFor="bk-notes">Notas (opcional)</label>
@@ -604,8 +705,12 @@ const BookingCalendar = () => {
 
             <footer className="bk-panel__foot bk-panel__foot--split">
               <button type="button" className="bk-back" onClick={() => setStep(2)}>← Horario</button>
-              <button type="submit" className="btn-primary bk-cta bk-cta--confirm" disabled={submitting}>
-                {submitting ? 'Confirmando…' : 'Confirmar mi cita'}
+              <button type="submit" className="btn-primary bk-cta bk-cta--confirm" disabled={!canSubmit}>
+                {submitting
+                  ? 'Procesando…'
+                  : needsPayment
+                    ? `Continuar al pago · $${selectedDeposit} MXN`
+                    : 'Confirmar mi cita'}
               </button>
             </footer>
           </form>
