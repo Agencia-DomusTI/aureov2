@@ -223,65 +223,91 @@ const AdminPanel = () => {
 
       <main className="admin-main">
         {tab === 'calendario' && (
-          <section className="admin-card">
-            <h2>Google Calendar</h2>
-            <p className="admin-card__lead">
-              Conecta el calendario del doctor. Las reservas del sitio (Cloudflare) se sincronizan
-              vía Supabase y no se empalman con otras citas.
-            </p>
-
+          <section className="admin-card admin-card--calendar">
             {urlConnected === '1' ? (
-              <p className="admin-success">✓ Calendario conectado correctamente</p>
+              <p className="admin-toast admin-toast--ok">✓ Calendario conectado correctamente</p>
             ) : null}
             {urlError ? (
-              <p className="admin-error">Error: {decodeURIComponent(urlError)}</p>
+              <p className="admin-toast admin-toast--err">Error: {decodeURIComponent(urlError)}</p>
             ) : null}
             {statusError ? (
-              <p className="admin-error">{statusError}</p>
+              <p className="admin-toast admin-toast--err">{statusError}</p>
             ) : null}
 
-            {status?.calendar?.connected ? (
-              <div className="admin-calendar-status admin-calendar-status--connected">
-                <span className="admin-status-dot" />
-                <div>
-                  <strong>Conectado</strong>
-                  <p>{status.calendar.email}</p>
-                  <p className="admin-muted">
-                    Desde {new Date(status.calendar.connectedAt).toLocaleDateString('es-MX')}
-                  </p>
+            <div className={`gcal-card ${status?.calendar?.connected ? 'gcal-card--on' : 'gcal-card--off'}`}>
+              <div className="gcal-card__top">
+                <div className="gcal-card__brand">
+                  <span className="gcal-card__icon" aria-hidden>
+                    <svg viewBox="0 0 24 24" width="28" height="28">
+                      <rect x="3" y="4" width="18" height="17" rx="2" fill="#fff" stroke="#4285F4" strokeWidth="1.5" />
+                      <rect x="3" y="4" width="18" height="5" fill="#4285F4" />
+                      <circle cx="8" cy="14" r="2" fill="#34A853" />
+                      <circle cx="12" cy="14" r="2" fill="#FBBC05" />
+                      <circle cx="16" cy="14" r="2" fill="#EA4335" />
+                    </svg>
+                  </span>
+                  <div>
+                    <h2>Google Calendar</h2>
+                    <span className={`gcal-badge ${status?.calendar?.connected ? 'gcal-badge--on' : 'gcal-badge--off'}`}>
+                      {status?.calendar?.connected ? 'Conectado' : 'Sin conectar'}
+                    </span>
+                  </div>
                 </div>
-                <button type="button" className="btn-secondary admin-disconnect" onClick={disconnectCalendar}>
-                  Desconectar
-                </button>
               </div>
-            ) : (
-              <div className="admin-calendar-status">
-                <span className="admin-status-dot admin-status-dot--off" />
-                <div>
-                  <strong>Sin conectar</strong>
-                  <p>Las citas usarán WhatsApp hasta conectar el calendario.</p>
-                </div>
-                {status?.googleOAuthReady ? (
-                  <button type="button" className="btn-primary admin-connect" onClick={connectCalendar}>
-                    Conectar Google Calendar
-                  </button>
-                ) : status ? (
-                  <p className="admin-error admin-error--inline">
-                    Agrega GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en Supabase → Edge Functions → Secrets.
-                  </p>
-                ) : null}
-              </div>
-            )}
 
-            <div className="admin-steps">
-              <h3>Configurar Google Calendar</h3>
-              <ol>
-                <li>Google Cloud: activa Calendar API y crea OAuth (Aplicación web)</li>
-                <li>URI de redirección: <code>{oauthCallbackUrl}</code></li>
-                <li>Supabase → Project Settings → Edge Functions → Secrets: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SITE_URL</li>
-                <li>Haz clic en <strong>Conectar Google Calendar</strong></li>
-              </ol>
+              {status?.calendar?.connected ? (
+                <>
+                  <div className="gcal-card__body">
+                    <p className="gcal-card__email">{status.calendar.email}</p>
+                    <p className="gcal-card__meta">
+                      Sincronizado desde {new Date(status.calendar.connectedAt).toLocaleDateString('es-MX', {
+                        day: 'numeric', month: 'long', year: 'numeric',
+                      })}
+                    </p>
+                    <p className="gcal-card__hint">
+                      Las citas del sitio se agregan automáticamente y no se empalman con otras reservas.
+                    </p>
+                  </div>
+                  <button type="button" className="gcal-btn gcal-btn--ghost" onClick={disconnectCalendar}>
+                    Desconectar
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="gcal-card__body">
+                    <p className="gcal-card__hint">
+                      Conecta el calendario del doctor para sincronizar las reservas del sitio en tiempo real.
+                    </p>
+                  </div>
+                  {status?.googleOAuthReady ? (
+                    <button type="button" className="gcal-btn gcal-btn--google" onClick={connectCalendar}>
+                      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden>
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                      </svg>
+                      Conectar con Google
+                    </button>
+                  ) : status ? (
+                    <p className="admin-toast admin-toast--err admin-toast--inline">
+                      Faltan credenciales de Google en Supabase.
+                    </p>
+                  ) : null}
+                </>
+              )}
             </div>
+
+            {!status?.calendar?.connected ? (
+              <details className="gcal-help">
+                <summary>¿Primera vez configurando?</summary>
+                <ol>
+                  <li>Activa Calendar API en Google Cloud</li>
+                  <li>URI de redirección: <code>{oauthCallbackUrl}</code></li>
+                  <li>Secrets en Supabase: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SITE_URL</li>
+                </ol>
+              </details>
+            ) : null}
           </section>
         )}
 

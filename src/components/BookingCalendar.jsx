@@ -1,18 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { DayPicker } from 'react-day-picker';
-import { es } from 'date-fns/locale';
 import { CLINICS } from '../constants/clinics';
 import { BOOKING_CONFIG } from '../constants/booking';
 import { createBooking, getAvailability, getBookingConfig } from '../lib/bookingApi';
 import { getAllBookableServices } from '../utils/bookableServices';
 import {
   generateTimeSlots,
+  getMonthDays,
   getTodayInMexico,
-  isDateBookableOnline,
   isSundayByRequest,
 } from '../utils/bookingSlots';
-import 'react-day-picker/style.css';
 import './BookingCalendar.css';
+
+const WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+const MONTHS = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+];
 
 const STEPS = [
   { id: 'service', label: 'Servicio', icon: '◆' },
@@ -21,20 +24,15 @@ const STEPS = [
   { id: 'details', label: 'Datos', icon: '◎' },
 ];
 
-function dateStrToLocal(dateStr) {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  return new Date(y, m - 1, d);
-}
-
-function localToDateStr(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
+function getInitialMonth(config) {
+  const today = getTodayInMexico(config);
+  const [y, m] = today.split('-').map(Number);
+  return { year: y, month: m - 1 };
 }
 
 function formatDateLabel(dateStr) {
-  return dateStrToLocal(dateStr).toLocaleDateString('es-MX', {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('es-MX', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -65,6 +63,7 @@ const BookingCalendar = () => {
   const [step, setStep] = useState(0);
   const [serviceId, setServiceId] = useState('');
   const [serviceSearch, setServiceSearch] = useState('');
+  const [month, setMonth] = useState(() => getInitialMonth(BOOKING_CONFIG));
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [slots, setSlots] = useState([]);
@@ -74,16 +73,17 @@ const BookingCalendar = () => {
   const [form, setForm] = useState({ name: '', phone: '', email: '', notes: '' });
 
   const selectedService = services.find((s) => s.id === serviceId);
-
   const todayStr = getTodayInMexico(bookingConfig);
-  const calendarFrom = dateStrToLocal(todayStr);
-  const calendarTo = useMemo(() => {
-    const max = dateStrToLocal(todayStr);
-    max.setDate(max.getDate() + bookingConfig.maxAdvanceDays);
-    return max;
-  }, [todayStr, bookingConfig.maxAdvanceDays]);
 
-  const selectedDay = selectedDate ? dateStrToLocal(selectedDate) : undefined;
+  const monthDays = useMemo(
+    () => getMonthDays(month.year, month.month, bookingConfig),
+    [month.year, month.month, bookingConfig],
+  );
+
+  const firstWeekday = useMemo(
+    () => new Date(Date.UTC(month.year, month.month, 1)).getUTCDay(),
+    [month.year, month.month],
+  );
 
   useEffect(() => {
     getBookingConfig()
@@ -110,11 +110,6 @@ const BookingCalendar = () => {
 
   const slotGroups = useMemo(() => groupSlotsByPeriod(slots), [slots]);
 
-  const isDayDisabled = useCallback(
-    (date) => !isDateBookableOnline(localToDateStr(date), bookingConfig),
-    [bookingConfig],
-  );
-
   const loadSlots = useCallback(async () => {
     if (!selectedDate || !selectedService) return;
     setLoadingSlots(true);
@@ -136,9 +131,19 @@ const BookingCalendar = () => {
     if (step === 2) loadSlots();
   }, [step, loadSlots]);
 
-  const handleDaySelect = (day) => {
-    if (!day) return;
-    setSelectedDate(localToDateStr(day));
+  const changeMonth = (delta) => {
+    setMonth((prev) => {
+      let { year, month: m } = prev;
+      m += delta;
+      if (m < 0) { m = 11; year -= 1; }
+      if (m > 11) { m = 0; year += 1; }
+      return { year, month: m };
+    });
+  };
+
+  const pickDate = (dateStr, bookable) => {
+    if (!bookable) return;
+    setSelectedDate(dateStr);
     setSelectedSlot(null);
     setStep(2);
   };
@@ -201,6 +206,7 @@ const BookingCalendar = () => {
     setStep(0);
     setServiceId('');
     setServiceSearch('');
+    setMonth(getInitialMonth(bookingConfig));
     setSelectedDate('');
     setSelectedSlot(null);
     setSlots([]);
@@ -388,31 +394,31 @@ const BookingCalendar = () => {
               <p>{selectedService.name} · {selectedService.durationLabel}</p>
             </header>
 
-            <div className="bk-calendar-wrap">
-              <DayPicker
-                mode="single"
-                locale={es}
-                selected={selectedDay}
-                onSelect={handleDaySelect}
-                disabled={isDayDisabled}
-                fromDate={calendarFrom}
-                toDate={calendarTo}
-                showOutsideDays={false}
-                className="bk-daypicker"
-                classNames={{
-                  month_caption: 'bk-dp-caption',
-                  nav: 'bk-dp-nav',
-                  button_previous: 'bk-dp-nav-btn',
-                  button_next: 'bk-dp-nav-btn',
-                  weekdays: 'bk-dp-weekdays',
-                  weekday: 'bk-dp-weekday',
-                  day: 'bk-dp-day',
-                  day_button: 'bk-dp-day-btn',
-                  selected: 'bk-dp-selected',
-                  disabled: 'bk-dp-disabled',
-                  today: 'bk-dp-today',
-                }}
-              />
+            <div className="bk-cal">
+              <div className="bk-cal__nav">
+                <button type="button" className="bk-cal__arrow" onClick={() => changeMonth(-1)} aria-label="Mes anterior">‹</button>
+                <strong>{MONTHS[month.month]} {month.year}</strong>
+                <button type="button" className="bk-cal__arrow" onClick={() => changeMonth(1)} aria-label="Mes siguiente">›</button>
+              </div>
+              <div className="bk-cal__weekdays">
+                {WEEKDAYS.map((d) => <span key={d}>{d}</span>)}
+              </div>
+              <div className="bk-cal__days">
+                {Array.from({ length: firstWeekday }).map((_, i) => (
+                  <span key={`pad-${i}`} className="bk-cal__day bk-cal__day--pad" aria-hidden />
+                ))}
+                {monthDays.map(({ dateStr, day, bookable, sunday }) => (
+                  <button
+                    key={dateStr}
+                    type="button"
+                    className={`bk-cal__day ${selectedDate === dateStr ? 'is-selected' : ''} ${!bookable ? 'is-disabled' : ''} ${dateStr === todayStr ? 'is-today' : ''} ${sunday ? 'is-sunday' : ''}`}
+                    disabled={!bookable}
+                    onClick={() => pickDate(dateStr, bookable)}
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <p className="bk-note">
