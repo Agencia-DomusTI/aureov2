@@ -62,8 +62,46 @@ function isBookingPaid(b: Record<string, unknown>) {
   return Boolean(b.deposit_paid) || b.payment_status === 'paid';
 }
 
+function isPaidSiteBooking(b: ReturnType<typeof mapBooking>) {
+  return Boolean(b.depositPaid) || b.paymentStatus === 'paid';
+}
+
+type GoogleAnalyticsEvent = { start: string; title: string };
+
+function countAppointment(
+  startKey: string,
+  monthStart: string,
+  monthEnd: string,
+  todayKey: string,
+  byMonth: Record<string, { bookings: number; revenue: number }>,
+  byService: Record<string, { total: number; paid: number }>,
+  weekdayCounts: number[],
+  serviceName: string,
+  counters: { upcoming: number; thisMonth: number; googleThisMonth: number },
+  isGoogle = false,
+) {
+  if (startKey >= todayKey) counters.upcoming++;
+  if (startKey >= monthStart && startKey <= monthEnd) {
+    counters.thisMonth++;
+    if (isGoogle) counters.googleThisMonth++;
+    const d = mxKeyToDate(startKey);
+    const jsDay = d.getDay();
+    const wd = jsDay === 0 ? 6 : jsDay - 1;
+    weekdayCounts[wd]++;
+  }
+
+  if (!byService[serviceName]) byService[serviceName] = { total: 0, paid: 0 };
+  byService[serviceName].total++;
+  if (!isGoogle) byService[serviceName].paid++;
+
+  const monthKey = startKey.slice(0, 7);
+  if (!byMonth[monthKey]) byMonth[monthKey] = { bookings: 0, revenue: 0 };
+  byMonth[monthKey].bookings++;
+}
+
 function buildAnalytics(
   rows: Record<string, unknown>[],
+  googleEvents: GoogleAnalyticsEvent[],
   monthStart: string,
   monthEnd: string,
   todayKey: string,
@@ -71,8 +109,7 @@ function buildAnalytics(
   let revenueMxn = 0;
   let paidCount = 0;
   let pendingCount = 0;
-  let upcoming = 0;
-  let thisMonth = 0;
+  const counters = { upcoming: 0, thisMonth: 0, googleThisMonth: 0, sitePaidThisMonth: 0 };
 
   const byService: Record<string, { total: number; paid: number }> = {};
   const byMonth: Record<string, { bookings: number; revenue: number }> = {};
@@ -90,24 +127,42 @@ function buildAnalytics(
       pendingCount++;
     }
 
-    if (startKey >= todayKey) upcoming++;
-    if (startKey >= monthStart && startKey <= monthEnd) {
-      thisMonth++;
-      const d = mxKeyToDate(startKey);
-      const jsDay = d.getDay();
-      const wd = jsDay === 0 ? 6 : jsDay - 1;
-      weekdayCounts[wd]++;
+    if (paid) {
+      countAppointment(
+        startKey,
+        monthStart,
+        monthEnd,
+        todayKey,
+        byMonth,
+        byService,
+        weekdayCounts,
+        String(b.service ?? 'Sin servicio'),
+        counters,
+      );
+      if (startKey >= monthStart && startKey <= monthEnd) counters.sitePaidThisMonth++;
     }
-
-    const svc = String(b.service ?? 'Sin servicio');
-    if (!byService[svc]) byService[svc] = { total: 0, paid: 0 };
-    byService[svc].total++;
-    if (paid) byService[svc].paid++;
 
     const monthKey = startKey.slice(0, 7);
     if (!byMonth[monthKey]) byMonth[monthKey] = { bookings: 0, revenue: 0 };
-    byMonth[monthKey].bookings++;
     if (paid) byMonth[monthKey].revenue += amount;
+  }
+
+  for (const e of googleEvents) {
+    if (!e.start) continue;
+    const startKey = mxDateKey(new Date(e.start));
+    const svc = serviceFromTitle(e.title) || 'Google Calendar';
+    countAppointment(
+      startKey,
+      monthStart,
+      monthEnd,
+      todayKey,
+      byMonth,
+      byService,
+      weekdayCounts,
+      svc,
+      counters,
+      true,
+    );
   }
 
   const monthlyTrend = Array.from({ length: 6 }, (_, i) => {
@@ -138,12 +193,15 @@ function buildAnalytics(
   return {
     totals: {
       allTime: rows.length,
-      thisMonth,
-      upcoming,
+      thisMonth: counters.thisMonth,
+      sitePaidThisMonth: counters.sitePaidThisMonth,
+      fromGoogle: counters.googleThisMonth,
+      upcoming: counters.upcoming,
       paid: paidCount,
       pending: pendingCount,
       revenueMxn,
       conversionRate,
+      googleInRange: googleEvents.length,
     },
     monthlyTrend,
     byWeekday,
@@ -211,7 +269,12 @@ Deno.serve(async (req) => {
 
   const rangeLabel = formatMxMonthYear(monthStart);
 
-  const [calendar, schedule, bookingsRes, rangeBookingsRes, allBookingsRes, analyticsRes] =
+  const analyticsRangeStart = addMxMonths(startOfMonthMx(todayKey), -5);
+  const analyticsRangeEnd = endOfMonthMx(todayKey);
+  const analyticsRangeStartIso = mxDayStartIso(analyticsRangeStart);
+  const analyticsRangeEndIso = mxDayEndIso(analyticsRangeEnd);
+
+  const [calendar, schedule, bookingsRes, rangeBookingsRes, allBookingsRes, analyticsRes, analyticsRangeRes] =
     await Promise.all([
       getCalendarStatus(supabase),
       getClinicSettings(supabase),
@@ -224,13 +287,17 @@ Deno.serve(async (req) => {
       supabase.from('bookings').select(
         'service, start_at, deposit_amount_mxn, deposit_paid, payment_status',
       ),
+      supabase.from('bookings').select('*')
+        .gte('start_at', analyticsRangeStartIso)
+        .lt('start_at', analyticsRangeEndIso),
     ]);
 
-  // En el panel admin se muestran TODAS las reservas del sitio (incluso con
-  // anticipo pendiente) para que siempre se vea teléfono, email y código.
-  // El evento duplicado de Google se oculta vía isGoogleDuplicate.
+  // Calendario: solo reservas del sitio pagadas + Google sin duplicar.
+  // Lista `bookings` incluye todas las reservas recientes (también pendientes).
   const bookings = (bookingsRes.data ?? []).map(mapBooking);
-  const rangeBookings = (rangeBookingsRes.data ?? []).map(mapBooking);
+  const rangeBookingsAll = (rangeBookingsRes.data ?? []).map(mapBooking);
+  // En el calendario solo citas del sitio con anticipo pagado.
+  const rangeBookings = rangeBookingsAll.filter(isPaidSiteBooking);
 
   let googleEvents: Array<{
     id: string;
@@ -240,8 +307,13 @@ Deno.serve(async (req) => {
     end: string;
     source: string;
   }> = [];
+  let analyticsGoogleEvents: typeof googleEvents = [];
+
   if (calendar.connected) {
-    googleEvents = await fetchCalendarEvents(supabase, rangeStartIso, rangeEndIso);
+    [googleEvents, analyticsGoogleEvents] = await Promise.all([
+      fetchCalendarEvents(supabase, rangeStartIso, rangeEndIso),
+      fetchCalendarEvents(supabase, analyticsRangeStartIso, analyticsRangeEndIso),
+    ]);
   }
 
   const allRangeRows = rangeBookingsRes.data ?? [];
@@ -250,7 +322,7 @@ Deno.serve(async (req) => {
   );
 
   const isGoogleDuplicate = (e: { id: string; title?: string; start?: string; description?: string }) =>
-    isGoogleEventDuplicate(e, rangeBookings, linkedEventIds);
+    isGoogleEventDuplicate(e, rangeBookingsAll, linkedEventIds);
 
   const unlinkedGoogle = googleEvents.filter((e) => !isGoogleDuplicate(e));
 
@@ -272,8 +344,19 @@ Deno.serve(async (req) => {
     .slice(0, 6)
     .map(([name, count]) => ({ name, count }));
 
+  const analyticsRangeBookings = (analyticsRangeRes.data ?? []).map(mapBooking);
+  const analyticsLinkedIds = new Set(
+    (analyticsRangeRes.data ?? [])
+      .map((b) => b.event_id as string | null)
+      .filter(Boolean),
+  );
+  const analyticsGoogleDeduped = analyticsGoogleEvents.filter(
+    (e) => !isGoogleEventDuplicate(e, analyticsRangeBookings, analyticsLinkedIds),
+  );
+
   const analytics = buildAnalytics(
     analyticsRes.data ?? [],
+    analyticsGoogleDeduped,
     monthStart,
     monthEnd,
     todayKey,
@@ -369,6 +452,7 @@ Deno.serve(async (req) => {
       range: rangeBookings.length + unlinkedGoogle.length,
       fromGoogle: unlinkedGoogle.length,
       fromSite: rangeBookings.length,
+      fromSitePaid: rangeBookings.length,
     },
     topServices,
     analytics,

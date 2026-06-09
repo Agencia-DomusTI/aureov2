@@ -20,8 +20,8 @@ import {
 import './AdminPanel.css';
 
 const TABS = [
-  { id: 'resumen', label: 'Resumen' },
   { id: 'calendario', label: 'Calendario' },
+  { id: 'resumen', label: 'Resumen' },
   { id: 'servicios', label: 'Servicios' },
   { id: 'configuracion', label: 'Configuración' },
 ];
@@ -30,7 +30,7 @@ function getTabFromUrl() {
   const params = new URLSearchParams(window.location.search);
   const tab = params.get('tab');
   if (tab === 'horarios' || tab === 'reservas' || tab === 'pagos') return 'configuracion';
-  return tab || 'resumen';
+  return tab || 'calendario';
 }
 
 const AdminPanel = () => {

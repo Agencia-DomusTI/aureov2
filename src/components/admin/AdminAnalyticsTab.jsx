@@ -115,16 +115,21 @@ const AdminAnalyticsTab = ({ status, statusError, refreshing, onRefresh, onGoCal
 
   const totals = analytics?.totals ?? {
     allTime: status?.bookings?.length ?? 0,
-    thisMonth: status?.stats?.fromSite ?? 0,
+    thisMonth: (status?.stats?.fromSite ?? 0) + (status?.stats?.fromGoogle ?? 0),
+    sitePaidThisMonth: status?.stats?.fromSite ?? 0,
+    fromGoogle: status?.stats?.fromGoogle ?? 0,
     upcoming: 0,
     paid: 0,
     pending: 0,
     revenueMxn: 0,
     conversionRate: 0,
+    googleInRange: 0,
   };
 
   const todayCount = status?.stats?.today ?? 0;
-  const googleExtra = status?.stats?.fromGoogle ?? 0;
+  const sitePaidMonth = totals.sitePaidThisMonth ?? status?.stats?.fromSite ?? 0;
+  const googleMonth = totals.fromGoogle ?? status?.stats?.fromGoogle ?? 0;
+  const googleConnected = status?.calendar?.connected;
 
   return (
     <div className="adm-dash adm-dash--apple adm-analytics">
@@ -134,8 +139,10 @@ const AdminAnalyticsTab = ({ status, statusError, refreshing, onRefresh, onGoCal
         <div>
           <h2 className="adm-analytics__title">Resumen</h2>
           <p className="adm-analytics__sub">
-            {rangeLabel} · {totals.thisMonth} citas del sitio
-            {googleExtra > 0 ? ` · ${googleExtra} solo en Google` : ''}
+            {rangeLabel} · {totals.thisMonth} citas
+            {googleConnected
+              ? ` (${sitePaidMonth} sitio pagadas · ${googleMonth} Google)`
+              : ` (${sitePaidMonth} del sitio)`}
           </p>
         </div>
         <div className="adm-analytics__actions">
@@ -162,7 +169,10 @@ const AdminAnalyticsTab = ({ status, statusError, refreshing, onRefresh, onGoCal
         <article className="adm-stat">
           <span className="adm-stat__num">{totals.thisMonth}</span>
           <span className="adm-stat__label">Este mes</span>
-          <span className="adm-stat__sub">{totals.upcoming} próximas</span>
+          <span className="adm-stat__sub">
+            {totals.upcoming} próximas
+            {googleMonth > 0 ? ` · ${googleMonth} Google` : ''}
+          </span>
         </article>
         <article className="adm-stat">
           <span className="adm-stat__num">{formatMxn(totals.revenueMxn)}</span>
@@ -170,15 +180,18 @@ const AdminAnalyticsTab = ({ status, statusError, refreshing, onRefresh, onGoCal
         </article>
         <article className="adm-stat">
           <span className="adm-stat__num">{totals.allTime}</span>
-          <span className="adm-stat__label">Reservas totales</span>
-          <span className="adm-stat__sub">{totals.conversionRate}% pagadas</span>
+          <span className="adm-stat__label">Reservas del sitio</span>
+          <span className="adm-stat__sub">
+            {totals.conversionRate}% pagadas
+            {(totals.googleInRange ?? 0) > 0 ? ` · ${totals.googleInRange} en Google (6 meses)` : ''}
+          </span>
         </article>
       </section>
 
       <div className="adm-analytics__grid">
         <section className="adm-panel-card">
           <h3 className="adm-panel-card__title">Citas por mes</h3>
-          <p className="adm-panel-card__desc">Últimos 6 meses (reservas del sitio)</p>
+          <p className="adm-panel-card__desc">Últimos 6 meses (sitio pagadas + Google)</p>
           {trendData.some((t) => t.value > 0) ? (
             <ColumnChart items={trendData} valueKey="value" labelKey="label" />
           ) : (
@@ -198,7 +211,7 @@ const AdminAnalyticsTab = ({ status, statusError, refreshing, onRefresh, onGoCal
 
         <section className="adm-panel-card adm-panel-card--wide">
           <h3 className="adm-panel-card__title">Servicios más reservados</h3>
-          <p className="adm-panel-card__desc">Conteo histórico por tratamiento</p>
+          <p className="adm-panel-card__desc">Sitio pagadas y citas de Google Calendar</p>
           {serviceData.length > 0 ? (
             <BarChart items={serviceData} valueKey="value" labelKey="label" />
           ) : (
@@ -208,7 +221,7 @@ const AdminAnalyticsTab = ({ status, statusError, refreshing, onRefresh, onGoCal
 
         <section className="adm-panel-card">
           <h3 className="adm-panel-card__title">Días con más citas</h3>
-          <p className="adm-panel-card__desc">Distribución en {rangeLabel}</p>
+          <p className="adm-panel-card__desc">Sitio pagadas + Google en {rangeLabel}</p>
           {weekdayData.some((d) => d.value > 0) ? (
             <ColumnChart items={weekdayData} valueKey="value" labelKey="label" />
           ) : (
