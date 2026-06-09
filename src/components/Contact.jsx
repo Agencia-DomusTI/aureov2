@@ -1,28 +1,13 @@
-import { useEffect } from 'react';
 import { CLINICS } from '../constants/clinics';
 import { useReveal } from '../hooks/useReveal';
+import BookingCalendar from './BookingCalendar';
 import './Contact.css';
-
-const LEAD_EMBED_SCRIPT_SRC = 'https://api.lead.dcontrol.com.mx/js/form_embed.js';
-const SERVICE_MENU_IFRAME_ID = '6a077883e531247aa622aa62_1778874522721';
-const SERVICE_MENU_IFRAME_SRC =
-  'https://api.lead.dcontrol.com.mx/widget/service-menu/6a077883e531247aa622aa62';
 
 const { qro, gdl } = CLINICS;
 const gdlWhatsAppHref = `https://wa.me/${gdl.phoneWa}?text=${encodeURIComponent('Hola Áureo Clinique Zapopan, me gustaría agendar una valoración.')}`;
 
 const Contact = () => {
   const revealRef = useReveal();
-
-  useEffect(() => {
-    if (document.querySelector(`script[src="${LEAD_EMBED_SCRIPT_SRC}"]`)) return;
-
-    const script = document.createElement('script');
-    script.src = LEAD_EMBED_SCRIPT_SRC;
-    script.type = 'text/javascript';
-    script.async = true;
-    document.body.appendChild(script);
-  }, []);
 
   return (
     <section className="contact scroll-reveal" id="contacto" ref={revealRef}>
@@ -70,8 +55,8 @@ const Contact = () => {
           <div className="contact-gdl-booking">
             <h3>¿Prefieres agendar en Zapopan?</h3>
             <p>
-              Las citas en línea de este sitio son exclusivamente para Querétaro. Para Zapopan, Jalisco,
-              agenda por WhatsApp o en el calendario del doctor.
+              El calendario en línea es para Querétaro. Para Zapopan, Jalisco, agenda por WhatsApp o
+              en el calendario del doctor.
             </p>
             <div className="contact-gdl-actions">
               {gdl.googleCalendarUrl ? (
@@ -99,17 +84,10 @@ const Contact = () => {
         <div className="contact-form-container contact-booking-wrap">
           <span className="form-kicker">Agenda en Querétaro</span>
           <p className="contact-booking-notice">
-            El calendario y pago en línea a continuación aplican <strong>solo para Querétaro</strong>.
+            Reserva en línea con duración según tu tratamiento. El calendario se sincroniza con Google
+            Calendar para evitar choques de horario. <strong>Solo Querétaro.</strong>
           </p>
-          <div className="contact-booking-frame">
-            <iframe
-              src={SERVICE_MENU_IFRAME_SRC}
-              title="Menú de servicios — Áureo Clinique"
-              id={SERVICE_MENU_IFRAME_ID}
-              scrolling="no"
-              className="contact-booking-iframe"
-            />
-          </div>
+          <BookingCalendar />
         </div>
       </div>
     </section>

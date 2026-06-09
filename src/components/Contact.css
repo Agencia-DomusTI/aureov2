@@ -158,23 +158,11 @@
 }
 
 .contact-booking-wrap {
-  overflow: hidden;
+  overflow: visible;
 }
 
-.contact-booking-frame {
-  width: 100%;
-  min-height: 520px;
-  border-radius: 0.65rem;
-  overflow: hidden;
-  background: var(--bg-soft);
-}
-
-.contact-booking-iframe {
-  display: block;
-  width: 100%;
-  min-height: 520px;
-  border: none;
-  overflow: hidden;
+.contact-booking-wrap .booking-calendar {
+  min-height: 420px;
 }
 
 @media (max-width: 992px) {

@@ -8,8 +8,9 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import FloatingWhatsApp from './components/FloatingWhatsApp';
 import LeadConnectorChat from './components/LeadConnectorChat';
+import AdminPanel from './pages/AdminPanel';
 
-function App() {
+function PublicSite() {
   return (
     <div className="App">
       <Navbar />
@@ -26,6 +27,16 @@ function App() {
       <Footer />
     </div>
   );
+}
+
+function App() {
+  const isAdmin = window.location.pathname === '/admin' || window.location.pathname.startsWith('/admin/');
+
+  if (isAdmin) {
+    return <AdminPanel />;
+  }
+
+  return <PublicSite />;
 }
 
 export default App;
