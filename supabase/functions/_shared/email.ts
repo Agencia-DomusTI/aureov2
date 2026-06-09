@@ -37,9 +37,22 @@ export interface BookingEmailData {
   paid?: boolean;
 }
 
+const DEFAULT_FROM = 'Aureo Clinique <onboarding@resend.dev>';
+
+/** Limpia comillas/espacios sobrantes y valida el formato del remitente. */
+function normalizeFrom(raw?: string | null) {
+  if (!raw) return DEFAULT_FROM;
+  // Quita comillas envolventes (' o ") y espacios.
+  const cleaned = raw.trim().replace(/^['"]+|['"]+$/g, '').trim();
+  // Acepta "email@dominio" o "Nombre <email@dominio>".
+  const valid = /^[^<>@\s]+@[^<>@\s]+\.[^<>@\s]+$/.test(cleaned) ||
+    /^.+<[^<>@\s]+@[^<>@\s]+\.[^<>@\s]+>$/.test(cleaned);
+  return valid ? cleaned : DEFAULT_FROM;
+}
+
 export async function sendEmail(opts: { to: string; subject: string; html: string }) {
   const apiKey = Deno.env.get('RESEND_API_KEY');
-  const from = Deno.env.get('EMAIL_FROM') ?? 'Aureo Clinique <citas@aureoclinique.com>';
+  const from = normalizeFrom(Deno.env.get('EMAIL_FROM'));
 
   if (!apiKey) {
     console.warn('RESEND_API_KEY no configurado: se omite el envío de correo.');
