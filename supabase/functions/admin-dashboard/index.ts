@@ -56,6 +56,101 @@ function serviceFromTitle(title: string) {
   return parseEventTitle(title).service;
 }
 
+const WEEKDAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+function isBookingPaid(b: Record<string, unknown>) {
+  return Boolean(b.deposit_paid) || b.payment_status === 'paid';
+}
+
+function buildAnalytics(
+  rows: Record<string, unknown>[],
+  monthStart: string,
+  monthEnd: string,
+  todayKey: string,
+) {
+  let revenueMxn = 0;
+  let paidCount = 0;
+  let pendingCount = 0;
+  let upcoming = 0;
+  let thisMonth = 0;
+
+  const byService: Record<string, { total: number; paid: number }> = {};
+  const byMonth: Record<string, { bookings: number; revenue: number }> = {};
+  const weekdayCounts = [0, 0, 0, 0, 0, 0, 0];
+
+  for (const b of rows) {
+    const startKey = mxDateKey(new Date(b.start_at as string));
+    const paid = isBookingPaid(b);
+    const amount = Number(b.deposit_amount_mxn) || 0;
+
+    if (paid) {
+      paidCount++;
+      revenueMxn += amount;
+    } else if (b.payment_status === 'pending') {
+      pendingCount++;
+    }
+
+    if (startKey >= todayKey) upcoming++;
+    if (startKey >= monthStart && startKey <= monthEnd) {
+      thisMonth++;
+      const d = mxKeyToDate(startKey);
+      const jsDay = d.getDay();
+      const wd = jsDay === 0 ? 6 : jsDay - 1;
+      weekdayCounts[wd]++;
+    }
+
+    const svc = String(b.service ?? 'Sin servicio');
+    if (!byService[svc]) byService[svc] = { total: 0, paid: 0 };
+    byService[svc].total++;
+    if (paid) byService[svc].paid++;
+
+    const monthKey = startKey.slice(0, 7);
+    if (!byMonth[monthKey]) byMonth[monthKey] = { bookings: 0, revenue: 0 };
+    byMonth[monthKey].bookings++;
+    if (paid) byMonth[monthKey].revenue += amount;
+  }
+
+  const monthlyTrend = Array.from({ length: 6 }, (_, i) => {
+    const offset = i - 5;
+    const mStart = addMxMonths(startOfMonthMx(todayKey), offset);
+    const mk = mStart.slice(0, 7);
+    const data = byMonth[mk] ?? { bookings: 0, revenue: 0 };
+    return {
+      key: mk,
+      label: formatMxMonthYear(mStart),
+      bookings: data.bookings,
+      revenue: data.revenue,
+    };
+  });
+
+  const topServices = Object.entries(byService)
+    .sort((a, b) => b[1].total - a[1].total)
+    .slice(0, 8)
+    .map(([name, v]) => ({ name, count: v.total, paid: v.paid }));
+
+  const byWeekday = weekdayCounts.map((count, i) => ({
+    day: WEEKDAY_LABELS[i],
+    count,
+  }));
+
+  const conversionRate = rows.length > 0 ? Math.round((paidCount / rows.length) * 100) : 0;
+
+  return {
+    totals: {
+      allTime: rows.length,
+      thisMonth,
+      upcoming,
+      paid: paidCount,
+      pending: pendingCount,
+      revenueMxn,
+      conversionRate,
+    },
+    monthlyTrend,
+    byWeekday,
+    topServices,
+  };
+}
+
 /** Eventos que el propio sitio creó en Google (espejo de una reserva del sitio). */
 function isSiteCreatedGoogleEvent(e: { description?: string }) {
   const d = (e.description ?? '').toLowerCase();
@@ -116,16 +211,20 @@ Deno.serve(async (req) => {
 
   const rangeLabel = formatMxMonthYear(monthStart);
 
-  const [calendar, schedule, bookingsRes, rangeBookingsRes, allBookingsRes] = await Promise.all([
-    getCalendarStatus(supabase),
-    getClinicSettings(supabase),
-    supabase.from('bookings').select('*').order('start_at', { ascending: false }).limit(80),
-    supabase.from('bookings').select('*')
-      .gte('start_at', rangeStartIso)
-      .lt('start_at', rangeEndIso)
-      .order('start_at', { ascending: true }),
-    supabase.from('bookings').select('service'),
-  ]);
+  const [calendar, schedule, bookingsRes, rangeBookingsRes, allBookingsRes, analyticsRes] =
+    await Promise.all([
+      getCalendarStatus(supabase),
+      getClinicSettings(supabase),
+      supabase.from('bookings').select('*').order('start_at', { ascending: false }).limit(80),
+      supabase.from('bookings').select('*')
+        .gte('start_at', rangeStartIso)
+        .lt('start_at', rangeEndIso)
+        .order('start_at', { ascending: true }),
+      supabase.from('bookings').select('service'),
+      supabase.from('bookings').select(
+        'service, start_at, deposit_amount_mxn, deposit_paid, payment_status',
+      ),
+    ]);
 
   // En el panel admin se muestran TODAS las reservas del sitio (incluso con
   // anticipo pendiente) para que siempre se vea teléfono, email y código.
@@ -172,6 +271,13 @@ Deno.serve(async (req) => {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 6)
     .map(([name, count]) => ({ name, count }));
+
+  const analytics = buildAnalytics(
+    analyticsRes.data ?? [],
+    monthStart,
+    monthEnd,
+    todayKey,
+  );
 
   const weekDays = Array.from({ length: totalDays }, (_, i) => {
     const key = addMxDays(rangeStartKey, i);
@@ -265,6 +371,7 @@ Deno.serve(async (req) => {
       fromSite: rangeBookings.length,
     },
     topServices,
+    analytics,
     googleOAuthReady,
     stripeReady: isStripeConfigured(),
     depositAmountMxn: schedule.depositAmountMxn,

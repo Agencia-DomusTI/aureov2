@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import AdminAnalyticsTab from '../components/admin/AdminAnalyticsTab';
 import AdminCalendarTab from '../components/admin/AdminCalendarTab';
 import AdminConfigTab from '../components/admin/AdminConfigTab';
 import AdminServicesTab from '../components/admin/AdminServicesTab';
@@ -19,6 +20,7 @@ import {
 import './AdminPanel.css';
 
 const TABS = [
+  { id: 'resumen', label: 'Resumen' },
   { id: 'calendario', label: 'Calendario' },
   { id: 'servicios', label: 'Servicios' },
   { id: 'configuracion', label: 'Configuración' },
@@ -28,7 +30,7 @@ function getTabFromUrl() {
   const params = new URLSearchParams(window.location.search);
   const tab = params.get('tab');
   if (tab === 'horarios' || tab === 'reservas' || tab === 'pagos') return 'configuracion';
-  return tab || 'calendario';
+  return tab || 'resumen';
 }
 
 const AdminPanel = () => {
@@ -257,6 +259,16 @@ const AdminPanel = () => {
       </nav>
 
       <main className="admin-main admin-main--wide">
+        {tab === 'resumen' && (
+          <AdminAnalyticsTab
+            status={status}
+            statusError={statusError}
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            onGoCalendar={() => setTab('calendario')}
+          />
+        )}
+
         {tab === 'calendario' && (
           <AdminCalendarTab
             status={status}
