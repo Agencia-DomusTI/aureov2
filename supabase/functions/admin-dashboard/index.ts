@@ -95,27 +95,34 @@ Deno.serve(async (req) => {
     supabase.from('bookings').select('service'),
   ]);
 
-  const bookings = (bookingsRes.data ?? []).map(mapBooking);
-  const rangeBookings = (rangeBookingsRes.data ?? []).map(mapBooking);
+  // Solo se muestran las reservas con anticipo pagado o sin costo.
+  // Las pendientes (nunca pagaron) no deben aparecer en el panel.
+  const isVisibleBooking = (b: { paymentStatus?: unknown }) => b.paymentStatus !== 'pending';
+
+  const bookings = (bookingsRes.data ?? []).map(mapBooking).filter(isVisibleBooking);
+  const rangeBookings = (rangeBookingsRes.data ?? []).map(mapBooking).filter(isVisibleBooking);
 
   let googleEvents: Array<{ id: string; title: string; start: string; end: string; source: string }> = [];
   if (calendar.connected) {
     googleEvents = await fetchCalendarEvents(supabase, rangeStartIso, rangeEndIso);
   }
 
+  const linkedEventIds = new Set(
+    (rangeBookingsRes.data ?? [])
+      .map((b) => b.event_id as string | null)
+      .filter(Boolean),
+  );
+
+  const unlinkedGoogle = googleEvents.filter((e) => !linkedEventIds.has(e.id));
+
   const todayBookings = rangeBookings.filter((b) => mxDateKey(new Date(b.start as string)) === todayKey);
-  const todayGoogle = googleEvents.filter((e) => e.start && mxDateKey(new Date(e.start)) === todayKey);
+  const todayGoogle = unlinkedGoogle.filter((e) => e.start && mxDateKey(new Date(e.start)) === todayKey);
 
   const serviceCounts: Record<string, number> = {};
   (allBookingsRes.data ?? []).forEach((b) => {
     const s = b.service as string;
     serviceCounts[s] = (serviceCounts[s] ?? 0) + 1;
   });
-  const linkedEventIds = new Set(
-    (rangeBookingsRes.data ?? [])
-      .map((b) => b.event_id as string | null)
-      .filter(Boolean),
-  );
 
   googleEvents.forEach((e) => {
     if (linkedEventIds.has(e.id)) return;
@@ -133,10 +140,9 @@ Deno.serve(async (req) => {
     const inMonth = key >= monthStart && key <= monthEnd;
     const dayBookings = rangeBookings.filter((b) => mxDateKey(new Date(b.start as string)) === key);
     const dayGoogleRaw = googleEvents.filter((e) => e.start && mxDateKey(new Date(e.start)) === key);
-    const dayLinkedIds = new Set(
-      dayBookings.map((b) => b.eventId as string | undefined).filter(Boolean),
-    );
-    const dayGoogle = dayGoogleRaw.filter((e) => !dayLinkedIds.has(e.id));
+    // Usa el set global (incluye reservas pendientes) para no mostrar su evento
+    // de Google como evento suelto cuando la reserva se oculta.
+    const dayGoogle = dayGoogleRaw.filter((e) => !linkedEventIds.has(e.id));
     const weekIndex = Math.floor(i / 7);
     return {
       date: key,
@@ -215,8 +221,8 @@ Deno.serve(async (req) => {
     todayBookings,
     stats: {
       today: todayBookings.length + todayGoogle.length,
-      range: rangeBookings.length + googleEvents.length,
-      fromGoogle: googleEvents.length,
+      range: rangeBookings.length + unlinkedGoogle.length,
+      fromGoogle: unlinkedGoogle.length,
       fromSite: rangeBookings.length,
     },
     topServices,

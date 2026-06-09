@@ -112,7 +112,7 @@ function DeleteConfirmModal({ apt, deleting, onCancel, onConfirm }) {
 }
 
 function AppointmentModal({ apt, deletingId, onClose, onRequestDelete }) {
-  useModalLock({ onClose });
+  useModalLock(apt ? onClose : null);
 
   if (!apt) return null;
 

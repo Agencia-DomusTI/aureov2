@@ -1379,6 +1379,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  padding: 0;
 }
 
 .adm-apple-cal__head {
