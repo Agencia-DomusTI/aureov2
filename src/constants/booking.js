@@ -71,6 +71,9 @@ export const BOOKING_CONFIG = {
   },
   scheduleSummary:
     'Lun–Vie 10:00–14:00 y 16:00–19:00 · Sáb 10:00–14:00 · Dom con cita previa',
+  /** Anticipo base cuando el servicio no tiene monto propio */
+  depositAmountMxn: 250,
+  servicesConfig: {},
 };
 
 export function formatDuration(minutes) {

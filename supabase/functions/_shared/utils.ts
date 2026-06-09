@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { DEFAULT_DEPOSIT_MXN } from './booking.ts';
 import { verifyAdminRequest } from './adminAuth.ts';
 
 export const corsHeaders = {
@@ -50,7 +51,7 @@ export async function getClinicSettings(supabase: SupabaseClient) {
     return {
       ...DEFAULT_SCHEDULE,
       paymentUrl: '',
-      depositAmountMxn: 250,
+      depositAmountMxn: DEFAULT_DEPOSIT_MXN,
       servicesConfig: {} as Record<string, unknown>,
     };
   }
@@ -64,7 +65,7 @@ export async function getClinicSettings(supabase: SupabaseClient) {
     schedule: data.schedule ?? DEFAULT_SCHEDULE.schedule,
     scheduleSummary: data.schedule_summary ?? DEFAULT_SCHEDULE.scheduleSummary,
     paymentUrl: data.payment_url ?? '',
-    depositAmountMxn: data.deposit_amount_mxn ?? 250,
+    depositAmountMxn: data.deposit_amount_mxn ?? DEFAULT_DEPOSIT_MXN,
     servicesConfig: (data.services_config ?? {}) as Record<string, { priceLabel?: string; active?: boolean; depositMxn?: number }>,
   };
 }

@@ -98,6 +98,7 @@ const AdminPanel = () => {
       await loadStatus();
     } catch (err) {
       alert(err.message || 'No se pudo eliminar la cita');
+      throw err;
     } finally {
       setDeletingId(null);
     }

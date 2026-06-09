@@ -135,6 +135,8 @@ async function createGhlAppointment(opts: {
   start: string;
   end: string;
   patient: Patient;
+  confirmationCode?: string;
+  depositAmountMxn?: number;
 }) {
   const calendarId = await resolveCalendarId();
   if (!calendarId) return null;
@@ -151,7 +153,11 @@ async function createGhlAppointment(opts: {
       title: `${opts.service} — ${opts.patient.name}`,
       appointmentStatus: 'confirmed',
       description: [
+        opts.confirmationCode ? `Código: ${opts.confirmationCode}` : '',
         `Servicio: ${opts.service}`,
+        opts.depositAmountMxn !== undefined && opts.depositAmountMxn > 0
+          ? `Anticipo: $${opts.depositAmountMxn} MXN`
+          : '',
         `Tel: ${opts.patient.phone}`,
         opts.patient.email ? `Email: ${opts.patient.email}` : '',
         opts.patient.notes ? `Notas: ${opts.patient.notes}` : '',
@@ -165,11 +171,38 @@ async function createGhlAppointment(opts: {
     ?? null;
 }
 
+export async function deleteGhlAppointment(appointmentId: string) {
+  if (!isGhlConfigured() || !appointmentId) {
+    return { deleted: false, reason: 'GHL no configurado o sin ID de cita' };
+  }
+
+  try {
+    const res = await fetch(`${GHL_BASE}/calendars/events/${encodeURIComponent(appointmentId)}`, {
+      method: 'DELETE',
+      headers: ghlHeaders(),
+      body: '{}',
+    });
+
+    if (!res.ok && res.status !== 404) {
+      const text = await res.text();
+      console.error('GHL delete appointment:', res.status, text);
+      return { deleted: false, reason: text };
+    }
+
+    return { deleted: true };
+  } catch (err) {
+    console.error('GHL delete appointment error:', err);
+    return { deleted: false, reason: (err as Error).message };
+  }
+}
+
 export async function syncBookingToGhl(booking: {
   service: string;
   start: string;
   end: string;
   patient: Patient;
+  confirmationCode?: string;
+  depositAmountMxn?: number;
 }) {
   if (!isGhlConfigured()) {
     return { synced: false, reason: 'GHL_API_TOKEN no configurado' };

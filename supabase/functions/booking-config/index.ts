@@ -1,3 +1,5 @@
+import { buildDepositsMap, getBaseDeposit } from '../_shared/booking.ts';
+import { isStripeConfigured } from '../_shared/stripe.ts';
 import { createServiceClient, getClinicSettings, handleCors, json } from '../_shared/utils.ts';
 
 Deno.serve(async (req) => {
@@ -6,6 +8,7 @@ Deno.serve(async (req) => {
 
   const supabase = createServiceClient();
   const config = await getClinicSettings(supabase);
+  const baseDeposit = getBaseDeposit(config);
   return json({
     timezone: config.timezone,
     timezoneLabel: config.timezoneLabel,
@@ -15,7 +18,9 @@ Deno.serve(async (req) => {
     maxAdvanceDays: config.maxAdvanceDays,
     schedule: config.schedule,
     scheduleSummary: config.scheduleSummary,
-    depositAmountMxn: config.depositAmountMxn,
+    depositAmountMxn: baseDeposit,
     servicesConfig: config.servicesConfig,
+    serviceDeposits: buildDepositsMap(config.servicesConfig, baseDeposit),
+    stripeEnabled: isStripeConfigured(),
   });
 });

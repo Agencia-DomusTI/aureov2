@@ -123,15 +123,21 @@ export async function createCalendarEvent(
     start: string;
     end: string;
     patient: { name: string; phone: string; email?: string; notes?: string };
+    confirmationCode?: string;
+    depositAmountMxn?: number;
   },
 ) {
   const auth = await refreshAccessToken(supabase);
   if (!auth) throw new Error('Google Calendar no conectado');
 
-  const { service, durationMinutes, start, end, patient } = booking;
+  const { service, durationMinutes, start, end, patient, confirmationCode, depositAmountMxn } = booking;
   const description = [
+    confirmationCode ? `Código: ${confirmationCode}` : '',
     `Servicio: ${service}`,
     `Duración: ${durationMinutes} min`,
+    depositAmountMxn !== undefined && depositAmountMxn > 0
+      ? `Anticipo: $${depositAmountMxn} MXN`
+      : depositAmountMxn === 0 ? 'Anticipo: no aplica' : '',
     `Paciente: ${patient.name}`,
     `Teléfono: ${patient.phone}`,
     patient.email ? `Email: ${patient.email}` : '',

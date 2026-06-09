@@ -3,6 +3,7 @@ import { CLINICS } from '../constants/clinics';
 import { BOOKING_CONFIG } from '../constants/booking';
 import { createBooking, getAvailability, getBookingConfig } from '../lib/bookingApi';
 import { getAllBookableServices } from '../utils/bookableServices';
+import { formatDepositLabel, getDepositForService } from '../utils/deposit';
 import {
   generateTimeSlots,
   getMonthDays,
@@ -84,6 +85,9 @@ const BookingCalendar = () => {
   }, [services, servicesConfig]);
 
   const selectedService = visibleServices.find((s) => s.id === serviceId);
+  const selectedDeposit = selectedService
+    ? getDepositForService(selectedService.id, bookingConfig)
+    : null;
   const todayStr = getTodayInMexico(bookingConfig);
 
   const monthDays = useMemo(
@@ -182,8 +186,10 @@ const BookingCalendar = () => {
         setResult({
           type: 'success',
           message: data.message,
+          confirmationCode: data.confirmationCode,
           paymentUrl: data.paymentUrl,
           depositAmountMxn: data.depositAmountMxn,
+          paymentRequired: data.paymentRequired,
         });
         setStep(4);
         return;
@@ -251,6 +257,14 @@ const BookingCalendar = () => {
     );
   };
 
+  const copyCode = async (code) => {
+    try {
+      await navigator.clipboard.writeText(code);
+    } catch {
+      /* clipboard no disponible */
+    }
+  };
+
   if (step === 4 && result) {
     return (
       <div className="bk-widget bk-widget--result">
@@ -259,6 +273,20 @@ const BookingCalendar = () => {
             <span className="bk-result__icon">{result.type === 'success' ? '✓' : '!'}</span>
           </div>
           <h3>{result.type === 'success' ? '¡Cita confirmada!' : 'Confirma por WhatsApp'}</h3>
+          {result.confirmationCode ? (
+            <div className="bk-result__code">
+              <span className="bk-result__code-label">Código de confirmación</span>
+              <button
+                type="button"
+                className="bk-result__code-value"
+                onClick={() => copyCode(result.confirmationCode)}
+                title="Copiar código"
+              >
+                {result.confirmationCode}
+              </button>
+              <span className="bk-result__code-hint">Toca el código para copiarlo</span>
+            </div>
+          ) : null}
           <p>{result.message}</p>
           {result.type === 'success' ? (
             <p className="bk-result__wa-hint">
@@ -270,6 +298,11 @@ const BookingCalendar = () => {
               <strong>{selectedService.name}</strong>
               <span>{formatDateLabel(selectedDate)}</span>
               <span>{selectedSlot.label} · {selectedService.durationLabel}</span>
+              {result.depositAmountMxn > 0 ? (
+                <span>Anticipo: ${result.depositAmountMxn} MXN</span>
+              ) : (
+                <span>Sin anticipo</span>
+              )}
             </div>
           ) : null}
           {result.paymentUrl ? (
@@ -336,6 +369,7 @@ const BookingCalendar = () => {
             <p className="bk-summary__meta">
               {selectedService.durationLabel}
               {selectedService.price ? ` · ${selectedService.price.split('·')[0].trim()}` : ''}
+              {selectedDeposit !== null ? ` · ${formatDepositLabel(selectedDeposit)}` : ''}
             </p>
           ) : null}
         </div>
@@ -371,20 +405,24 @@ const BookingCalendar = () => {
                   <div key={category} className="bk-service-group">
                     <h4 className="bk-service-group__title">{category}</h4>
                     <div className="bk-service-grid">
-                      {items.map((service) => (
-                        <button
-                          key={service.id}
-                          type="button"
-                          className={`bk-service-card ${serviceId === service.id ? 'is-selected' : ''}`}
-                          onClick={() => setServiceId(service.id)}
-                        >
-                          <span className="bk-service-card__name">{service.name}</span>
-                          <span className="bk-service-card__meta">
-                            {service.durationLabel}
-                            {service.price ? ` · ${service.price.split('·')[0].trim()}` : ''}
-                          </span>
-                        </button>
-                      ))}
+                      {items.map((service) => {
+                        const deposit = getDepositForService(service.id, bookingConfig);
+                        return (
+                          <button
+                            key={service.id}
+                            type="button"
+                            className={`bk-service-card ${serviceId === service.id ? 'is-selected' : ''}`}
+                            onClick={() => setServiceId(service.id)}
+                          >
+                            <span className="bk-service-card__name">{service.name}</span>
+                            <span className="bk-service-card__meta">
+                              {service.durationLabel}
+                              {service.price ? ` · ${service.price.split('·')[0].trim()}` : ''}
+                            </span>
+                            <span className="bk-service-card__deposit">{formatDepositLabel(deposit)}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 ))
@@ -505,6 +543,14 @@ const BookingCalendar = () => {
               <div className="bk-confirm-summary__row">
                 <span>Horario</span>
                 <strong>{selectedSlot.label} · {selectedService.durationLabel}</strong>
+              </div>
+              <div className="bk-confirm-summary__row">
+                <span>Anticipo</span>
+                <strong>
+                  {selectedDeposit > 0
+                    ? `$${selectedDeposit} MXN`
+                    : 'No aplica'}
+                </strong>
               </div>
             </div>
 

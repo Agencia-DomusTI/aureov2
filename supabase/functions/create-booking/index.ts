@@ -1,7 +1,8 @@
 import { createServiceClient, getClinicSettings, handleCors, json } from '../_shared/utils.ts';
 import { createCalendarEvent, fetchBusyPeriods, isGoogleConnected } from '../_shared/google.ts';
 import { syncBookingToGhl } from '../_shared/ghl.ts';
-import { createDepositCheckout } from '../_shared/stripe.ts';
+import { createDepositCheckout, isStripeConfigured } from '../_shared/stripe.ts';
+import { createUniqueConfirmationCode, getServiceDeposit } from '../_shared/booking.ts';
 
 const BUFFER_MS = 10 * 60 * 1000;
 
@@ -50,9 +51,30 @@ Deno.serve(async (req) => {
     return json({ success: false, message: 'Ese horario ya no está disponible.' }, 409);
   }
 
+  const settings = await getClinicSettings(supabase);
+  const deposit = getServiceDeposit(settings, service);
+  const serviceOverride = settings.servicesConfig?.[service];
+  const confirmationCode = await createUniqueConfirmationCode(supabase);
+  const paymentRequired = deposit > 0;
+
   try {
-    const event = await createCalendarEvent(supabase, body);
-    const ghlSync = await syncBookingToGhl({ service, start, end, patient });
+    const event = await createCalendarEvent(supabase, {
+      ...body,
+      confirmationCode,
+      depositAmountMxn: deposit,
+    });
+    const ghlSync = await syncBookingToGhl({
+      service,
+      start,
+      end,
+      patient,
+      confirmationCode,
+      depositAmountMxn: deposit,
+    });
+
+    let paymentUrl: string | null = null;
+    let stripeSessionId: string | null = null;
+    let paymentStatus = paymentRequired ? 'pending' : 'waived';
 
     const { data: bookingRow } = await supabase.from('bookings').insert({
       event_id: event.id,
@@ -66,31 +88,48 @@ Deno.serve(async (req) => {
       patient_notes: patient.notes || null,
       ghl_contact_id: ghlSync.contactId ?? null,
       ghl_appointment_id: ghlSync.appointmentId ?? null,
+      confirmation_code: confirmationCode,
+      deposit_amount_mxn: deposit,
+      payment_status: paymentStatus,
     }).select('id').single();
 
-    const settings = await getClinicSettings(supabase);
-    const serviceOverride = settings.servicesConfig?.[service];
-    const deposit = serviceOverride?.depositMxn ?? settings.depositAmountMxn ?? 250;
-
-    let paymentUrl = settings.paymentUrl || null;
-    if (!paymentUrl && bookingRow?.id) {
-      paymentUrl = await createDepositCheckout({
-        amountMxn: deposit,
-        serviceName: service,
-        patientName: patient.name,
-        bookingId: bookingRow.id,
-      });
+    if (paymentRequired && bookingRow?.id) {
+      if (isStripeConfigured()) {
+        const checkout = await createDepositCheckout({
+          amountMxn: deposit,
+          serviceName: service,
+          patientName: patient.name,
+          patientPhone: patient.phone,
+          patientEmail: patient.email,
+          bookingId: bookingRow.id,
+          confirmationCode,
+          priceLabel: serviceOverride?.priceLabel,
+        });
+        if (checkout) {
+          paymentUrl = checkout.url;
+          stripeSessionId = checkout.sessionId;
+          await supabase.from('bookings').update({
+            stripe_session_id: stripeSessionId,
+          }).eq('id', bookingRow.id);
+        }
+      } else if (settings.paymentUrl) {
+        paymentUrl = settings.paymentUrl;
+      }
     }
 
-    const paymentNote = paymentUrl
-      ? ' Completa el anticipo en línea para confirmar.'
-      : ' Recibirás confirmación por WhatsApp en breve.';
+    const paymentNote = paymentRequired && paymentUrl
+      ? ` Tu código es ${confirmationCode}. Completa el anticipo de $${deposit} MXN en línea.`
+      : paymentRequired && !paymentUrl
+        ? ` Tu código es ${confirmationCode}. Te contactaremos para el anticipo de $${deposit} MXN.`
+        : ` Tu código de confirmación es ${confirmationCode}.`;
 
     return json({
       success: true,
       eventId: event.id,
+      confirmationCode,
       paymentUrl,
       depositAmountMxn: deposit,
+      paymentRequired,
       ghlSynced: ghlSync.synced,
       message: `¡Tu cita de ${service} quedó confirmada!${paymentNote}`,
     });

@@ -79,22 +79,18 @@ const AdminServicesTab = ({ settings, setSettings, onSave, saveMsg }) => {
         <span>— configurable en Configuración</span>
       </div>
 
-      {[...categories.entries()].map(([category, items]) => (
-        <section key={category} className="adm-svc-apple__section">
-          <h3>{category}</h3>
-          <div className="adm-svc-apple__group">
-            {items.map((service, idx) => {
-              const cfg = getConfig(service);
-              return (
-                <div
-                  key={service.id}
-                  className={`adm-svc-apple__row ${cfg.active ? '' : 'is-off'} ${idx < items.length - 1 ? 'has-divider' : ''}`}
-                >
-                  <div className="adm-svc-apple__main">
-                    <div className="adm-svc-apple__text">
-                      <strong>{service.name}</strong>
-                      <span>{service.durationLabel}</span>
-                    </div>
+      <div className="adm-svc-apple__list">
+        {[...categories.entries()].map(([category, items]) => (
+          <section key={category} className="adm-svc-apple__section">
+            <h3>{category}</h3>
+            <div className="adm-svc-apple__group">
+              {items.map((service, idx) => {
+                const cfg = getConfig(service);
+                return (
+                  <div
+                    key={service.id}
+                    className={`adm-svc-apple__row ${cfg.active ? '' : 'is-off'} ${idx < items.length - 1 ? 'has-divider' : ''}`}
+                  >
                     <label className="adm-ios-toggle">
                       <input
                         type="checkbox"
@@ -103,22 +99,24 @@ const AdminServicesTab = ({ settings, setSettings, onSave, saveMsg }) => {
                       />
                       <span />
                     </label>
-                  </div>
-                  <div className="adm-svc-apple__fields">
-                    <label>
-                      <span>Precio visible</span>
+                    <div className="adm-svc-apple__text">
+                      <strong>{service.name}</strong>
+                      <span>{service.durationLabel}</span>
+                    </div>
+                    <label className="adm-svc-apple__field adm-svc-apple__field--price">
+                      <span>Precio</span>
                       <input
                         className="adm-svc-apple__input"
                         value={cfg.priceLabel}
-                        placeholder="Ej. Desde $1,200"
+                        placeholder="Precio visible"
                         onChange={(e) => updateService(service.id, { priceLabel: e.target.value })}
                       />
                     </label>
-                    <label>
-                      <span>Anticipo MXN</span>
+                    <label className="adm-svc-apple__field adm-svc-apple__field--deposit">
+                      <span>Anticipo</span>
                       <input
                         type="number"
-                        className="adm-svc-apple__input adm-svc-apple__input--short"
+                        className="adm-svc-apple__input"
                         placeholder="250"
                         min="0"
                         value={cfg.depositMxn}
@@ -128,16 +126,16 @@ const AdminServicesTab = ({ settings, setSettings, onSave, saveMsg }) => {
                       />
                     </label>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      ))}
+                );
+              })}
+            </div>
+          </section>
+        ))}
 
-      {!categories.size ? (
-        <p className="adm-apple-empty">No hay servicios que coincidan con tu búsqueda</p>
-      ) : null}
+        {!categories.size ? (
+          <p className="adm-apple-empty">No hay servicios que coincidan con tu búsqueda</p>
+        ) : null}
+      </div>
     </div>
   );
 };

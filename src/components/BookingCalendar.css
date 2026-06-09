@@ -366,6 +366,13 @@
   color: var(--text-muted);
 }
 
+.bk-service-card__deposit {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--secondary);
+  letter-spacing: 0.02em;
+}
+
 /* ─── Calendario de fechas ─── */
 
 .bk-cal {
@@ -769,6 +776,46 @@
   color: var(--secondary);
   text-decoration: underline;
   cursor: pointer;
+}
+
+.bk-result__code {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 auto 1rem;
+  max-width: 20rem;
+}
+
+.bk-result__code-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.bk-result__code-value {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--primary);
+  background: rgba(14, 33, 56, 0.05);
+  border: 1px dashed rgba(184, 153, 104, 0.55);
+  border-radius: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.bk-result__code-value:hover {
+  background: rgba(184, 153, 104, 0.12);
+  border-color: var(--secondary);
+}
+
+.bk-result__code-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
 }
 
 /* ─── Responsive ─── */

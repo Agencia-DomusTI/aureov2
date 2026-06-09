@@ -1,5 +1,32 @@
+import { deleteGhlAppointment } from '../_shared/ghl.ts';
 import { deleteCalendarEvent } from '../_shared/google.ts';
 import { createServiceClient, handleCors, json, verifyAdmin } from '../_shared/utils.ts';
+
+async function removeExternalBooking(
+  supabase: ReturnType<typeof createServiceClient>,
+  booking: { event_id?: string | null; ghl_appointment_id?: string | null },
+) {
+  const results = { google: false, ghl: false };
+
+  if (booking.event_id) {
+    try {
+      await deleteCalendarEvent(supabase, booking.event_id);
+      results.google = true;
+    } catch (err) {
+      console.error('Google delete:', err);
+    }
+  }
+
+  if (booking.ghl_appointment_id) {
+    const ghlResult = await deleteGhlAppointment(booking.ghl_appointment_id);
+    results.ghl = ghlResult.deleted;
+    if (!ghlResult.deleted) {
+      console.error('GHL delete:', ghlResult.reason);
+    }
+  }
+
+  return results;
+}
 
 Deno.serve(async (req) => {
   const cors = handleCors(req);
@@ -41,30 +68,37 @@ Deno.serve(async (req) => {
         return json({ error: 'Reserva no encontrada' }, 404);
       }
 
-      if (booking.event_id) {
-        await deleteCalendarEvent(supabase, booking.event_id).catch((err) => {
-          console.error('Google delete:', err);
-        });
-      }
-
+      const external = await removeExternalBooking(supabase, booking);
       await supabase.from('bookings').delete().eq('id', id);
-      return json({ success: true, message: 'Cita eliminada' });
+
+      return json({
+        success: true,
+        message: 'Cita eliminada',
+        removed: external,
+      });
     }
 
     if (source === 'google') {
-      await deleteCalendarEvent(supabase, id);
-
       const { data: linked } = await supabase
         .from('bookings')
-        .select('id')
+        .select('*')
         .eq('event_id', id)
         .maybeSingle();
+
+      const external = await removeExternalBooking(supabase, {
+        event_id: id,
+        ghl_appointment_id: linked?.ghl_appointment_id,
+      });
 
       if (linked) {
         await supabase.from('bookings').delete().eq('id', linked.id);
       }
 
-      return json({ success: true, message: 'Cita eliminada de Google Calendar' });
+      return json({
+        success: true,
+        message: 'Cita eliminada de Google Calendar y GHL',
+        removed: external,
+      });
     }
 
     return json({ error: 'source inválido' }, 400);

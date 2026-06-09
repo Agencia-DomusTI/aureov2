@@ -1,3 +1,4 @@
+import { DEFAULT_DEPOSIT_MXN } from '../_shared/booking.ts';
 import { createServiceClient, getClinicSettings, handleCors, json, verifyAdmin } from '../_shared/utils.ts';
 import { isStripeConfigured } from '../_shared/stripe.ts';
 
@@ -42,7 +43,7 @@ Deno.serve(async (req) => {
       slot_interval_minutes: body.slotIntervalMinutes ?? current.slotIntervalMinutes,
       buffer_minutes: body.bufferMinutes ?? current.bufferMinutes,
       payment_url: body.paymentUrl ?? current.paymentUrl,
-      deposit_amount_mxn: body.depositAmountMxn ?? current.depositAmountMxn,
+      deposit_amount_mxn: body.depositAmountMxn ?? current.depositAmountMxn ?? DEFAULT_DEPOSIT_MXN,
       services_config: body.servicesConfig ?? current.servicesConfig,
       updated_at: new Date().toISOString(),
     }).eq('id', 1);
