@@ -7,6 +7,7 @@ import Services from './components/Services';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import FloatingWhatsApp from './components/FloatingWhatsApp';
+import ChatAssistant from './components/ChatAssistant';
 import AdminPanel from './pages/AdminPanel';
 
 function PublicSite() {
@@ -21,6 +22,7 @@ function PublicSite() {
         <Services />
         <Contact />
       </main>
+      <ChatAssistant />
       <FloatingWhatsApp />
       <Footer />
     </div>

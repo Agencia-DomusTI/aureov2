@@ -264,15 +264,10 @@ const AdminPanel = () => {
           <AdminCalendarTab
             status={status}
             statusError={statusError}
-            urlConnected={urlConnected}
-            urlError={urlError}
-            oauthCallbackUrl={oauthCallbackUrl}
             weekOffset={weekOffset}
             weeks={weeks}
             refreshing={refreshing}
             deletingId={deletingId}
-            onConnect={connectCalendar}
-            onDisconnect={disconnectCalendar}
             onRangeChange={handleRangeChange}
             onRefresh={handleRefresh}
             onDelete={handleDeleteBooking}
@@ -295,6 +290,8 @@ const AdminPanel = () => {
             onSave={saveSettingsHandler}
             saveMsg={saveMsg}
             status={status}
+            urlConnected={urlConnected}
+            urlError={urlError}
             oauthCallbackUrl={oauthCallbackUrl}
             onConnect={connectCalendar}
             onDisconnect={disconnectCalendar}

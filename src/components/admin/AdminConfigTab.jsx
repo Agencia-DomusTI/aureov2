@@ -6,6 +6,8 @@ const AdminConfigTab = ({
   onSave,
   saveMsg,
   status,
+  urlConnected,
+  urlError,
   oauthCallbackUrl,
   onConnect,
   onDisconnect,
@@ -27,6 +29,9 @@ const AdminConfigTab = ({
         <h2>Configuración</h2>
         <p>Horarios, pagos y conexiones del consultorio.</p>
       </header>
+
+      {urlConnected === '1' ? <p className="admin-toast admin-toast--ok">✓ Calendario conectado</p> : null}
+      {urlError ? <p className="admin-toast admin-toast--err">Error: {decodeURIComponent(urlError)}</p> : null}
 
       <form onSubmit={onSave} className="adm-config__sections">
         <section className="adm-config__block">

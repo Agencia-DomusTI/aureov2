@@ -56,15 +56,10 @@ function EventRow({ apt, deletingId, onDelete }) {
 const AdminCalendarTab = ({
   status,
   statusError,
-  urlConnected,
-  urlError,
-  oauthCallbackUrl,
   weekOffset = 0,
   weeks = 2,
   refreshing = false,
   deletingId = null,
-  onConnect,
-  onDisconnect,
   onRangeChange,
   onRefresh,
   onDelete,
@@ -99,8 +94,6 @@ const AdminCalendarTab = ({
     return mid?.monthLabel ?? status?.rangeLabel ?? '';
   }, [weekDays, status?.rangeLabel]);
 
-  const topService = status?.topServices?.[0];
-
   const handleDelete = (apt) => {
     const label = apt.subtitle ? `${apt.title} — ${apt.subtitle}` : apt.title;
     if (!window.confirm(`¿Eliminar la cita de ${label}?\n\nSe quitará del calendario.`)) return;
@@ -114,27 +107,7 @@ const AdminCalendarTab = ({
 
   return (
     <div className="adm-dash adm-dash--apple">
-      {urlConnected === '1' ? <p className="admin-toast admin-toast--ok">✓ Calendario conectado</p> : null}
-      {urlError ? <p className="admin-toast admin-toast--err">Error: {decodeURIComponent(urlError)}</p> : null}
       {statusError ? <p className="admin-toast admin-toast--err">{statusError}</p> : null}
-
-      <div className="adm-apple-summary">
-        <div className="adm-apple-chip">
-          <span className="adm-apple-chip__val">{status?.stats?.today ?? '—'}</span>
-          <span className="adm-apple-chip__lbl">Hoy</span>
-        </div>
-        <div className="adm-apple-chip">
-          <span className="adm-apple-chip__val">{status?.stats?.range ?? '—'}</span>
-          <span className="adm-apple-chip__lbl">En periodo</span>
-        </div>
-        {topService ? (
-          <div className="adm-apple-chip adm-apple-chip--wide">
-            <span className="adm-apple-chip__lbl">Más solicitado</span>
-            <span className="adm-apple-chip__val adm-apple-chip__val--text">{topService.name}</span>
-            <span className="adm-apple-chip__sub">{topService.count} citas</span>
-          </div>
-        ) : null}
-      </div>
 
       <section className="adm-apple-cal">
         <header className="adm-apple-cal__head">
@@ -318,49 +291,6 @@ const AdminCalendarTab = ({
           </aside>
         </div>
       </section>
-
-      <div className="adm-apple-footer">
-        <section className="adm-apple-card">
-          <h4>Servicios populares</h4>
-          {!status?.topServices?.length ? (
-            <p className="adm-muted">Aún no hay suficientes datos</p>
-          ) : (
-            <ul className="adm-apple-rank">
-              {status.topServices.map((s, i) => (
-                <li key={s.name}>
-                  <span className="adm-apple-rank__pos">{i + 1}</span>
-                  <span className="adm-apple-rank__name">{s.name}</span>
-                  <span className="adm-apple-rank__count">{s.count}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section className="adm-apple-card">
-          <h4>Google Calendar</h4>
-          <div className={`adm-gcal ${status?.calendar?.connected ? 'adm-gcal--on' : ''}`}>
-            <span className="adm-gcal__dot" />
-            <div className="adm-gcal__info">
-              <strong>{status?.calendar?.connected ? 'Conectado' : 'Sin conectar'}</strong>
-              <p>{status?.calendar?.connected ? status.calendar.email : 'Sincroniza citas automáticamente'}</p>
-            </div>
-            {status?.calendar?.connected ? (
-              <button type="button" className="adm-gcal__btn" onClick={onDisconnect}>Desconectar</button>
-            ) : status?.googleOAuthReady ? (
-              <button type="button" className="adm-gcal__btn adm-gcal__btn--primary" onClick={onConnect}>Conectar</button>
-            ) : (
-              <span className="adm-muted">Faltan credenciales</span>
-            )}
-          </div>
-          {!status?.calendar?.connected ? (
-            <details className="gcal-help gcal-help--compact">
-              <summary>Configurar OAuth</summary>
-              <p className="adm-muted"><code>{oauthCallbackUrl}</code></p>
-            </details>
-          ) : null}
-        </section>
-      </div>
     </div>
   );
 };
