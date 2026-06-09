@@ -36,13 +36,8 @@ export async function verifyAdminToken(token: string) {
 }
 
 export async function verifyAdminRequest(req: Request, supabase: SupabaseClient) {
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) throw new Error('No autorizado');
-
-  const token = authHeader.slice(7);
-  if (token.startsWith('eyJ') === false && token.length < 40) {
-    throw new Error('No autorizado');
-  }
+  const token = req.headers.get('X-Admin-Token');
+  if (!token) throw new Error('No autorizado');
 
   const admin = await verifyAdminToken(token);
   const { data: user } = await supabase

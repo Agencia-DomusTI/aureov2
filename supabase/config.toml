@@ -39,9 +39,34 @@ enable_confirmations = false
 enabled = true
 verify_jwt = false
 import_map = "./functions/hello-world/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/hello-world/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/hello-world/*.html" ]
+
+[functions.admin-login]
+verify_jwt = false
+
+[functions.admin-me]
+verify_jwt = false
+
+[functions.admin-dashboard]
+verify_jwt = false
+
+[functions.admin-settings]
+verify_jwt = false
+
+[functions.admin-google-auth]
+verify_jwt = false
+
+[functions.admin-google-disconnect]
+verify_jwt = false
+
+[functions.admin-google-callback]
+verify_jwt = false
+
+[functions.booking-config]
+verify_jwt = false
+
+[functions.availability]
+verify_jwt = false
+
+[functions.create-booking]
+verify_jwt = false

@@ -25,7 +25,8 @@ async function adminRequest(functionName, { method = 'GET', body, params } = {})
     method,
     headers: {
       apikey: supabaseAnonKey,
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${supabaseAnonKey}`,
+      'X-Admin-Token': token,
       'Content-Type': 'application/json',
     },
     body: body ? JSON.stringify(body) : undefined,

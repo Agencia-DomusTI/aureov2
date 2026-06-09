@@ -37,6 +37,7 @@ const AdminPanel = () => {
   const [status, setStatus] = useState(null);
   const [settings, setSettings] = useState(null);
   const [saveMsg, setSaveMsg] = useState('');
+  const [statusError, setStatusError] = useState('');
 
   const urlParams = new URLSearchParams(window.location.search);
   const urlError = urlParams.get('error');
@@ -45,8 +46,13 @@ const AdminPanel = () => {
   const supabaseReady = isSupabaseConfigured();
 
   const loadStatus = useCallback(async () => {
-    const data = await getAdminDashboard();
-    setStatus(data);
+    try {
+      setStatusError('');
+      const data = await getAdminDashboard();
+      setStatus(data);
+    } catch (err) {
+      setStatusError(err.message || 'No se pudo cargar el panel');
+    }
   }, []);
 
   const loadSettings = useCallback(async () => {
@@ -230,6 +236,9 @@ const AdminPanel = () => {
             {urlError ? (
               <p className="admin-error">Error: {decodeURIComponent(urlError)}</p>
             ) : null}
+            {statusError ? (
+              <p className="admin-error">{statusError}</p>
+            ) : null}
 
             {status?.calendar?.connected ? (
               <div className="admin-calendar-status admin-calendar-status--connected">
@@ -256,11 +265,11 @@ const AdminPanel = () => {
                   <button type="button" className="btn-primary admin-connect" onClick={connectCalendar}>
                     Conectar Google Calendar
                   </button>
-                ) : (
+                ) : status ? (
                   <p className="admin-error admin-error--inline">
                     Agrega GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en Supabase → Edge Functions → Secrets.
                   </p>
-                )}
+                ) : null}
               </div>
             )}
 
