@@ -24,7 +24,7 @@ async function verifyStripeSignature(
     false,
     ['sign'],
   );
-  const mac = await crypto.subtle.sign('raw', key, new TextEncoder().encode(signed));
+  const mac = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signed));
   const expected = [...new Uint8Array(mac)].map((b) => b.toString(16).padStart(2, '0')).join('');
   return expected === signature;
 }
