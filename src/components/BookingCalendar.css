@@ -551,6 +551,50 @@
   box-shadow: 0 4px 14px rgba(14, 33, 56, 0.2);
 }
 
+/* ─── Confirm step ─── */
+
+.bk-confirm-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.15rem;
+  margin-bottom: 1.25rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, rgba(14, 33, 56, 0.04), rgba(184, 153, 104, 0.1));
+  border: 1px solid rgba(184, 153, 104, 0.25);
+}
+
+.bk-confirm-summary__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  font-size: 0.82rem;
+}
+
+.bk-confirm-summary__row span {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.bk-confirm-summary__row strong {
+  color: var(--primary);
+  text-align: right;
+  font-weight: 600;
+}
+
+.bk-cta--confirm {
+  font-size: 1rem;
+  padding: 0.95rem 1.5rem;
+}
+
+.bk-result__wa-hint {
+  font-size: 0.85rem;
+  color: var(--secondary);
+  margin: -0.5rem auto 1rem;
+  max-width: 22rem;
+}
+
 /* ─── Form ─── */
 
 .bk-form-card {

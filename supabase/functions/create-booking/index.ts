@@ -1,5 +1,6 @@
 import { createServiceClient, getClinicSettings, handleCors, json } from '../_shared/utils.ts';
 import { createCalendarEvent, fetchBusyPeriods, isGoogleConnected } from '../_shared/google.ts';
+import { syncBookingToGhl } from '../_shared/ghl.ts';
 import { createDepositCheckout } from '../_shared/stripe.ts';
 
 const BUFFER_MS = 10 * 60 * 1000;
@@ -51,6 +52,8 @@ Deno.serve(async (req) => {
 
   try {
     const event = await createCalendarEvent(supabase, body);
+    const ghlSync = await syncBookingToGhl({ service, start, end, patient });
+
     const { data: bookingRow } = await supabase.from('bookings').insert({
       event_id: event.id,
       service,
@@ -61,6 +64,8 @@ Deno.serve(async (req) => {
       patient_phone: patient.phone,
       patient_email: patient.email || null,
       patient_notes: patient.notes || null,
+      ghl_contact_id: ghlSync.contactId ?? null,
+      ghl_appointment_id: ghlSync.appointmentId ?? null,
     }).select('id').single();
 
     const settings = await getClinicSettings(supabase);
@@ -79,14 +84,15 @@ Deno.serve(async (req) => {
 
     const paymentNote = paymentUrl
       ? ' Completa el anticipo en línea para confirmar.'
-      : ' Te contactaremos para confirmar tu cita.';
+      : ' Recibirás confirmación por WhatsApp en breve.';
 
     return json({
       success: true,
       eventId: event.id,
       paymentUrl,
       depositAmountMxn: deposit,
-      message: `Tu cita de ${service} quedó registrada.${paymentNote}`,
+      ghlSynced: ghlSync.synced,
+      message: `¡Tu cita de ${service} quedó confirmada!${paymentNote}`,
     });
   } catch (err) {
     return json({ success: false, message: (err as Error).message }, 500);

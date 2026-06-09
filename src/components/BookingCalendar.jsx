@@ -258,8 +258,13 @@ const BookingCalendar = () => {
           <div className="bk-result__ring">
             <span className="bk-result__icon">{result.type === 'success' ? '✓' : '!'}</span>
           </div>
-          <h3>{result.type === 'success' ? '¡Cita solicitada!' : 'Confirma por WhatsApp'}</h3>
+          <h3>{result.type === 'success' ? '¡Cita confirmada!' : 'Confirma por WhatsApp'}</h3>
           <p>{result.message}</p>
+          {result.type === 'success' ? (
+            <p className="bk-result__wa-hint">
+              Te enviaremos un mensaje de confirmación al WhatsApp que indicaste.
+            </p>
+          ) : null}
           {selectedService && selectedSlot ? (
             <div className="bk-result__card">
               <strong>{selectedService.name}</strong>
@@ -484,9 +489,24 @@ const BookingCalendar = () => {
         {step === 3 && selectedService && selectedSlot && (
           <form className="bk-panel bk-form" key="details" onSubmit={handleSubmit}>
             <header className="bk-panel__head">
-              <h3>Tus datos</h3>
-              <p>Último paso para confirmar tu cita.</p>
+              <h3>Confirma tu cita</h3>
+              <p>Último paso — te contactamos por WhatsApp al confirmar.</p>
             </header>
+
+            <div className="bk-confirm-summary">
+              <div className="bk-confirm-summary__row">
+                <span>Servicio</span>
+                <strong>{selectedService.name}</strong>
+              </div>
+              <div className="bk-confirm-summary__row">
+                <span>Fecha</span>
+                <strong className="bk-panel__capitalize">{formatDateLabel(selectedDate)}</strong>
+              </div>
+              <div className="bk-confirm-summary__row">
+                <span>Horario</span>
+                <strong>{selectedSlot.label} · {selectedService.durationLabel}</strong>
+              </div>
+            </div>
 
             <div className="bk-form-card">
               <div className="bk-form-row">
@@ -538,8 +558,8 @@ const BookingCalendar = () => {
 
             <footer className="bk-panel__foot bk-panel__foot--split">
               <button type="button" className="bk-back" onClick={() => setStep(2)}>← Horario</button>
-              <button type="submit" className="btn-primary bk-cta" disabled={submitting}>
-                {submitting ? 'Reservando…' : 'Confirmar cita'}
+              <button type="submit" className="btn-primary bk-cta bk-cta--confirm" disabled={submitting}>
+                {submitting ? 'Confirmando…' : 'Confirmar mi cita'}
               </button>
             </footer>
           </form>
