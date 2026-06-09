@@ -1,49 +1,50 @@
 import { createClient } from '@supabase/supabase-js';
 
-export const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-export const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+export const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, '') ?? '';
+export const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY ?? '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase: faltan VITE_SUPABASE_URL o VITE_SUPABASE_ANON_KEY');
 }
 
-export const supabase = createClient(supabaseUrl ?? '', supabaseAnonKey ?? '');
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
 
 export function isSupabaseConfigured() {
   return Boolean(supabaseUrl && supabaseAnonKey);
 }
 
+function assertConfigured() {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase no configurado en el sitio');
+  }
+}
+
 /** Invoca Edge Functions públicas (booking) */
 export async function invokeFunction(name, options = {}) {
-  const url = `${supabaseUrl}/functions/v1/${name}`;
-  const res = await fetch(url, {
+  assertConfigured();
+
+  const { data, error } = await supabase.functions.invoke(name, {
     method: options.method ?? 'POST',
+    body: options.body ?? undefined,
     headers: {
-      apikey: supabaseAnonKey,
-      Authorization: `Bearer ${supabaseAnonKey}`,
       'Content-Type': 'application/json',
     },
-    body: options.body ? JSON.stringify(options.body) : undefined,
   });
 
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || data.message || `Error ${res.status}`);
+  if (error) {
+    throw new Error(error.message || `Error al llamar ${name}`);
+  }
+
+  if (data?.error) {
+    throw new Error(data.error);
+  }
+
   return data;
 }
 
-/** GET público con query params */
+/** Consulta pública — usa POST para evitar bloqueos CORS en GET */
 export async function fetchFunction(name, params = {}) {
-  const qs = new URLSearchParams(params).toString();
-  const url = `${supabaseUrl}/functions/v1/${name}${qs ? `?${qs}` : ''}`;
-
-  const res = await fetch(url, {
-    headers: {
-      apikey: supabaseAnonKey,
-      Authorization: `Bearer ${supabaseAnonKey}`,
-    },
-  });
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || data.message || `Error ${res.status}`);
-  return data;
+  return invokeFunction(name, { method: 'POST', body: params });
 }

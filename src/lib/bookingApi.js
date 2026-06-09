@@ -2,7 +2,7 @@ import { adminFetch, adminInvoke } from './adminAuth';
 import { fetchFunction, invokeFunction } from './supabase';
 
 export async function getBookingConfig() {
-  return invokeFunction('booking-config', { method: 'GET' });
+  return invokeFunction('booking-config', { method: 'POST', body: {} });
 }
 
 export async function getAvailability(date, durationMinutes) {
