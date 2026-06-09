@@ -7,7 +7,13 @@ import {
   saveAdminSettings,
   startGoogleConnect,
 } from '../lib/bookingApi';
-import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import {
+  adminLogin,
+  adminMe,
+  adminSetup,
+  clearAdminToken,
+  isSupabaseConfigured,
+} from '../lib/adminAuth';
 import './AdminPanel.css';
 
 const TABS = [
@@ -32,6 +38,12 @@ const AdminPanel = () => {
   const [status, setStatus] = useState(null);
   const [settings, setSettings] = useState(null);
   const [saveMsg, setSaveMsg] = useState('');
+  const [setupMode, setSetupMode] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('setup') === '1';
+  });
+  const [setupSecret, setSetupSecret] = useState('');
+  const [adminName, setAdminName] = useState('');
 
   const urlParams = new URLSearchParams(window.location.search);
   const urlError = urlParams.get('error');
@@ -55,23 +67,16 @@ const AdminPanel = () => {
       return;
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setAuthenticated(Boolean(session));
-      if (session) {
-        loadStatus();
-        loadSettings();
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthenticated(Boolean(session));
-      if (session) {
-        loadStatus();
-        loadSettings();
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    adminMe()
+      .then((session) => {
+        const ok = Boolean(session?.authenticated);
+        setAuthenticated(ok);
+        if (ok) {
+          loadStatus();
+          loadSettings();
+        }
+      })
+      .catch(() => setAuthenticated(false));
   }, [supabaseReady, loadStatus, loadSettings]);
 
   const handleLogin = async (e) => {
@@ -79,8 +84,8 @@ const AdminPanel = () => {
     setLoginError('');
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      await adminLogin(email, password);
+      setAuthenticated(true);
       setPassword('');
       await loadStatus();
       await loadSettings();
@@ -91,8 +96,26 @@ const AdminPanel = () => {
     }
   };
 
+  const handleSetup = async (e) => {
+    e.preventDefault();
+    setLoginError('');
+    setLoading(true);
+    try {
+      await adminSetup({ email, password, name: adminName, setupSecret });
+      setAuthenticated(true);
+      setPassword('');
+      setSetupSecret('');
+      await loadStatus();
+      await loadSettings();
+    } catch (err) {
+      setLoginError(err.message || 'Error al crear administrador');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    clearAdminToken();
     setAuthenticated(false);
     setStatus(null);
   };
@@ -154,6 +177,53 @@ const AdminPanel = () => {
             <p className="admin-error">
               Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en Cloudflare Pages.
             </p>
+          ) : setupMode ? (
+            <form onSubmit={handleSetup}>
+              <p className="admin-setup-note">Crea el primer administrador del panel.</p>
+              <label htmlFor="admin-name">Nombre</label>
+              <input
+                id="admin-name"
+                type="text"
+                value={adminName}
+                onChange={(e) => setAdminName(e.target.value)}
+                placeholder="Dr. Demetrio"
+              />
+              <label htmlFor="admin-email">Email</label>
+              <input
+                id="admin-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@aureoclinique.com"
+                required
+              />
+              <label htmlFor="admin-pass">Contraseña</label>
+              <input
+                id="admin-pass"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Mínimo 8 caracteres"
+                minLength={8}
+                required
+              />
+              <label htmlFor="setup-secret">Clave de configuración</label>
+              <input
+                id="setup-secret"
+                type="password"
+                value={setupSecret}
+                onChange={(e) => setSetupSecret(e.target.value)}
+                placeholder="ADMIN_SETUP_SECRET de Supabase"
+                required
+              />
+              {loginError ? <p className="admin-error">{loginError}</p> : null}
+              <button type="submit" className="btn-primary" disabled={loading}>
+                {loading ? 'Creando…' : 'Crear administrador'}
+              </button>
+              <button type="button" className="admin-toggle-mode" onClick={() => setSetupMode(false)}>
+                Ya tengo cuenta → Iniciar sesión
+              </button>
+            </form>
           ) : (
             <form onSubmit={handleLogin}>
               <label htmlFor="admin-email">Email</label>
@@ -177,6 +247,9 @@ const AdminPanel = () => {
               {loginError ? <p className="admin-error">{loginError}</p> : null}
               <button type="submit" className="btn-primary" disabled={loading}>
                 {loading ? 'Entrando…' : 'Entrar'}
+              </button>
+              <button type="button" className="admin-toggle-mode" onClick={() => setSetupMode(true)}>
+                Primera vez → Crear administrador
               </button>
             </form>
           )}
@@ -269,7 +342,9 @@ const AdminPanel = () => {
             <div className="admin-steps">
               <h3>¿Primera vez?</h3>
               <ol>
-                <li>Crea usuario admin en Supabase → Authentication → Users</li>
+                <li>Ejecuta el SQL de <code>admin_users</code> en Supabase SQL Editor</li>
+                <li>Configura secrets: ADMIN_JWT_SECRET y ADMIN_SETUP_SECRET</li>
+                <li>Despliega funciones: admin-login, admin-setup, admin-me</li>
                 <li>Google Cloud: activa Calendar API y crea OAuth (Aplicación web)</li>
                 <li>URI de redirección: <code>{oauthCallbackUrl}</code></li>
                 <li>Supabase → Project Settings → Edge Functions → Secrets: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SITE_URL</li>

@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { verifyAdminRequest } from './adminAuth.ts';
 
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -59,16 +60,6 @@ export async function getClinicSettings(supabase: SupabaseClient) {
 }
 
 export async function verifyAdmin(req: Request) {
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) throw new Error('No autorizado');
-
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_ANON_KEY')!,
-    { global: { headers: { Authorization: authHeader } } },
-  );
-
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) throw new Error('No autorizado');
-  return user;
+  const supabase = createServiceClient();
+  return verifyAdminRequest(req, supabase);
 }

@@ -1,7 +1,8 @@
+import { adminFetch, adminInvoke } from './adminAuth';
 import { fetchFunction, invokeFunction } from './supabase';
 
 export async function getBookingConfig() {
-  return invokeFunction('booking-config');
+  return invokeFunction('booking-config', { method: 'GET' });
 }
 
 export async function getAvailability(date, durationMinutes) {
@@ -13,21 +14,21 @@ export async function createBooking(payload) {
 }
 
 export async function getAdminDashboard() {
-  return invokeFunction('admin-dashboard');
+  return adminInvoke('admin-dashboard');
 }
 
 export async function getAdminSettings() {
-  return fetchFunction('admin-settings');
+  return adminFetch('admin-settings');
 }
 
 export async function saveAdminSettings(settings) {
-  return invokeFunction('admin-settings', { method: 'PUT', body: settings });
+  return adminInvoke('admin-settings', { method: 'PUT', body: settings });
 }
 
 export async function startGoogleConnect() {
-  return invokeFunction('admin-google-auth');
+  return adminInvoke('admin-google-auth');
 }
 
 export async function disconnectGoogleCalendar() {
-  return invokeFunction('admin-google-disconnect', { method: 'POST' });
+  return adminInvoke('admin-google-disconnect', { method: 'POST' });
 }
