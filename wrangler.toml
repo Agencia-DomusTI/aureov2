@@ -1,4 +1,4 @@
-# Frontend en Cloudflare Pages — solo build estático
-name = "aureo-clinique"
-compatibility_date = "2024-01-01"
-pages_build_output_dir = "dist"
+# wrangler.toml
+name = 'aureov2'
+compatibility_date = '2024-01-01'
+pages_build_output_dir = 'dist'
