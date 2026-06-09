@@ -1832,6 +1832,15 @@
   color: #7a5f2e;
 }
 
+.adm-event--pending .adm-event__stripe {
+  background: #d97706;
+}
+
+.adm-event--pending .adm-event__badge {
+  background: rgba(217, 119, 6, 0.15);
+  color: #b45309;
+}
+
 .adm-event__title {
   font-size: 0.86rem;
   font-weight: 600;

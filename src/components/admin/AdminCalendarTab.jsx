@@ -406,7 +406,13 @@ const AdminCalendarTab = ({
                     <button
                       key={aptKey(apt)}
                       type="button"
-                      className={`adm-event adm-event--${apt.source}`}
+                      className={[
+                        'adm-event',
+                        `adm-event--${apt.source}`,
+                        apt.source === 'site' && apt.paymentStatus === 'pending' && !apt.depositPaid
+                          ? 'adm-event--pending'
+                          : '',
+                      ].filter(Boolean).join(' ')}
                       onClick={() => setModalApt(apt)}
                     >
                       <span className="adm-event__stripe" aria-hidden />
@@ -414,7 +420,11 @@ const AdminCalendarTab = ({
                         <span className="adm-event__top">
                           <span className="adm-event__time">{formatTimeRange(apt.start, apt.end)}</span>
                           <span className="adm-event__badge">
-                            {apt.source === 'google' ? 'Google' : 'Sitio'}
+                            {apt.source === 'google'
+                              ? 'Google'
+                              : apt.paymentStatus === 'pending' && !apt.depositPaid
+                                ? 'Pago pendiente'
+                                : 'Sitio'}
                           </span>
                         </span>
                         <span className="adm-event__title">{apt.title}</span>

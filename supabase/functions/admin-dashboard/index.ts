@@ -95,12 +95,11 @@ Deno.serve(async (req) => {
     supabase.from('bookings').select('service'),
   ]);
 
-  // Solo se muestran las reservas con anticipo pagado o sin costo.
-  // Las pendientes (nunca pagaron) no deben aparecer en el panel.
-  const isVisibleBooking = (b: { paymentStatus?: unknown }) => b.paymentStatus !== 'pending';
-
-  const bookings = (bookingsRes.data ?? []).map(mapBooking).filter(isVisibleBooking);
-  const rangeBookings = (rangeBookingsRes.data ?? []).map(mapBooking).filter(isVisibleBooking);
+  // En el panel admin se muestran TODAS las reservas del sitio (incluso con
+  // anticipo pendiente) para que siempre se vea teléfono, email y código.
+  // El evento duplicado de Google se oculta vía isGoogleDuplicate.
+  const bookings = (bookingsRes.data ?? []).map(mapBooking);
+  const rangeBookings = (rangeBookingsRes.data ?? []).map(mapBooking);
 
   let googleEvents: Array<{ id: string; title: string; start: string; end: string; source: string }> = [];
   if (calendar.connected) {
