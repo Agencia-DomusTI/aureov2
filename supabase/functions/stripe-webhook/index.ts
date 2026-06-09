@@ -1,4 +1,5 @@
 import { createServiceClient, handleCors, json } from '../_shared/utils.ts';
+import { sendBookingConfirmationEmail } from '../_shared/email.ts';
 
 async function verifyStripeSignature(
   payload: string,
@@ -64,10 +65,43 @@ Deno.serve(async (req) => {
       stripe_session_id: session.id as string,
     };
 
+    let booking: Record<string, unknown> | null = null;
+
     if (metadata?.booking_id) {
-      await supabase.from('bookings').update(update).eq('id', metadata.booking_id);
+      const { data } = await supabase
+        .from('bookings')
+        .update(update)
+        .eq('id', metadata.booking_id)
+        .select('*')
+        .maybeSingle();
+      booking = data;
     } else if (typeof session.client_reference_id === 'string') {
-      await supabase.from('bookings').update(update).eq('confirmation_code', session.client_reference_id);
+      const { data } = await supabase
+        .from('bookings')
+        .update(update)
+        .eq('confirmation_code', session.client_reference_id)
+        .select('*')
+        .maybeSingle();
+      booking = data;
+    }
+
+    if (booking) {
+      const customerEmail =
+        (booking.patient_email as string | null) ||
+        ((session.customer_details as Record<string, unknown> | undefined)?.email as string | undefined) ||
+        (session.customer_email as string | undefined) ||
+        null;
+
+      await sendBookingConfirmationEmail({
+        service: booking.service as string,
+        startAt: booking.start_at as string,
+        endAt: booking.end_at as string,
+        patientName: booking.patient_name as string,
+        patientEmail: customerEmail,
+        confirmationCode: booking.confirmation_code as string,
+        depositAmountMxn: booking.deposit_amount_mxn as number | null,
+        paid: true,
+      });
     }
   }
 

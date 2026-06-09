@@ -2,6 +2,7 @@ import { createServiceClient, getClinicSettings, handleCors, json } from '../_sh
 import { createCalendarEvent, fetchBusyPeriods, isGoogleConnected } from '../_shared/google.ts';
 import { syncBookingToGhl } from '../_shared/ghl.ts';
 import { createDepositCheckout, isStripeConfigured } from '../_shared/stripe.ts';
+import { sendBookingConfirmationEmail } from '../_shared/email.ts';
 import { createUniqueConfirmationCode, getServiceDeposit, isServiceActive } from '../_shared/booking.ts';
 
 const BUFFER_MS = 10 * 60 * 1000;
@@ -124,6 +125,20 @@ Deno.serve(async (req) => {
       } else if (settings.paymentUrl) {
         paymentUrl = settings.paymentUrl;
       }
+    }
+
+    // Sin anticipo requerido: la cita queda confirmada de inmediato → correo.
+    if (!paymentRequired && patient.email) {
+      await sendBookingConfirmationEmail({
+        service,
+        startAt: start,
+        endAt: end,
+        patientName: patient.name,
+        patientEmail: patient.email,
+        confirmationCode,
+        depositAmountMxn: deposit,
+        paid: false,
+      });
     }
 
     const message = paymentRequired && paymentUrl
