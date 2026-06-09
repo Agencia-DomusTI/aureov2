@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { BOOKING_CONFIG } from '../constants/booking';
+import AdminCalendarTab from '../components/admin/AdminCalendarTab';
+import AdminConfigTab from '../components/admin/AdminConfigTab';
+import AdminServicesTab from '../components/admin/AdminServicesTab';
 import {
   disconnectGoogleCalendar,
   getAdminDashboard,
@@ -17,14 +19,15 @@ import './AdminPanel.css';
 
 const TABS = [
   { id: 'calendario', label: 'Calendario' },
-  { id: 'horarios', label: 'Horarios' },
-  { id: 'reservas', label: 'Reservas' },
-  { id: 'pagos', label: 'Pagos' },
+  { id: 'servicios', label: 'Servicios' },
+  { id: 'configuracion', label: 'Configuración' },
 ];
 
 function getTabFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  return params.get('tab') || 'calendario';
+  const tab = params.get('tab');
+  if (tab === 'horarios' || tab === 'reservas' || tab === 'pagos') return 'configuracion';
+  return tab || 'calendario';
 }
 
 const AdminPanel = () => {
@@ -117,26 +120,16 @@ const AdminPanel = () => {
   };
 
   const saveSettingsHandler = async (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
     setSaveMsg('');
     try {
       await saveAdminSettings(settings);
-      setSaveMsg('Configuración guardada');
+      setSaveMsg('Guardado correctamente');
+      await loadStatus();
       setTimeout(() => setSaveMsg(''), 3000);
     } catch (err) {
       setSaveMsg(err.message || 'Error al guardar');
     }
-  };
-
-  const updateScheduleWindow = (dayKey, index, field, value) => {
-    setSettings((prev) => {
-      const schedule = { ...prev.schedule };
-      const windows = [...schedule[dayKey]];
-      windows[index] = [...windows[index]];
-      windows[index][field === 'start' ? 0 : 1] = parseInt(value, 10);
-      schedule[dayKey] = windows;
-      return { ...prev, schedule };
-    });
   };
 
   const oauthCallbackUrl = import.meta.env.VITE_SUPABASE_URL
@@ -197,7 +190,7 @@ const AdminPanel = () => {
           <img src="/logosin.png" alt="" className="admin-header__logo" />
           <div>
             <strong>Áureo Clinique</strong>
-            <span>Panel Admin · Supabase</span>
+            <span>Panel Admin</span>
           </div>
         </div>
         <div className="admin-header__actions">
@@ -221,205 +214,39 @@ const AdminPanel = () => {
         ))}
       </nav>
 
-      <main className="admin-main">
+      <main className="admin-main admin-main--wide">
         {tab === 'calendario' && (
-          <section className="admin-card admin-card--calendar">
-            {urlConnected === '1' ? (
-              <p className="admin-toast admin-toast--ok">✓ Calendario conectado correctamente</p>
-            ) : null}
-            {urlError ? (
-              <p className="admin-toast admin-toast--err">Error: {decodeURIComponent(urlError)}</p>
-            ) : null}
-            {statusError ? (
-              <p className="admin-toast admin-toast--err">{statusError}</p>
-            ) : null}
-
-            <div className={`gcal-card ${status?.calendar?.connected ? 'gcal-card--on' : 'gcal-card--off'}`}>
-              <div className="gcal-card__top">
-                <div className="gcal-card__brand">
-                  <span className="gcal-card__icon" aria-hidden>
-                    <svg viewBox="0 0 24 24" width="28" height="28">
-                      <rect x="3" y="4" width="18" height="17" rx="2" fill="#fff" stroke="#4285F4" strokeWidth="1.5" />
-                      <rect x="3" y="4" width="18" height="5" fill="#4285F4" />
-                      <circle cx="8" cy="14" r="2" fill="#34A853" />
-                      <circle cx="12" cy="14" r="2" fill="#FBBC05" />
-                      <circle cx="16" cy="14" r="2" fill="#EA4335" />
-                    </svg>
-                  </span>
-                  <div>
-                    <h2>Google Calendar</h2>
-                    <span className={`gcal-badge ${status?.calendar?.connected ? 'gcal-badge--on' : 'gcal-badge--off'}`}>
-                      {status?.calendar?.connected ? 'Conectado' : 'Sin conectar'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {status?.calendar?.connected ? (
-                <>
-                  <div className="gcal-card__body">
-                    <p className="gcal-card__email">{status.calendar.email}</p>
-                    <p className="gcal-card__meta">
-                      Sincronizado desde {new Date(status.calendar.connectedAt).toLocaleDateString('es-MX', {
-                        day: 'numeric', month: 'long', year: 'numeric',
-                      })}
-                    </p>
-                    <p className="gcal-card__hint">
-                      Las citas del sitio se agregan automáticamente y no se empalman con otras reservas.
-                    </p>
-                  </div>
-                  <button type="button" className="gcal-btn gcal-btn--ghost" onClick={disconnectCalendar}>
-                    Desconectar
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="gcal-card__body">
-                    <p className="gcal-card__hint">
-                      Conecta el calendario del doctor para sincronizar las reservas del sitio en tiempo real.
-                    </p>
-                  </div>
-                  {status?.googleOAuthReady ? (
-                    <button type="button" className="gcal-btn gcal-btn--google" onClick={connectCalendar}>
-                      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden>
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                      </svg>
-                      Conectar con Google
-                    </button>
-                  ) : status ? (
-                    <p className="admin-toast admin-toast--err admin-toast--inline">
-                      Faltan credenciales de Google en Supabase.
-                    </p>
-                  ) : null}
-                </>
-              )}
-            </div>
-
-            {!status?.calendar?.connected ? (
-              <details className="gcal-help">
-                <summary>¿Primera vez configurando?</summary>
-                <ol>
-                  <li>Activa Calendar API en Google Cloud</li>
-                  <li>URI de redirección: <code>{oauthCallbackUrl}</code></li>
-                  <li>Secrets en Supabase: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SITE_URL</li>
-                </ol>
-              </details>
-            ) : null}
-          </section>
+          <AdminCalendarTab
+            status={status}
+            statusError={statusError}
+            urlConnected={urlConnected}
+            urlError={urlError}
+            oauthCallbackUrl={oauthCallbackUrl}
+            onConnect={connectCalendar}
+            onDisconnect={disconnectCalendar}
+          />
         )}
 
-        {tab === 'horarios' && settings && (
-          <section className="admin-card">
-            <h2>Horarios de atención</h2>
-            <p className="admin-card__lead">Hora Ciudad de México (CDMX). Los cambios aplican al calendario público de inmediato.</p>
-            <form onSubmit={saveSettingsHandler}>
-              <div className="admin-schedule-grid">
-                <div className="admin-schedule-block">
-                  <h3>Lunes – Viernes</h3>
-                  {settings.schedule.weekday.map((win, i) => (
-                    <div key={`wd-${i}`} className="admin-time-row">
-                      <input type="number" min="0" max="23" value={win[0]} onChange={(e) => updateScheduleWindow('weekday', i, 'start', e.target.value)} /> :
-                      <input type="number" min="0" max="59" value="0" disabled className="admin-time-min" />
-                      <span>a</span>
-                      <input type="number" min="0" max="23" value={win[1]} onChange={(e) => updateScheduleWindow('weekday', i, 'end', e.target.value)} /> h
-                    </div>
-                  ))}
-                </div>
-                <div className="admin-schedule-block">
-                  <h3>Sábado</h3>
-                  {settings.schedule.saturday.map((win, i) => (
-                    <div key={`sat-${i}`} className="admin-time-row">
-                      <input type="number" min="0" max="23" value={win[0]} onChange={(e) => updateScheduleWindow('saturday', i, 'start', e.target.value)} /> :
-                      <input type="number" min="0" max="59" value="0" disabled className="admin-time-min" />
-                      <span>a</span>
-                      <input type="number" min="0" max="23" value={win[1]} onChange={(e) => updateScheduleWindow('saturday', i, 'end', e.target.value)} /> h
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <label className="admin-label">Resumen visible en el sitio</label>
-              <input
-                className="admin-input"
-                value={settings.scheduleSummary ?? BOOKING_CONFIG.scheduleSummary}
-                onChange={(e) => setSettings({ ...settings, scheduleSummary: e.target.value })}
-              />
-              <div className="admin-row-2">
-                <div>
-                  <label className="admin-label">Intervalo entre citas (min)</label>
-                  <input
-                    type="number"
-                    className="admin-input"
-                    min="5"
-                    max="60"
-                    value={settings.slotIntervalMinutes ?? 15}
-                    onChange={(e) => setSettings({ ...settings, slotIntervalMinutes: parseInt(e.target.value, 10) })}
-                  />
-                </div>
-                <div>
-                  <label className="admin-label">Buffer entre citas (min)</label>
-                  <input
-                    type="number"
-                    className="admin-input"
-                    min="0"
-                    max="60"
-                    value={settings.bufferMinutes ?? 10}
-                    onChange={(e) => setSettings({ ...settings, bufferMinutes: parseInt(e.target.value, 10) })}
-                  />
-                </div>
-              </div>
-              <p className="admin-muted">Domingo: solo con cita previa (WhatsApp).</p>
-              <button type="submit" className="btn-primary">Guardar horarios</button>
-              {saveMsg ? <p className="admin-success">{saveMsg}</p> : null}
-            </form>
-          </section>
+        {tab === 'servicios' && settings && (
+          <AdminServicesTab
+            settings={settings}
+            setSettings={setSettings}
+            onSave={saveSettingsHandler}
+            saveMsg={saveMsg}
+          />
         )}
 
-        {tab === 'reservas' && (
-          <section className="admin-card">
-            <h2>Reservas recientes</h2>
-            {!status?.bookings?.length ? (
-              <p className="admin-muted">Aún no hay reservas registradas desde el sitio.</p>
-            ) : (
-              <div className="admin-bookings">
-                {status.bookings.map((b) => (
-                  <article key={b.id} className="admin-booking-item">
-                    <strong>{b.service}</strong>
-                    <span>{b.patient?.name} · {b.patient?.phone}</span>
-                    <span>
-                      {new Date(b.start).toLocaleString('es-MX', {
-                        weekday: 'short', day: 'numeric', month: 'short',
-                        hour: 'numeric', minute: '2-digit', timeZone: 'America/Mexico_City',
-                      })}
-                    </span>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-
-        {tab === 'pagos' && settings && (
-          <section className="admin-card">
-            <h2>Link de pago</h2>
-            <p className="admin-card__lead">
-              URL de pago en línea (LeadConnector, Stripe, etc.) que se comparte tras confirmar la cita.
-            </p>
-            <form onSubmit={saveSettingsHandler}>
-              <label className="admin-label">URL de pago</label>
-              <input
-                className="admin-input"
-                type="url"
-                placeholder="https://..."
-                value={settings.paymentUrl ?? ''}
-                onChange={(e) => setSettings({ ...settings, paymentUrl: e.target.value })}
-              />
-              <button type="submit" className="btn-primary">Guardar</button>
-              {saveMsg ? <p className="admin-success">{saveMsg}</p> : null}
-            </form>
-          </section>
+        {tab === 'configuracion' && settings && (
+          <AdminConfigTab
+            settings={settings}
+            setSettings={setSettings}
+            onSave={saveSettingsHandler}
+            saveMsg={saveMsg}
+            status={status}
+            oauthCallbackUrl={oauthCallbackUrl}
+            onConnect={connectCalendar}
+            onDisconnect={disconnectCalendar}
+          />
         )}
       </main>
     </div>

@@ -46,7 +46,14 @@ export function createServiceClient() {
 
 export async function getClinicSettings(supabase: SupabaseClient) {
   const { data } = await supabase.from('clinic_settings').select('*').eq('id', 1).single();
-  if (!data) return { ...DEFAULT_SCHEDULE, paymentUrl: '' };
+  if (!data) {
+    return {
+      ...DEFAULT_SCHEDULE,
+      paymentUrl: '',
+      depositAmountMxn: 250,
+      servicesConfig: {} as Record<string, unknown>,
+    };
+  }
   return {
     timezone: data.timezone ?? DEFAULT_SCHEDULE.timezone,
     timezoneLabel: DEFAULT_SCHEDULE.timezoneLabel,
@@ -57,6 +64,8 @@ export async function getClinicSettings(supabase: SupabaseClient) {
     schedule: data.schedule ?? DEFAULT_SCHEDULE.schedule,
     scheduleSummary: data.schedule_summary ?? DEFAULT_SCHEDULE.scheduleSummary,
     paymentUrl: data.payment_url ?? '',
+    depositAmountMxn: data.deposit_amount_mxn ?? 250,
+    servicesConfig: (data.services_config ?? {}) as Record<string, { priceLabel?: string; active?: boolean; depositMxn?: number }>,
   };
 }
 

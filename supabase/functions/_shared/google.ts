@@ -168,6 +168,43 @@ export async function createCalendarEvent(
   return res.json();
 }
 
+export async function fetchCalendarEvents(
+  supabase: SupabaseClient,
+  timeMin: string,
+  timeMax: string,
+) {
+  const auth = await refreshAccessToken(supabase);
+  if (!auth) return [];
+
+  const params = new URLSearchParams({
+    timeMin,
+    timeMax,
+    singleEvents: 'true',
+    orderBy: 'startTime',
+    maxResults: '100',
+  });
+
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(auth.calendarId)}/events?${params}`,
+    { headers: { Authorization: `Bearer ${auth.token}` } },
+  );
+
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.items ?? []).map((ev: {
+    id: string;
+    summary?: string;
+    start?: { dateTime?: string; date?: string };
+    end?: { dateTime?: string; date?: string };
+  }) => ({
+    id: ev.id,
+    title: ev.summary ?? 'Sin título',
+    start: ev.start?.dateTime ?? ev.start?.date,
+    end: ev.end?.dateTime ?? ev.end?.date,
+    source: 'google' as const,
+  }));
+}
+
 export async function getCalendarStatus(supabase: SupabaseClient) {
   const stored = await getStoredConnection(supabase);
   if (!stored?.refresh_token) return { connected: false };

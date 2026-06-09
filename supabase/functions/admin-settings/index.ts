@@ -1,4 +1,5 @@
 import { createServiceClient, getClinicSettings, handleCors, json, verifyAdmin } from '../_shared/utils.ts';
+import { isStripeConfigured } from '../_shared/stripe.ts';
 
 Deno.serve(async (req) => {
   const cors = handleCors(req);
@@ -20,6 +21,9 @@ Deno.serve(async (req) => {
       slotIntervalMinutes: settings.slotIntervalMinutes,
       bufferMinutes: settings.bufferMinutes,
       paymentUrl: settings.paymentUrl,
+      depositAmountMxn: settings.depositAmountMxn,
+      servicesConfig: settings.servicesConfig,
+      stripeReady: isStripeConfigured(),
     });
   }
 
@@ -38,11 +42,25 @@ Deno.serve(async (req) => {
       slot_interval_minutes: body.slotIntervalMinutes ?? current.slotIntervalMinutes,
       buffer_minutes: body.bufferMinutes ?? current.bufferMinutes,
       payment_url: body.paymentUrl ?? current.paymentUrl,
+      deposit_amount_mxn: body.depositAmountMxn ?? current.depositAmountMxn,
+      services_config: body.servicesConfig ?? current.servicesConfig,
       updated_at: new Date().toISOString(),
     }).eq('id', 1);
 
     const updated = await getClinicSettings(supabase);
-    return json({ success: true, settings: updated });
+    return json({
+      success: true,
+      settings: {
+        schedule: updated.schedule,
+        scheduleSummary: updated.scheduleSummary,
+        slotIntervalMinutes: updated.slotIntervalMinutes,
+        bufferMinutes: updated.bufferMinutes,
+        paymentUrl: updated.paymentUrl,
+        depositAmountMxn: updated.depositAmountMxn,
+        servicesConfig: updated.servicesConfig,
+        stripeReady: isStripeConfigured(),
+      },
+    });
   }
 
   return json({ error: 'Method not allowed' }, 405);

@@ -1,5 +1,6 @@
 import { createServiceClient, getClinicSettings, handleCors, json } from '../_shared/utils.ts';
 import { createCalendarEvent, fetchBusyPeriods, isGoogleConnected } from '../_shared/google.ts';
+import { createDepositCheckout } from '../_shared/stripe.ts';
 
 const BUFFER_MS = 10 * 60 * 1000;
 
@@ -50,7 +51,7 @@ Deno.serve(async (req) => {
 
   try {
     const event = await createCalendarEvent(supabase, body);
-    await supabase.from('bookings').insert({
+    const { data: bookingRow } = await supabase.from('bookings').insert({
       event_id: event.id,
       service,
       duration_minutes: durationMinutes,
@@ -60,17 +61,31 @@ Deno.serve(async (req) => {
       patient_phone: patient.phone,
       patient_email: patient.email || null,
       patient_notes: patient.notes || null,
-    });
+    }).select('id').single();
 
     const settings = await getClinicSettings(supabase);
-    const paymentNote = settings.paymentUrl
-      ? ' Recibirás el link de pago por WhatsApp.'
-      : ' Te contactaremos para confirmar y compartir el link de pago.';
+    const serviceOverride = settings.servicesConfig?.[service];
+    const deposit = serviceOverride?.depositMxn ?? settings.depositAmountMxn ?? 250;
+
+    let paymentUrl = settings.paymentUrl || null;
+    if (!paymentUrl && bookingRow?.id) {
+      paymentUrl = await createDepositCheckout({
+        amountMxn: deposit,
+        serviceName: service,
+        patientName: patient.name,
+        bookingId: bookingRow.id,
+      });
+    }
+
+    const paymentNote = paymentUrl
+      ? ' Completa el anticipo en línea para confirmar.'
+      : ' Te contactaremos para confirmar tu cita.';
 
     return json({
       success: true,
       eventId: event.id,
-      paymentUrl: settings.paymentUrl || null,
+      paymentUrl,
+      depositAmountMxn: deposit,
       message: `Tu cita de ${service} quedó registrada.${paymentNote}`,
     });
   } catch (err) {

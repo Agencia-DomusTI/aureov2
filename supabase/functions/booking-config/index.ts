@@ -6,5 +6,16 @@ Deno.serve(async (req) => {
 
   const supabase = createServiceClient();
   const config = await getClinicSettings(supabase);
-  return json(config);
+  return json({
+    timezone: config.timezone,
+    timezoneLabel: config.timezoneLabel,
+    slotIntervalMinutes: config.slotIntervalMinutes,
+    bufferMinutes: config.bufferMinutes,
+    minAdvanceHours: config.minAdvanceHours,
+    maxAdvanceDays: config.maxAdvanceDays,
+    schedule: config.schedule,
+    scheduleSummary: config.scheduleSummary,
+    depositAmountMxn: config.depositAmountMxn,
+    servicesConfig: config.servicesConfig,
+  });
 });

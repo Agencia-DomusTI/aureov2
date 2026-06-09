@@ -72,7 +72,18 @@ const BookingCalendar = () => {
   const [result, setResult] = useState(null);
   const [form, setForm] = useState({ name: '', phone: '', email: '', notes: '' });
 
-  const selectedService = services.find((s) => s.id === serviceId);
+  const servicesConfig = bookingConfig.servicesConfig ?? {};
+
+  const visibleServices = useMemo(() => {
+    return services
+      .filter((s) => servicesConfig[s.id]?.active !== false)
+      .map((s) => ({
+        ...s,
+        price: servicesConfig[s.id]?.priceLabel ?? s.price,
+      }));
+  }, [services, servicesConfig]);
+
+  const selectedService = visibleServices.find((s) => s.id === serviceId);
   const todayStr = getTodayInMexico(bookingConfig);
 
   const monthDays = useMemo(
@@ -93,11 +104,11 @@ const BookingCalendar = () => {
 
   const filteredServices = useMemo(() => {
     const q = serviceSearch.trim().toLowerCase();
-    if (!q) return services;
-    return services.filter(
+    if (!q) return visibleServices;
+    return visibleServices.filter(
       (s) => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q),
     );
-  }, [services, serviceSearch]);
+  }, [visibleServices, serviceSearch]);
 
   const servicesByCategory = useMemo(() => {
     const groups = new Map();
@@ -172,6 +183,7 @@ const BookingCalendar = () => {
           type: 'success',
           message: data.message,
           paymentUrl: data.paymentUrl,
+          depositAmountMxn: data.depositAmountMxn,
         });
         setStep(4);
         return;
@@ -257,7 +269,7 @@ const BookingCalendar = () => {
           ) : null}
           {result.paymentUrl ? (
             <a href={result.paymentUrl} className="btn-primary bk-result__btn" target="_blank" rel="noopener noreferrer">
-              Completar pago
+              Pagar anticipo{result.depositAmountMxn ? ` · $${result.depositAmountMxn} MXN` : ''}
             </a>
           ) : null}
           {result.waHref ? (
