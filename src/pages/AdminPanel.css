@@ -2431,20 +2431,57 @@
 .adm-svc-apple__list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.65rem;
 }
 
 .adm-svc-apple__banner strong {
   color: var(--primary);
 }
 
-.adm-svc-apple__section h3 {
-  font-size: 0.68rem;
+.adm-svc-apple__section {
+  padding: 0;
+  margin: 0;
+}
+
+.adm-svc-apple__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.35rem 0.15rem 0.4rem;
+  border-bottom: 1px solid rgba(14, 33, 56, 0.06);
+  margin-bottom: 0.35rem;
+}
+
+.adm-svc-apple__section-title h3 {
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
+  color: var(--primary);
+  margin: 0;
+}
+
+.adm-svc-apple__section-title span {
+  display: block;
+  font-size: 0.68rem;
   color: var(--text-muted);
-  margin: 0 0 0.25rem;
+  margin-top: 0.1rem;
+}
+
+.adm-svc-apple__cat-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.adm-svc-apple__cat-toggle-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .adm-svc-apple__table {
@@ -2455,8 +2492,8 @@
 
 .adm-svc-apple__thead {
   display: grid;
-  grid-template-columns: 2.85rem 1fr 11rem 7.5rem;
-  gap: 0.65rem;
+  grid-template-columns: 2.4rem 1fr 5.5rem 10rem 7.5rem;
+  gap: 0.5rem;
   padding: 0.2rem 0.75rem 0.3rem;
   font-size: 0.58rem;
   font-weight: 700;
@@ -2474,10 +2511,10 @@
 
 .adm-svc-apple__row {
   display: grid;
-  grid-template-columns: 2.85rem 1fr 11rem 7.5rem;
-  gap: 0.65rem;
+  grid-template-columns: 2.4rem 1fr 5.5rem 10rem 7.5rem;
+  gap: 0.5rem;
   align-items: center;
-  padding: 0.5rem 0.75rem;
+  padding: 0.45rem 0.75rem;
   background: #fff;
   border-bottom: 1px solid rgba(14, 33, 56, 0.05);
 }
@@ -2507,16 +2544,9 @@
   line-height: 1.3;
 }
 
-.adm-svc-apple__text > span:first-of-type {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  margin-top: 0.1rem;
-  display: block;
-}
-
 .adm-svc-apple__status {
   display: inline-block;
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
   font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -2541,6 +2571,24 @@
   height: 1.55rem;
   flex-shrink: 0;
   cursor: pointer;
+}
+
+.adm-ios-toggle--sm {
+  width: 2.35rem;
+  height: 1.35rem;
+}
+
+.adm-ios-toggle--sm span::after {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.adm-ios-toggle--sm input:checked + span::after {
+  transform: translateX(1rem);
+}
+
+.adm-ios-toggle.is-mixed span {
+  background: rgba(217, 119, 6, 0.45);
 }
 
 .adm-ios-toggle input {
@@ -2622,6 +2670,22 @@
   font-variant-numeric: tabular-nums;
 }
 
+.adm-svc-apple__input--duration {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.adm-svc-apple__field--duration {
+  min-width: 0;
+}
+
+.adm-svc-apple__duration-hint {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.2;
+}
+
 .adm-svc-apple__input:focus {
   outline: none;
   border-color: var(--secondary);
@@ -2700,6 +2764,7 @@
     gap: 0.5rem;
   }
 
+  .adm-svc-apple__field--duration,
   .adm-svc-apple__field--price,
   .adm-svc-apple__field--deposit {
     grid-column: 2;

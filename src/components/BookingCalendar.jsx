@@ -5,6 +5,7 @@ import { confirmPayment, createBooking, getAvailability, getBookingConfig } from
 import { getAllBookableServices } from '../utils/bookableServices';
 import { useServicesConfig } from '../hooks/useServicesConfig';
 import { formatDepositLabel, getDepositForService } from '../utils/deposit';
+import { withServiceConfigOverrides } from '../utils/serviceConfig';
 import { filterActiveServices } from '../utils/serviceVisibility';
 import {
   clearHashQuery,
@@ -89,10 +90,9 @@ const BookingCalendar = () => {
   const { servicesConfig, ready: servicesConfigReady } = useServicesConfig();
 
   const visibleServices = useMemo(() => {
-    return filterActiveServices(services, servicesConfig).map((s) => ({
-      ...s,
-      price: servicesConfig[s.id]?.priceLabel ?? s.price,
-    }));
+    return filterActiveServices(services, servicesConfig).map((s) =>
+      withServiceConfigOverrides(s, servicesConfig),
+    );
   }, [services, servicesConfig]);
 
   useEffect(() => {
