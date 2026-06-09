@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CLINICS } from '../constants/clinics';
+import { createPortal } from 'react-dom';
 import { SERVICE_DURATIONS, formatDuration } from '../constants/booking';
 import { SERVICE_PROMOTIONS, servicesData } from '../constants/services';
-import { useReveal } from '../hooks/useReveal';
 import { useServicesConfig } from '../hooks/useServicesConfig';
+import { navigateToBooking } from '../utils/bookingNavigation';
 import { isServiceActive } from '../utils/serviceVisibility';
 import OptimizedImage from './OptimizedImage';
 import './Services.css';
@@ -17,7 +17,6 @@ function collageModifier(indexInList, expanded) {
 }
 
 const Services = () => {
-  const revealRef = useReveal();
   const [activeTab, setActiveTab] = useState('estetica');
   const [selectedService, setSelectedService] = useState(null);
   const [expanded, setExpanded] = useState(false);
@@ -30,9 +29,9 @@ const Services = () => {
   }, [servicesConfig]);
 
   const items = useMemo(() => {
-    return servicesData[activeTab].items.filter((item) =>
-      isServiceActive(item.name, servicesConfig),
-    );
+    const category = servicesData[activeTab];
+    if (!category) return [];
+    return category.items.filter((item) => isServiceActive(item.name, servicesConfig));
   }, [activeTab, servicesConfig]);
 
   useEffect(() => {
@@ -45,7 +44,7 @@ const Services = () => {
   const remaining = Math.max(0, items.length - PREVIEW_COUNT);
 
   return (
-    <section className="services scroll-reveal" id="servicios" ref={revealRef}>
+    <section className="services" id="servicios">
       <div className="container">
         <div className="services-header">
           <span className="subtitle">Nuestros tratamientos</span>
@@ -75,7 +74,9 @@ const Services = () => {
 
         <div
           className={`services-collage ${expanded ? 'services-collage--expanded' : ''} ${
-            items.length <= PREVIEW_COUNT ? 'services-collage--few' : ''
+            !expanded && items.length > 0 && items.length <= PREVIEW_COUNT
+              ? `services-collage--count-${items.length}`
+              : ''
           }`}
           key={activeTab}
         >
@@ -141,53 +142,57 @@ const Services = () => {
         </div>
       </div>
 
-      {selectedService && (
-        <div
-          className="modal-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
-          onClick={() => setSelectedService(null)}
-        >
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button type="button" className="close-modal" onClick={() => setSelectedService(null)}>
-              ×
-            </button>
-            <div className="modal-grid">
-              <div className="modal-image">
-                <OptimizedImage
-                  src={selectedService.img}
-                  alt={selectedService.name}
-                  loading="eager"
-                  sizes="(max-width: 768px) 100vw, 480px"
-                />
-              </div>
-              <div className="modal-text">
-                <span className="subtitle">{servicesData[activeTab].title}</span>
-                <h2 id="modal-title">{selectedService.name}</h2>
-                {selectedService.price ? (
-                  <p className="modal-price">{selectedService.price}</p>
-                ) : null}
-                {SERVICE_DURATIONS[selectedService.name] ? (
-                  <p className="modal-duration">
-                    Duración: {formatDuration(SERVICE_DURATIONS[selectedService.name])}
-                  </p>
-                ) : null}
-                <p>{selectedService.desc}</p>
-                <a
-                  href={`https://wa.me/${CLINICS.qro.phoneWa}?text=${encodeURIComponent(`Hola Áureo Clinique, me gustaría agendar una valoración para el servicio de ${selectedService.name}.`)}`}
-                  className="btn-primary"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setSelectedService(null)}
-                >
-                  Agendar valoración
-                </a>
+      {selectedService &&
+        createPortal(
+          <div
+            className="modal-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
+            onClick={() => setSelectedService(null)}
+          >
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <button type="button" className="close-modal" onClick={() => setSelectedService(null)}>
+                ×
+              </button>
+              <div className="modal-grid">
+                <div className="modal-image">
+                  <OptimizedImage
+                    src={selectedService.img}
+                    alt={selectedService.name}
+                    loading="eager"
+                    sizes="(max-width: 768px) 100vw, 480px"
+                  />
+                </div>
+                <div className="modal-text">
+                  <span className="subtitle">{servicesData[activeTab]?.title}</span>
+                  <h2 id="modal-title">{selectedService.name}</h2>
+                  {selectedService.price ? (
+                    <p className="modal-price">{selectedService.price}</p>
+                  ) : null}
+                  {SERVICE_DURATIONS[selectedService.name] ? (
+                    <p className="modal-duration">
+                      Duración: {formatDuration(SERVICE_DURATIONS[selectedService.name])}
+                    </p>
+                  ) : null}
+                  <p>{selectedService.desc}</p>
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={() => {
+                      const name = selectedService.name;
+                      setSelectedService(null);
+                      navigateToBooking(name);
+                    }}
+                  >
+                    Agendar valoración
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </section>
   );
 };

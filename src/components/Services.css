@@ -174,10 +174,32 @@
   min-height: 210px;
 }
 
-/* Pocas fichas en la pestaña · cierra huecos inferiores */
-.services-collage--few .service-card--c4 {
+/* Pocas fichas activas · reacomoda el collage sin huecos */
+.services-collage--count-1 .service-card--c1 {
   grid-column: 1 / -1;
+  grid-row: auto;
+}
+
+.services-collage--count-2 .service-card--c1 {
+  grid-column: 1 / span 4;
+  grid-row: 1 / span 2;
+}
+
+.services-collage--count-2 .service-card--c2 {
+  grid-column: 5 / span 2;
+  grid-row: 1 / span 2;
+  min-height: clamp(260px, 36vw, 380px);
+}
+
+.services-collage--count-4 .service-card--c4 {
+  grid-column: 3 / -1;
+  grid-row: 3;
   min-height: 220px;
+}
+
+.services-collage--count-5 .service-card--c5 {
+  grid-column: 3 / -1;
+  grid-row: 3;
 }
 
 .services-collage--expanded {

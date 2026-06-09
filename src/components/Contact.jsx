@@ -1,5 +1,4 @@
 import { CLINICS } from '../constants/clinics';
-import { useReveal } from '../hooks/useReveal';
 import BookingCalendar from './BookingCalendar';
 import './Contact.css';
 
@@ -7,10 +6,8 @@ const { qro, gdl } = CLINICS;
 const gdlWhatsAppHref = `https://wa.me/${gdl.phoneWa}?text=${encodeURIComponent('Hola Áureo Clinique Zapopan, me gustaría agendar una valoración.')}`;
 
 const Contact = () => {
-  const revealRef = useReveal();
-
   return (
-    <section className="contact scroll-reveal" id="contacto" ref={revealRef}>
+    <section className="contact" id="contacto">
       <div className="container contact-container">
         <div className="contact-info">
           <span className="subtitle">Contacto</span>

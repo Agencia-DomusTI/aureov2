@@ -9,6 +9,11 @@ export function useReveal(options = {}) {
     const el = ref.current;
     if (!el) return;
 
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight * 0.94 && rect.bottom > 0) {
+      el.classList.add('is-visible');
+    }
+
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {

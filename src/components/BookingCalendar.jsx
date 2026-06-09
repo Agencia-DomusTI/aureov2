@@ -147,6 +147,28 @@ const BookingCalendar = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (!servicesConfigReady) return;
+
+    const applyServiceFromHash = () => {
+      const params = parseHashParams();
+      if (!params.servicio) return;
+
+      const name = decodeURIComponent(params.servicio);
+      const match = visibleServices.find((s) => s.id === name || s.name === name);
+      if (!match) return;
+
+      setServiceId(match.id);
+      setServiceSearch('');
+      setStep(1);
+      clearHashQuery();
+    };
+
+    applyServiceFromHash();
+    window.addEventListener('hashchange', applyServiceFromHash);
+    return () => window.removeEventListener('hashchange', applyServiceFromHash);
+  }, [servicesConfigReady, visibleServices]);
+
   const filteredServices = useMemo(() => {
     const q = serviceSearch.trim().toLowerCase();
     if (!q) return visibleServices;
