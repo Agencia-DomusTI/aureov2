@@ -1,38 +1,12 @@
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const MODEL = 'llama-3.3-70b-versatile';
+import { fetchFunction } from './supabase.js';
 
 export function isGroqConfigured() {
-  return Boolean(import.meta.env.VITE_GROQ_API_KEY?.trim());
+  return Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
 }
 
 export async function sendGroqMessage(messages) {
-  const apiKey = import.meta.env.VITE_GROQ_API_KEY?.trim();
-  if (!apiKey) {
-    throw new Error('El asistente no está configurado. Agrega VITE_GROQ_API_KEY.');
-  }
-
-  const res = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      messages,
-      temperature: 0.2,
-      max_tokens: 280,
-      top_p: 0.85,
-      frequency_penalty: 0.3,
-    }),
-  });
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(data?.error?.message || `Error del asistente (${res.status})`);
-  }
-
-  const reply = data?.choices?.[0]?.message?.content?.trim();
-  if (!reply) throw new Error('No hubo respuesta del asistente.');
-  return reply;
+  const data = await fetchFunction('chat-assistant', { messages });
+  if (data?.error) throw new Error(data.error);
+  if (!data?.reply) throw new Error('No hubo respuesta del asistente.');
+  return data.reply;
 }

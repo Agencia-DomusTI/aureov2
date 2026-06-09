@@ -2,10 +2,13 @@ import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-
 import { DEFAULT_DEPOSIT_MXN } from './booking.ts';
 import { verifyAdminRequest } from './adminAuth.ts';
 
+const SITE_URL = (Deno.env.get('SITE_URL') ?? 'https://aureoclinique.com').replace(/\/$/, '');
+
 export const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': SITE_URL,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-admin-token',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+  'Vary': 'Origin',
 };
 
 export function json(data: unknown, status = 200) {

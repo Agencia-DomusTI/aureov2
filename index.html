@@ -2,18 +2,134 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ─── Favicon & app icons ─── -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+    <meta name="theme-color" content="#b89a6a" />
+
+    <!-- ─── Primary SEO ─── -->
+    <title>Aureo Clinique | Medicina Estética y Regenerativa — Querétaro y Zapopan</title>
+    <meta name="description" content="Aureo Clinique: medicina estética, regenerativa y wellness en Querétaro y Zapopan. Tratamientos médicos seguros y personalizados. Agenda tu valoración en línea." />
+    <meta name="keywords" content="medicina estética Querétaro, tratamientos faciales, rejuvenecimiento, bienestar integral, medicina regenerativa, Aureo Clinique, Zapopan" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="author" content="Aureo Clinique" />
+    <link rel="canonical" href="https://aureoclinique.com/" />
+
+    <!-- ─── Open Graph ─── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_MX" />
+    <meta property="og:url" content="https://aureoclinique.com/" />
+    <meta property="og:site_name" content="Aureo Clinique" />
+    <meta property="og:title" content="Aureo Clinique | Medicina Estética y Regenerativa" />
+    <meta property="og:description" content="Medicina estética, regenerativa y wellness en Querétaro y Zapopan. Tratamientos médicos seguros y personalizados. Agenda tu valoración en línea." />
+    <meta property="og:image" content="https://aureoclinique.com/AUREO.webp" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Aureo Clinique — Medicina Estética y Regenerativa" />
+
+    <!-- ─── Twitter / X Card ─── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Aureo Clinique | Medicina Estética y Regenerativa" />
+    <meta name="twitter:description" content="Medicina estética, regenerativa y wellness en Querétaro y Zapopan. Agenda tu valoración en línea." />
+    <meta name="twitter:image" content="https://aureoclinique.com/AUREO.webp" />
+
+    <!-- ─── Preconnect ─── -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://pqnyzlvwlkwvhgpcchxm.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="https://checkout.stripe.com" />
+
+    <!-- ─── Fonts ─── -->
     <link
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Aureo Clinique | Medicina Estética y Regenerativa</title>
-    <meta name="description" content="Aureo Clinique promueve la salud, la belleza y el bienestar integral a través de tratamientos médicos seguros y personalizados." />
+
+    <!-- ─── Critical image preload ─── -->
     <link rel="preload" as="image" href="/AUREO.webp" type="image/webp" fetchpriority="high" />
+
+    <!-- ─── Structured data: MedicalBusiness ─── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": ["MedicalBusiness", "LocalBusiness"],
+          "@id": "https://aureoclinique.com/#clinica-queretaro",
+          "name": "Aureo Clinique Querétaro",
+          "description": "Clínica de medicina estética, regenerativa y wellness en Querétaro. Tratamientos médicos seguros y personalizados.",
+          "url": "https://aureoclinique.com",
+          "logo": "https://aureoclinique.com/logo.png",
+          "image": "https://aureoclinique.com/AUREO.webp",
+          "telephone": "+524427217377",
+          "email": "aureoqro@gmail.com",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Av. Paseo de las Pitahayas No. 55, Local 217, Plaza Xentric Anáhuac, Zibatá",
+            "addressLocality": "El Marqués",
+            "addressRegion": "Querétaro",
+            "addressCountry": "MX"
+          },
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+              "opens": "10:00",
+              "closes": "14:00"
+            },
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+              "opens": "16:00",
+              "closes": "19:00"
+            },
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Saturday"],
+              "opens": "10:00",
+              "closes": "14:00"
+            }
+          ],
+          "sameAs": [
+            "https://www.instagram.com/aureoclinique_qro"
+          ],
+          "priceRange": "$$",
+          "medicalSpecialty": ["Dermatology", "PlasticSurgery"],
+          "hasMap": "https://maps.google.com/?q=Plaza+Xentric+Anahuac+Zibata+Queretaro"
+        },
+        {
+          "@type": ["MedicalBusiness", "LocalBusiness"],
+          "@id": "https://aureoclinique.com/#clinica-zapopan",
+          "name": "Aureo Clinique Zapopan",
+          "description": "Clínica de medicina estética y regenerativa en Zapopan, Jalisco.",
+          "url": "https://aureoclinique.com",
+          "telephone": "+523327847251",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Av. William Shakespeare 4978, Patria Universidad",
+            "addressLocality": "Zapopan",
+            "addressRegion": "Jalisco",
+            "postalCode": "45119",
+            "addressCountry": "MX"
+          },
+          "sameAs": [
+            "https://www.instagram.com/aureoclinique_gdl"
+          ],
+          "priceRange": "$$"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://aureoclinique.com/#website",
+          "url": "https://aureoclinique.com",
+          "name": "Aureo Clinique",
+          "description": "Medicina estética, regenerativa y wellness",
+          "inLanguage": "es-MX"
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

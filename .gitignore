@@ -25,4 +25,4 @@ dist-ssr
 .vercel
 
 .env
-.env.example
+# .env.example is intentionally tracked (no real secrets, only placeholders)

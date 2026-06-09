@@ -39,11 +39,13 @@ Deno.serve(async (req) => {
     }
 
     if (!user || !user.is_active) {
+      await new Promise((r) => setTimeout(r, 1000));
       return json({ error: 'Credenciales incorrectas' }, 401);
     }
 
     const valid = await verifyPassword(password, user.password_hash);
     if (!valid) {
+      await new Promise((r) => setTimeout(r, 1000));
       return json({ error: 'Credenciales incorrectas' }, 401);
     }
 
