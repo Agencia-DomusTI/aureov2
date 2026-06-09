@@ -601,6 +601,34 @@
   color: var(--secondary);
 }
 
+.adm-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.adm-view-toggle {
+  display: flex;
+  gap: 0.35rem;
+  align-self: flex-end;
+}
+
+.adm-view-toggle button {
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--white);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.adm-view-toggle button.is-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--bg-soft);
+}
+
 .adm-week {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -699,6 +727,103 @@
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
+}
+
+.adm-agenda--timeline {
+  min-height: 320px;
+}
+
+.adm-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--line);
+}
+
+.adm-timeline__row {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  border-bottom: 1px solid rgba(14, 33, 56, 0.06);
+  align-items: start;
+  padding: 0.35rem 0;
+}
+
+.adm-timeline__hour {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  padding-top: 0.35rem;
+}
+
+.adm-timeline__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-height: 2rem;
+}
+
+.adm-timeline__free {
+  display: block;
+  height: 1px;
+}
+
+.adm-timeline__event {
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.5rem;
+  border-left: 3px solid var(--secondary);
+  background: rgba(184, 153, 104, 0.1);
+}
+
+.adm-timeline__event--google {
+  border-left-color: #4285F4;
+  background: rgba(66, 133, 244, 0.08);
+}
+
+.adm-timeline__event time {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.15rem;
+}
+
+.adm-timeline__event strong {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--primary);
+}
+
+.adm-timeline__event span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.adm-week-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.adm-week-list__day h4 {
+  font-size: 0.88rem;
+  text-transform: capitalize;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.adm-week-list__day h4.is-today {
+  color: var(--secondary);
+}
+
+.adm-sync-note {
+  margin-top: 0.65rem;
+  font-size: 0.78rem;
 }
 
 .adm-apt {

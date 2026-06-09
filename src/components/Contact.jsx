@@ -83,10 +83,6 @@ const Contact = () => {
 
         <div className="contact-form-container contact-booking-wrap">
           <span className="form-kicker">Agenda en Querétaro</span>
-          <p className="contact-booking-notice">
-            Reserva en línea con duración según tu tratamiento. El calendario se sincroniza con Google
-            Calendar para evitar choques de horario. <strong>Solo Querétaro.</strong>
-          </p>
           <BookingCalendar />
         </div>
       </div>

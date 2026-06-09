@@ -76,11 +76,21 @@ Deno.serve(async (req) => {
   }
 
   const todayBookings = weekBookings.filter((b) => mxDateKey(new Date(b.start as string)) === todayKey);
+  const todayGoogle = googleEvents.filter((e) => e.start && mxDateKey(new Date(e.start)) === todayKey);
+
+  function serviceFromTitle(title: string) {
+    const dash = title.split(/\s[-–—]\s/);
+    return (dash.length > 1 ? dash[dash.length - 1] : title).trim();
+  }
 
   const serviceCounts: Record<string, number> = {};
   (allBookingsRes.data ?? []).forEach((b) => {
     const s = b.service as string;
     serviceCounts[s] = (serviceCounts[s] ?? 0) + 1;
+  });
+  googleEvents.forEach((e) => {
+    const s = serviceFromTitle(e.title);
+    if (s) serviceCounts[s] = (serviceCounts[s] ?? 0) + 1;
   });
   const topServices = Object.entries(serviceCounts)
     .sort((a, b) => b[1] - a[1])
@@ -130,8 +140,10 @@ Deno.serve(async (req) => {
     weekDays,
     todayBookings,
     stats: {
-      today: todayBookings.length,
-      week: weekBookings.length,
+      today: todayBookings.length + todayGoogle.length,
+      week: weekBookings.length + googleEvents.length,
+      fromGoogle: googleEvents.length,
+      fromSite: weekBookings.length,
     },
     topServices,
     googleOAuthReady,
