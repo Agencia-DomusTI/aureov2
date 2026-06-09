@@ -13,10 +13,9 @@ export async function createBooking(payload) {
   return invokeFunction('create-booking', { body: payload });
 }
 
-export async function getAdminDashboard({ weekOffset = 0, weeks = 2 } = {}) {
+export async function getAdminDashboard({ monthOffset = 0 } = {}) {
   return adminFetch('admin-dashboard', {
-    weekOffset: String(weekOffset),
-    weeks: String(weeks),
+    monthOffset: String(monthOffset),
   });
 }
 

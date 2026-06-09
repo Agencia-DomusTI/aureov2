@@ -42,8 +42,7 @@ const AdminPanel = () => {
   const [settings, setSettings] = useState(null);
   const [saveMsg, setSaveMsg] = useState('');
   const [statusError, setStatusError] = useState('');
-  const [weekOffset, setWeekOffset] = useState(0);
-  const [weeks, setWeeks] = useState(2);
+  const [monthOffset, setMonthOffset] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
@@ -54,33 +53,30 @@ const AdminPanel = () => {
   const supabaseReady = isSupabaseConfigured();
 
   const loadStatus = useCallback(async (opts = {}) => {
-    const wo = opts.weekOffset ?? weekOffset;
-    const w = opts.weeks ?? weeks;
+    const mo = opts.monthOffset ?? monthOffset;
     try {
       setStatusError('');
-      const data = await getAdminDashboard({ weekOffset: wo, weeks: w });
+      const data = await getAdminDashboard({ monthOffset: mo });
       setStatus(data);
     } catch (err) {
       setStatusError(err.message || 'No se pudo cargar el panel');
     }
-  }, [weekOffset, weeks]);
+  }, [monthOffset]);
 
-  const handleRangeChange = useCallback(async ({ weekOffset: nextOffset, weeks: nextWeeks }) => {
-    const wo = nextOffset ?? weekOffset;
-    const w = nextWeeks ?? weeks;
-    if (nextOffset !== undefined) setWeekOffset(wo);
-    if (nextWeeks !== undefined) setWeeks(w);
+  const handleRangeChange = useCallback(async ({ monthOffset: nextOffset }) => {
+    const mo = nextOffset ?? monthOffset;
+    if (nextOffset !== undefined) setMonthOffset(mo);
     setRefreshing(true);
     try {
       setStatusError('');
-      const data = await getAdminDashboard({ weekOffset: wo, weeks: w });
+      const data = await getAdminDashboard({ monthOffset: mo });
       setStatus(data);
     } catch (err) {
       setStatusError(err.message || 'No se pudo cargar el panel');
     } finally {
       setRefreshing(false);
     }
-  }, [weekOffset, weeks]);
+  }, [monthOffset]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -265,8 +261,7 @@ const AdminPanel = () => {
           <AdminCalendarTab
             status={status}
             statusError={statusError}
-            weekOffset={weekOffset}
-            weeks={weeks}
+            monthOffset={monthOffset}
             refreshing={refreshing}
             deletingId={deletingId}
             onRangeChange={handleRangeChange}

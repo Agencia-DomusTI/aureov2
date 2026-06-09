@@ -80,6 +80,31 @@ export function formatMxMonthYear(key: string): string {
   return mxKeyToDate(key).toLocaleDateString('es-MX', { month: 'long', year: 'numeric', timeZone: TZ });
 }
 
+export function startOfMonthMx(key: string): string {
+  const { y, m } = parseMxKey(key);
+  return formatMxKey(y, m, 1);
+}
+
+export function addMxMonths(monthStartKey: string, months: number): string {
+  const { y, m } = parseMxKey(monthStartKey);
+  const dt = new Date(Date.UTC(y, m - 1 + months, 1, 12, 0, 0));
+  return formatMxKey(dt.getUTCFullYear(), dt.getUTCMonth() + 1, 1);
+}
+
+export function endOfMonthMx(monthStartKey: string): string {
+  return addMxDays(addMxMonths(startOfMonthMx(monthStartKey), 1), -1);
+}
+
+export function daysBetweenInclusive(startKey: string, endKey: string): number {
+  let count = 0;
+  let cursor = startKey;
+  while (cursor <= endKey) {
+    count += 1;
+    cursor = addMxDays(cursor, 1);
+  }
+  return count;
+}
+
 export function formatMxRangeLabel(startKey: string, endKey: string): string {
   const start = mxKeyToDate(startKey);
   const end = mxKeyToDate(endKey);

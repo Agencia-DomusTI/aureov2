@@ -3,6 +3,9 @@ import { fetchCalendarEvents, getCalendarStatus } from '../_shared/google.ts';
 import { isStripeConfigured } from '../_shared/stripe.ts';
 import {
   addMxDays,
+  addMxMonths,
+  daysBetweenInclusive,
+  endOfMonthMx,
   formatMxLabel,
   formatMxMonthYear,
   formatMxRangeLabel,
@@ -11,6 +14,7 @@ import {
   mxDayNum,
   mxDayStartIso,
   mxKeyToDate,
+  startOfMonthMx,
   startOfWeekMx,
 } from '../_shared/mxTime.ts';
 
@@ -63,21 +67,22 @@ Deno.serve(async (req) => {
   }
 
   const url = new URL(req.url);
-  const weekOffset = parseInt(url.searchParams.get('weekOffset') ?? '0', 10) || 0;
-  const weeks = Math.min(6, Math.max(1, parseInt(url.searchParams.get('weeks') ?? '2', 10) || 2));
+  const monthOffset = parseInt(url.searchParams.get('monthOffset') ?? '0', 10) || 0;
 
   const supabase = createServiceClient();
   const now = new Date();
   const todayKey = mxDateKey(now);
 
-  const rangeStartKey = addMxDays(startOfWeekMx(now), weekOffset * 7);
-  const totalDays = weeks * 7;
-  const rangeEndKey = addMxDays(rangeStartKey, totalDays - 1);
+  const monthStart = addMxMonths(startOfMonthMx(todayKey), monthOffset);
+  const monthEnd = endOfMonthMx(monthStart);
+  const rangeStartKey = startOfWeekMx(mxKeyToDate(monthStart));
+  const rangeEndKey = addMxDays(startOfWeekMx(mxKeyToDate(monthEnd)), 6);
+  const totalDays = daysBetweenInclusive(rangeStartKey, rangeEndKey);
 
   const rangeStartIso = mxDayStartIso(rangeStartKey);
   const rangeEndIso = mxDayEndIso(addMxDays(rangeStartKey, totalDays));
 
-  const rangeLabel = formatMxRangeLabel(rangeStartKey, rangeEndKey);
+  const rangeLabel = formatMxMonthYear(monthStart);
 
   const [calendar, schedule, bookingsRes, rangeBookingsRes, allBookingsRes] = await Promise.all([
     getCalendarStatus(supabase),
@@ -125,6 +130,7 @@ Deno.serve(async (req) => {
   const weekDays = Array.from({ length: totalDays }, (_, i) => {
     const key = addMxDays(rangeStartKey, i);
     const d = mxKeyToDate(key);
+    const inMonth = key >= monthStart && key <= monthEnd;
     const dayBookings = rangeBookings.filter((b) => mxDateKey(new Date(b.start as string)) === key);
     const dayGoogleRaw = googleEvents.filter((e) => e.start && mxDateKey(new Date(e.start)) === key);
     const dayLinkedIds = new Set(
@@ -135,10 +141,11 @@ Deno.serve(async (req) => {
     return {
       date: key,
       dayNum: mxDayNum(d),
-      monthLabel: formatMxMonthYear(key),
+      monthLabel: formatMxMonthYear(monthStart),
       label: formatMxLabel(key, 'long'),
       shortLabel: formatMxLabel(key, 'short'),
       isToday: key === todayKey,
+      inMonth,
       weekIndex,
       count: dayBookings.length + dayGoogle.length,
       appointments: [
@@ -201,8 +208,9 @@ Deno.serve(async (req) => {
     bookings,
     weekDays,
     rangeLabel,
-    weekOffset,
-    weeks,
+    monthOffset,
+    monthStart,
+    monthEnd,
     todayKey,
     todayBookings,
     stats: {
