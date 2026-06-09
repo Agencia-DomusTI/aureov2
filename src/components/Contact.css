@@ -128,23 +128,15 @@
 }
 
 .contact-form-container {
-  background: var(--white);
-  padding: 1.75rem 1.5rem;
-  border-radius: 1rem;
-  box-shadow:
-    0 28px 56px rgba(14, 33, 56, 0.07),
-    0 0 0 1px rgba(14, 33, 56, 0.05);
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
   position: relative;
 }
 
 .contact-form-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 2rem;
-  width: 3rem;
-  height: 2px;
-  background: var(--secondary);
+  display: none;
 }
 
 .form-kicker {
@@ -154,15 +146,16 @@
   text-transform: uppercase;
   color: var(--secondary);
   display: block;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .contact-booking-wrap {
   overflow: visible;
 }
 
-.contact-booking-wrap .booking-calendar {
-  min-height: 420px;
+.contact-booking-wrap .booking-calendar,
+.contact-booking-wrap .bk-widget {
+  min-height: 520px;
 }
 
 @media (max-width: 992px) {
