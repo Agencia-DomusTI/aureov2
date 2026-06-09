@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CLINICS } from '../constants/clinics';
 import { SERVICE_DURATIONS, formatDuration } from '../constants/booking';
 import { SERVICE_PROMOTIONS, servicesData } from '../constants/services';
 import { useReveal } from '../hooks/useReveal';
+import { useServicesConfig } from '../hooks/useServicesConfig';
+import { isServiceActive } from '../utils/serviceVisibility';
 import OptimizedImage from './OptimizedImage';
 import './Services.css';
 
@@ -19,8 +21,25 @@ const Services = () => {
   const [activeTab, setActiveTab] = useState('estetica');
   const [selectedService, setSelectedService] = useState(null);
   const [expanded, setExpanded] = useState(false);
+  const { servicesConfig } = useServicesConfig();
 
-  const items = servicesData[activeTab].items;
+  const visibleTabs = useMemo(() => {
+    return Object.entries(servicesData).filter(([, category]) =>
+      category.items.some((item) => isServiceActive(item.name, servicesConfig)),
+    );
+  }, [servicesConfig]);
+
+  const items = useMemo(() => {
+    return servicesData[activeTab].items.filter((item) =>
+      isServiceActive(item.name, servicesConfig),
+    );
+  }, [activeTab, servicesConfig]);
+
+  useEffect(() => {
+    if (!visibleTabs.some(([key]) => key === activeTab) && visibleTabs[0]) {
+      setActiveTab(visibleTabs[0][0]);
+    }
+  }, [visibleTabs, activeTab]);
   const hasMore = items.length > PREVIEW_COUNT;
   const visibleItems = expanded || !hasMore ? items : items.slice(0, PREVIEW_COUNT);
   const remaining = Math.max(0, items.length - PREVIEW_COUNT);
@@ -39,7 +58,7 @@ const Services = () => {
         </div>
 
         <div className="services-tabs">
-          {Object.keys(servicesData).map((key) => (
+          {visibleTabs.map(([key]) => (
             <button
               key={key}
               type="button"

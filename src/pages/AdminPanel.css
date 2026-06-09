@@ -163,7 +163,7 @@
 .admin-main {
   max-width: 820px;
   margin: 0 auto;
-  padding: 0.75rem 1rem 1rem;
+  padding: 0.5rem 1rem 1rem;
 }
 
 .admin-card {
@@ -548,6 +548,7 @@
 
 .admin-main--wide {
   max-width: 1180px;
+  padding-top: 0.35rem;
 }
 
 /* ─── Dashboard calendario (Apple-style) ─── */
@@ -1378,13 +1379,15 @@
   overflow: hidden;
 }
 
-.adm-apple-cal__head {
+.adm-apple-cal__head,
+.adm-apple-cal__toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.65rem 0.85rem 0.45rem;
-  flex-wrap: wrap;
+  gap: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  flex-wrap: nowrap;
+  border-bottom: 1px solid rgba(14, 33, 56, 0.05);
 }
 
 .adm-apple-cal__nav {
@@ -1475,8 +1478,13 @@
   border-radius: 10px;
 }
 
+.adm-seg--inline {
+  margin: 0;
+  flex-shrink: 0;
+}
+
 .adm-seg--panel {
-  margin: 0 0 0.85rem;
+  margin: 0 0 0.65rem;
 }
 
 .adm-seg button {
@@ -1648,13 +1656,13 @@
 
 .adm-apple-side {
   border-left: 1px solid rgba(14, 33, 56, 0.06);
-  padding: 0.65rem 0.75rem;
+  padding: 0.55rem 0.65rem 0.65rem;
   background: rgba(249, 246, 240, 0.45);
   display: flex;
   flex-direction: column;
-  max-height: 420px;
-  position: sticky;
-  top: 0;
+  min-height: 0;
+  max-height: min(70vh, 520px);
+  overflow: hidden;
 }
 
 .adm-apple-side__head {
@@ -1713,16 +1721,17 @@
 }
 
 .adm-event {
-  display: flex;
-  align-items: stretch;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: 4px 1fr auto;
+  align-items: center;
+  gap: 0.55rem;
   background: #fff;
-  border-radius: 8px;
-  padding: 0.5rem 0.6rem;
-  border: 1px solid rgba(14, 33, 56, 0.06);
-  box-shadow: 0 1px 2px rgba(14, 33, 56, 0.04);
+  border-radius: 10px;
+  padding: 0.55rem 0.5rem 0.55rem 0;
+  border: 1px solid rgba(14, 33, 56, 0.07);
+  box-shadow: 0 1px 3px rgba(14, 33, 56, 0.04);
   cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
 }
 
 .adm-event:hover {
@@ -1741,9 +1750,11 @@
 
 .adm-event__stripe {
   width: 4px;
-  border-radius: 4px;
+  height: 100%;
+  min-height: 2.75rem;
+  border-radius: 0 4px 4px 0;
   background: var(--secondary);
-  flex-shrink: 0;
+  align-self: stretch;
 }
 
 .adm-event--google .adm-event__stripe {
@@ -1751,32 +1762,84 @@
 }
 
 .adm-event__body {
-  flex: 1;
   min-width: 0;
+  padding: 0.1rem 0;
+}
+
+.adm-event__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin-bottom: 0.2rem;
 }
 
 .adm-event__time {
   font-size: 0.68rem;
   font-weight: 600;
   color: var(--text-muted);
-  margin-bottom: 0.15rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.adm-event__badge {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.12rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(14, 33, 56, 0.06);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.adm-event--google .adm-event__badge {
+  background: rgba(66, 133, 244, 0.12);
+  color: #1a56b0;
+}
+
+.adm-event--site .adm-event__badge {
+  background: rgba(184, 153, 104, 0.18);
+  color: #7a5f2e;
 }
 
 .adm-event__title {
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   font-weight: 600;
   color: var(--primary);
-  line-height: 1.3;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-event__service {
+  font-size: 0.74rem;
+  color: var(--secondary);
+  margin-top: 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .adm-event__meta {
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
-  margin-top: 0.1rem;
+  margin-top: 0.15rem;
 }
 
 .adm-event__detail {
   opacity: 0.85;
+}
+
+.adm-event .adm-del {
+  margin-right: 0.15rem;
+  opacity: 0.55;
+}
+
+.adm-event:hover .adm-del,
+.adm-event.is-selected .adm-del {
+  opacity: 1;
 }
 
 .adm-del--text {
@@ -2188,52 +2251,63 @@
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.65rem;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(14, 33, 56, 0.08);
+  box-shadow: 0 4px 24px rgba(14, 33, 56, 0.06);
+  padding: 0.85rem 1rem 1rem;
 }
 
 .adm-svc-apple__head {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 1rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(14, 33, 56, 0.06);
 }
 
 .adm-svc-apple__head h2 {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--primary);
 }
 
 .adm-svc-apple__head p {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
-  margin-top: 0.2rem;
+  margin-top: 0.15rem;
 }
 
 .adm-svc-apple__save {
-  padding: 0.5rem 1.1rem;
+  padding: 0.5rem 1rem;
   border: none;
   border-radius: 10px;
   background: var(--primary);
   color: #fff;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   flex-shrink: 0;
 }
 
-.adm-svc-apple__search-wrap {
-  padding: 0 0.15rem;
+.adm-svc-apple__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
 }
 
 .adm-svc-apple__search {
-  width: 100%;
-  padding: 0.65rem 0.9rem;
-  border: none;
+  flex: 1;
+  min-width: 12rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid rgba(14, 33, 56, 0.08);
   border-radius: 10px;
-  background: rgba(14, 33, 56, 0.06);
-  font-size: 0.9rem;
+  background: rgba(14, 33, 56, 0.03);
+  font-size: 0.88rem;
   color: var(--primary);
 }
 
@@ -2243,21 +2317,23 @@
 
 .adm-svc-apple__search:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(184, 153, 104, 0.35);
+  border-color: var(--secondary);
+  background: #fff;
 }
 
 .adm-svc-apple__banner {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
-  padding: 0.4rem 0.7rem;
-  background: rgba(184, 153, 104, 0.12);
+  padding: 0.45rem 0.75rem;
+  background: rgba(184, 153, 104, 0.1);
   border-radius: 8px;
+  white-space: nowrap;
 }
 
 .adm-svc-apple__list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.85rem;
 }
 
 .adm-svc-apple__banner strong {
@@ -2266,61 +2342,99 @@
 
 .adm-svc-apple__section h3 {
   font-size: 0.68rem;
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin: 0 0 0.4rem;
+}
+
+.adm-svc-apple__table {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.adm-svc-apple__thead {
+  display: grid;
+  grid-template-columns: 2.85rem 1fr 11rem 7.5rem;
+  gap: 0.75rem;
+  padding: 0.35rem 0.85rem 0.45rem;
+  font-size: 0.58rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
-  margin: 0 0 0.25rem 0.5rem;
 }
 
 .adm-svc-apple__group {
-  background: #fff;
-  border-radius: 14px;
-  border: 1px solid rgba(14, 33, 56, 0.08);
+  background: rgba(249, 246, 240, 0.35);
+  border-radius: 12px;
+  border: 1px solid rgba(14, 33, 56, 0.07);
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(14, 33, 56, 0.04);
 }
 
 .adm-svc-apple__row {
   display: grid;
-  grid-template-columns: auto 1fr 9.5rem 4.5rem;
-  gap: 0.65rem;
+  grid-template-columns: 2.85rem 1fr 11rem 7.5rem;
+  gap: 0.75rem;
   align-items: center;
-  padding: 0.55rem 0.75rem;
+  padding: 0.65rem 0.85rem;
+  background: #fff;
+  border-bottom: 1px solid rgba(14, 33, 56, 0.05);
 }
 
-.adm-svc-apple__row.has-divider {
-  border-bottom: 1px solid rgba(14, 33, 56, 0.06);
+.adm-svc-apple__row:last-child {
+  border-bottom: none;
 }
 
 .adm-svc-apple__row.is-off {
-  opacity: 0.5;
+  background: rgba(14, 33, 56, 0.02);
 }
 
-.adm-svc-apple__row .adm-ios-toggle {
-  grid-column: 1;
-  align-self: center;
+.adm-svc-apple__row.is-off .adm-svc-apple__text strong {
+  color: var(--text-muted);
 }
 
 .adm-svc-apple__text {
-  grid-column: 2;
   min-width: 0;
 }
 
 .adm-svc-apple__text strong {
   display: block;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   font-weight: 600;
   color: var(--primary);
   letter-spacing: -0.01em;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
-.adm-svc-apple__text span {
+.adm-svc-apple__text > span:first-of-type {
   font-size: 0.72rem;
   color: var(--text-muted);
   margin-top: 0.1rem;
   display: block;
+}
+
+.adm-svc-apple__status {
+  display: inline-block;
+  margin-top: 0.25rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+}
+
+.adm-svc-apple__status.is-on {
+  background: rgba(52, 199, 89, 0.12);
+  color: #248a3d;
+}
+
+.adm-svc-apple__status.is-off {
+  background: rgba(14, 33, 56, 0.08);
+  color: var(--text-muted);
 }
 
 .adm-ios-toggle {
@@ -2369,40 +2483,51 @@
 .adm-svc-apple__field {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.2rem;
   min-width: 0;
 }
 
-.adm-svc-apple__field--price {
-  grid-column: 3;
-}
-
-.adm-svc-apple__field--deposit {
-  grid-column: 4;
-}
-
-.adm-svc-apple__field span {
+.adm-svc-apple__field-label {
   font-size: 0.58rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
+}
+
+.adm-svc-apple__deposit-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.adm-svc-apple__currency {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .adm-svc-apple__input {
   width: 100%;
-  padding: 0.4rem 0.5rem;
+  padding: 0.45rem 0.55rem;
   border: 1px solid rgba(14, 33, 56, 0.1);
-  border-radius: 6px;
-  font-size: 0.78rem;
-  background: rgba(249, 246, 240, 0.5);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  background: #fff;
   color: var(--primary);
+}
+
+.adm-svc-apple__input--deposit {
+  width: 4.5rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .adm-svc-apple__input:focus {
   outline: none;
   border-color: var(--secondary);
-  background: #fff;
+  box-shadow: 0 0 0 2px rgba(184, 153, 104, 0.2);
 }
 
 @media (max-width: 900px) {
@@ -2482,13 +2607,32 @@
     grid-column: 2;
   }
 
-  .adm-apple-cal__head {
-    flex-direction: column;
-    align-items: stretch;
+  .adm-apple-cal__head,
+  .adm-apple-cal__toolbar {
+    flex-wrap: wrap;
   }
 
   .adm-apple-cal__tools {
     justify-content: center;
+  }
+
+  .adm-svc-apple__thead {
+    display: none;
+  }
+
+  .adm-svc-apple__row {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 0.5rem 0.65rem;
+    padding: 0.75rem;
+  }
+
+  .adm-svc-apple__field {
+    grid-column: 2;
+  }
+
+  .adm-svc-apple__field--deposit {
+    grid-column: 2;
   }
 }
 

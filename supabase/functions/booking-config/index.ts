@@ -1,4 +1,4 @@
-import { buildDepositsMap, getBaseDeposit } from '../_shared/booking.ts';
+import { buildDepositsMap, getBaseDeposit, isServiceActive } from '../_shared/booking.ts';
 import { isStripeConfigured } from '../_shared/stripe.ts';
 import { createServiceClient, getClinicSettings, handleCors, json } from '../_shared/utils.ts';
 
@@ -9,6 +9,10 @@ Deno.serve(async (req) => {
   const supabase = createServiceClient();
   const config = await getClinicSettings(supabase);
   const baseDeposit = getBaseDeposit(config);
+  const servicesConfig = config.servicesConfig ?? {};
+  const inactiveServiceIds = Object.keys(servicesConfig).filter(
+    (id) => !isServiceActive(id, servicesConfig),
+  );
   return json({
     timezone: config.timezone,
     timezoneLabel: config.timezoneLabel,
@@ -19,8 +23,9 @@ Deno.serve(async (req) => {
     schedule: config.schedule,
     scheduleSummary: config.scheduleSummary,
     depositAmountMxn: baseDeposit,
-    servicesConfig: config.servicesConfig,
-    serviceDeposits: buildDepositsMap(config.servicesConfig, baseDeposit),
+    servicesConfig,
+    inactiveServiceIds,
+    serviceDeposits: buildDepositsMap(servicesConfig, baseDeposit),
     stripeEnabled: isStripeConfigured(),
   });
 });

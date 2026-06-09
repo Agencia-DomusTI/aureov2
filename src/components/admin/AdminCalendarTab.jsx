@@ -176,6 +176,9 @@ function DeleteConfirmModal({ apt, deleting, onCancel, onConfirm }) {
 }
 
 function EventRow({ apt, selected, onSelect, deletingId, onRequestDelete }) {
+  const patient = apt.patientName || (apt.subtitle !== 'Sin paciente' ? apt.subtitle : '');
+  const service = apt.title;
+
   return (
     <article
       className={`adm-event adm-event--${apt.source} ${selected ? 'is-selected' : ''}`}
@@ -191,14 +194,19 @@ function EventRow({ apt, selected, onSelect, deletingId, onRequestDelete }) {
     >
       <div className="adm-event__stripe" aria-hidden />
       <div className="adm-event__body">
-        <div className="adm-event__time">{formatTimeRange(apt.start, apt.end)}</div>
-        <div className="adm-event__title">{apt.title}</div>
-        <div className="adm-event__meta">
-          {apt.subtitle}
-          {apt.detail ? <span className="adm-event__detail"> · {apt.detail}</span> : null}
+        <div className="adm-event__top">
+          <time className="adm-event__time">{formatTimeRange(apt.start, apt.end)}</time>
+          <span className="adm-event__badge">{apt.sourceLabel ?? (apt.source === 'google' ? 'Google' : 'Sitio')}</span>
         </div>
+        <div className="adm-event__title">{patient || service}</div>
+        {patient && service && patient !== service ? (
+          <div className="adm-event__service">{service}</div>
+        ) : null}
+        {apt.detail && apt.source === 'site' ? (
+          <div className="adm-event__meta">{apt.detail}</div>
+        ) : null}
       </div>
-      <DeleteBtn apt={apt} deletingId={deletingId} onRequestDelete={onRequestDelete} variant="text" />
+      <DeleteBtn apt={apt} deletingId={deletingId} onRequestDelete={onRequestDelete} variant="icon" />
     </article>
   );
 }
@@ -376,7 +384,7 @@ const AdminCalendarTab = ({
       {statusError ? <p className="admin-toast admin-toast--err">{statusError}</p> : null}
 
       <section className="adm-apple-cal">
-        <header className="adm-apple-cal__head">
+        <header className="adm-apple-cal__toolbar">
           <div className="adm-apple-cal__nav">
             <button
               type="button"
@@ -402,6 +410,20 @@ const AdminCalendarTab = ({
             </button>
           </div>
 
+          <div className="adm-seg adm-seg--inline">
+            {SPAN_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                className={weeks === opt.value ? 'is-active' : ''}
+                onClick={() => onRangeChange?.({ weeks: opt.value, weekOffset: 0 })}
+                disabled={refreshing}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
           <div className="adm-apple-cal__tools">
             <button
               type="button"
@@ -422,20 +444,6 @@ const AdminCalendarTab = ({
             </button>
           </div>
         </header>
-
-        <div className="adm-seg adm-seg--span">
-          {SPAN_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              className={weeks === opt.value ? 'is-active' : ''}
-              onClick={() => onRangeChange?.({ weeks: opt.value, weekOffset: 0 })}
-              disabled={refreshing}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
 
         <div className="adm-apple-layout">
           <div className="adm-apple-grid-wrap">
@@ -493,7 +501,7 @@ const AdminCalendarTab = ({
                                   }
                                 }}
                               >
-                                {formatTime(apt.start)} {apt.title}
+                                {formatTime(apt.start)} {apt.patientName || (apt.subtitle !== 'Sin paciente' ? apt.subtitle : apt.title)}
                               </span>
                             ))}
                             {extra > 0 ? (

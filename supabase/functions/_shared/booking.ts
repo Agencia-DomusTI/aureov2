@@ -4,6 +4,14 @@ export const DEFAULT_DEPOSIT_MXN = 250;
 
 type ServiceConfig = { depositMxn?: number | string | null; priceLabel?: string; active?: boolean };
 
+/** Por defecto activo; solo oculta si `active === false` en admin */
+export function isServiceActive(
+  serviceId: string,
+  servicesConfig?: Record<string, ServiceConfig>,
+): boolean {
+  return servicesConfig?.[serviceId]?.active !== false;
+}
+
 function parseDepositValue(value: unknown): number | null {
   if (value === undefined || value === null || value === '') return null;
   const n = Math.round(Number(value));

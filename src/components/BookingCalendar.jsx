@@ -3,7 +3,9 @@ import { CLINICS } from '../constants/clinics';
 import { BOOKING_CONFIG } from '../constants/booking';
 import { createBooking, getAvailability, getBookingConfig } from '../lib/bookingApi';
 import { getAllBookableServices } from '../utils/bookableServices';
+import { useServicesConfig } from '../hooks/useServicesConfig';
 import { formatDepositLabel, getDepositForService } from '../utils/deposit';
+import { filterActiveServices } from '../utils/serviceVisibility';
 import {
   clearHashQuery,
   formatEmailInput,
@@ -84,16 +86,22 @@ const BookingCalendar = () => {
   const [touched, setTouched] = useState({ phone: false, email: false });
   const [redirectingPayment, setRedirectingPayment] = useState(false);
 
-  const servicesConfig = bookingConfig.servicesConfig ?? {};
+  const { servicesConfig, ready: servicesConfigReady } = useServicesConfig();
 
   const visibleServices = useMemo(() => {
-    return services
-      .filter((s) => servicesConfig[s.id]?.active !== false)
-      .map((s) => ({
-        ...s,
-        price: servicesConfig[s.id]?.priceLabel ?? s.price,
-      }));
+    return filterActiveServices(services, servicesConfig).map((s) => ({
+      ...s,
+      price: servicesConfig[s.id]?.priceLabel ?? s.price,
+    }));
   }, [services, servicesConfig]);
+
+  useEffect(() => {
+    if (!servicesConfigReady || !serviceId) return;
+    if (!visibleServices.some((s) => s.id === serviceId)) {
+      setServiceId('');
+      if (step > 0) setStep(0);
+    }
+  }, [servicesConfigReady, serviceId, visibleServices, step]);
 
   const selectedService = visibleServices.find((s) => s.id === serviceId);
   const selectedDeposit = selectedService
@@ -113,7 +121,7 @@ const BookingCalendar = () => {
 
   useEffect(() => {
     getBookingConfig()
-      .then((data) => { if (data) setBookingConfig(data); })
+      .then((data) => { if (data) setBookingConfig((prev) => ({ ...prev, ...data })); })
       .catch(() => {});
   }, []);
 
@@ -480,7 +488,12 @@ const BookingCalendar = () => {
             </div>
 
             <div className="bk-services">
-              {filteredServices.length === 0 ? (
+              {!servicesConfigReady ? (
+                <div className="bk-loading">
+                  <span className="bk-loading__spinner" />
+                  Cargando servicios…
+                </div>
+              ) : filteredServices.length === 0 ? (
                 <p className="bk-empty">No encontramos ese servicio. Prueba otra búsqueda.</p>
               ) : (
                 [...servicesByCategory.entries()].map(([category, items]) => (

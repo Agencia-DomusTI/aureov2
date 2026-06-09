@@ -2,7 +2,7 @@ import { createServiceClient, getClinicSettings, handleCors, json } from '../_sh
 import { createCalendarEvent, fetchBusyPeriods, isGoogleConnected } from '../_shared/google.ts';
 import { syncBookingToGhl } from '../_shared/ghl.ts';
 import { createDepositCheckout, isStripeConfigured } from '../_shared/stripe.ts';
-import { createUniqueConfirmationCode, getServiceDeposit } from '../_shared/booking.ts';
+import { createUniqueConfirmationCode, getServiceDeposit, isServiceActive } from '../_shared/booking.ts';
 
 const BUFFER_MS = 10 * 60 * 1000;
 
@@ -52,6 +52,15 @@ Deno.serve(async (req) => {
   }
 
   const settings = await getClinicSettings(supabase);
+
+  if (!isServiceActive(service, settings.servicesConfig)) {
+    return json({
+      success: false,
+      message: 'Este servicio no está disponible para reservas en línea.',
+      code: 'SERVICE_INACTIVE',
+    }, 400);
+  }
+
   const deposit = getServiceDeposit(settings, service);
   const serviceOverride = settings.servicesConfig?.[service];
   const confirmationCode = await createUniqueConfirmationCode(supabase);
