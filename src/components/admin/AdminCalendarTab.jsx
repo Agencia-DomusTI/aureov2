@@ -252,22 +252,24 @@ const AdminCalendarTab = ({
 
       <section className="adm-apple-cal adm-apple-cal--month">
         <header className="adm-apple-cal__head">
-          <button
-            type="button"
-            className="adm-apple-cal__chev"
-            onClick={() => onRangeChange?.({ monthOffset: monthOffset - 1 })}
-            disabled={refreshing}
-            aria-label="Mes anterior"
-          >
-            ‹
-          </button>
+          <div className="adm-apple-cal__side adm-apple-cal__side--left">
+            <button
+              type="button"
+              className="adm-apple-cal__chev"
+              onClick={() => onRangeChange?.({ monthOffset: monthOffset - 1 })}
+              disabled={refreshing}
+              aria-label="Mes anterior"
+            >
+              ‹
+            </button>
+          </div>
 
           <div className="adm-apple-cal__title">
             <strong>{monthTitle}</strong>
             <span>{status?.stats?.range ?? 0} citas este mes</span>
           </div>
 
-          <div className="adm-apple-cal__tools">
+          <div className="adm-apple-cal__side adm-apple-cal__side--right">
             <button
               type="button"
               className="adm-apple-cal__chev"
