@@ -8,6 +8,7 @@ const AdminServicesTab = ({ settings, setSettings, onSave, saveMsg }) => {
   const [filter, setFilter] = useState('');
 
   const servicesConfig = settings?.servicesConfig ?? {};
+  const baseDeposit = settings?.depositAmountMxn ?? 250;
 
   const categories = useMemo(() => {
     const q = filter.trim().toLowerCase();
@@ -90,9 +91,31 @@ const AdminServicesTab = ({ settings, setSettings, onSave, saveMsg }) => {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         />
-        <div className="adm-svc-apple__banner">
-          Anticipo base <strong>${settings?.depositAmountMxn ?? 250} MXN</strong>
-        </div>
+        <label className="adm-svc-apple__base-deposit">
+          <span className="adm-svc-apple__base-deposit-label">Anticipo base</span>
+          <div className="adm-svc-apple__deposit-wrap">
+            <span className="adm-svc-apple__currency">$</span>
+            <input
+              type="number"
+              className="adm-svc-apple__input adm-svc-apple__input--deposit"
+              min="0"
+              step="50"
+              placeholder="250"
+              value={settings?.depositAmountMxn ?? ''}
+              onChange={(e) => {
+                const raw = e.target.value;
+                setSettings((prev) => ({
+                  ...prev,
+                  depositAmountMxn: raw === '' ? undefined : Math.max(0, parseInt(raw, 10) || 0),
+                }));
+              }}
+            />
+            <span className="adm-svc-apple__currency">MXN</span>
+          </div>
+          <span className="adm-svc-apple__base-deposit-hint">
+            Por defecto $250 si no defines otro monto
+          </span>
+        </label>
       </div>
 
       <div className="adm-svc-apple__list">
@@ -185,7 +208,7 @@ const AdminServicesTab = ({ settings, setSettings, onSave, saveMsg }) => {
                             <input
                               type="number"
                               className="adm-svc-apple__input adm-svc-apple__input--deposit"
-                              placeholder="250"
+                              placeholder={String(baseDeposit)}
                               min="0"
                               value={cfg.depositMxn}
                               onChange={(e) => updateService(service.id, {
