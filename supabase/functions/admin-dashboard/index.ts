@@ -107,13 +107,23 @@ Deno.serve(async (req) => {
     googleEvents = await fetchCalendarEvents(supabase, rangeStartIso, rangeEndIso);
   }
 
+  const allRangeRows = rangeBookingsRes.data ?? [];
   const linkedEventIds = new Set(
-    (rangeBookingsRes.data ?? [])
-      .map((b) => b.event_id as string | null)
-      .filter(Boolean),
+    allRangeRows.map((b) => b.event_id as string | null).filter(Boolean),
+  );
+  // También deduplicamos por hora de inicio: un evento de Google que coincide
+  // con una reserva (aunque el event_id no empate) no debe mostrarse aparte.
+  const bookedStartTimes = new Set(
+    allRangeRows
+      .map((b) => (b.start_at ? new Date(b.start_at as string).getTime() : null))
+      .filter((t): t is number => t !== null),
   );
 
-  const unlinkedGoogle = googleEvents.filter((e) => !linkedEventIds.has(e.id));
+  const isGoogleDuplicate = (e: { id: string; start?: string }) =>
+    linkedEventIds.has(e.id) ||
+    (Boolean(e.start) && bookedStartTimes.has(new Date(e.start as string).getTime()));
+
+  const unlinkedGoogle = googleEvents.filter((e) => !isGoogleDuplicate(e));
 
   const todayBookings = rangeBookings.filter((b) => mxDateKey(new Date(b.start as string)) === todayKey);
   const todayGoogle = unlinkedGoogle.filter((e) => e.start && mxDateKey(new Date(e.start)) === todayKey);
@@ -124,8 +134,7 @@ Deno.serve(async (req) => {
     serviceCounts[s] = (serviceCounts[s] ?? 0) + 1;
   });
 
-  googleEvents.forEach((e) => {
-    if (linkedEventIds.has(e.id)) return;
+  unlinkedGoogle.forEach((e) => {
     const s = serviceFromTitle(e.title);
     if (s) serviceCounts[s] = (serviceCounts[s] ?? 0) + 1;
   });
@@ -142,7 +151,7 @@ Deno.serve(async (req) => {
     const dayGoogleRaw = googleEvents.filter((e) => e.start && mxDateKey(new Date(e.start)) === key);
     // Usa el set global (incluye reservas pendientes) para no mostrar su evento
     // de Google como evento suelto cuando la reserva se oculta.
-    const dayGoogle = dayGoogleRaw.filter((e) => !linkedEventIds.has(e.id));
+    const dayGoogle = dayGoogleRaw.filter((e) => !isGoogleDuplicate(e));
     const weekIndex = Math.floor(i / 7);
     return {
       date: key,

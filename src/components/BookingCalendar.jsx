@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CLINICS } from '../constants/clinics';
 import { BOOKING_CONFIG } from '../constants/booking';
-import { createBooking, getAvailability, getBookingConfig } from '../lib/bookingApi';
+import { confirmPayment, createBooking, getAvailability, getBookingConfig } from '../lib/bookingApi';
 import { getAllBookableServices } from '../utils/bookableServices';
 import { useServicesConfig } from '../hooks/useServicesConfig';
 import { formatDepositLabel, getDepositForService } from '../utils/deposit';
@@ -128,14 +128,17 @@ const BookingCalendar = () => {
   useEffect(() => {
     const params = parseHashParams();
     if (params.pago === 'ok' && params.codigo) {
+      const code = decodeURIComponent(params.codigo);
       setStep(4);
       setResult({
         type: 'success',
         paid: true,
-        confirmationCode: decodeURIComponent(params.codigo),
+        confirmationCode: code,
         message: 'Tu pago fue recibido correctamente. Tu cita quedó confirmada.',
       });
       clearHashQuery();
+      // Respaldo: confirma el pago con Stripe por si el webhook no llegó.
+      confirmPayment(code).catch(() => {});
     } else if (params.pago === 'cancel' && params.codigo) {
       setStep(4);
       setResult({

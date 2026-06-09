@@ -2,6 +2,23 @@ export function isStripeConfigured() {
   return Boolean(Deno.env.get('STRIPE_SECRET_KEY'));
 }
 
+/** Recupera una Checkout Session para verificar el estado del pago. */
+export async function getCheckoutSession(sessionId: string) {
+  const secret = Deno.env.get('STRIPE_SECRET_KEY');
+  if (!secret || !sessionId) return null;
+
+  const res = await fetch(
+    `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`,
+    { headers: { Authorization: `Bearer ${secret}` } },
+  );
+
+  if (!res.ok) {
+    console.error('Stripe retrieve session error:', await res.text());
+    return null;
+  }
+  return res.json();
+}
+
 export async function createDepositCheckout(opts: {
   amountMxn: number;
   serviceName: string;

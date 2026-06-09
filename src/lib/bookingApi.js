@@ -13,6 +13,10 @@ export async function createBooking(payload) {
   return invokeFunction('create-booking', { body: payload });
 }
 
+export async function confirmPayment(code) {
+  return invokeFunction('confirm-payment', { body: { code } });
+}
+
 export async function getAdminDashboard({ monthOffset = 0 } = {}) {
   return adminFetch('admin-dashboard', {
     monthOffset: String(monthOffset),
