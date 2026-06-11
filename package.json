@@ -10,6 +10,7 @@
     "build": "vite build",
     "deploy": "wrangler pages deploy dist --project-name=aureov2",
     "cf:deploy": "wrangler pages deploy dist --project-name=aureov2",
+    "cf:deploy:worker": "wrangler deploy",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -23,7 +24,8 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "sharp",
-      "workerd"
+      "workerd",
+      "esbuild"
     ]
   },
   "devDependencies": {

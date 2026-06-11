@@ -1,4 +1,8 @@
-# Cloudflare Pages — app React/Vite (NO es Next.js / OpenNext)
+# Cloudflare Workers Builds — sitio estático React/Vite
+# El CI ejecuta `npx wrangler deploy`; los assets salen de dist tras `pnpm run build`.
 name = "aureov2"
 compatibility_date = "2024-01-01"
-pages_build_output_dir = "dist"
+
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
