@@ -483,7 +483,6 @@ const BookingCalendar = () => {
           {selectedService ? (
             <p className="bk-summary__meta">
               {selectedService.durationLabel}
-              {selectedService.price ? ` · ${selectedService.price.split('·')[0].trim()}` : ''}
               {selectedDeposit !== null ? ` · ${formatDepositLabel(selectedDeposit)}` : ''}
             </p>
           ) : null}
@@ -537,7 +536,6 @@ const BookingCalendar = () => {
                             <span className="bk-service-card__name">{service.name}</span>
                             <span className="bk-service-card__meta">
                               {service.durationLabel}
-                              {service.price ? ` · ${service.price.split('·')[0].trim()}` : ''}
                             </span>
                             <span className="bk-service-card__deposit">{formatDepositLabel(deposit)}</span>
                           </button>

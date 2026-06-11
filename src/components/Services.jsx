@@ -52,7 +52,7 @@ const Services = () => {
             Excelencia en <span>medicina especializada</span>
           </h2>
           <p className="services-deck">
-            Catálogo Aureo Clinique Querétaro · Precios orientativos · Valoración médica previa
+            Catálogo Aureo Clinique Querétaro · Valoración médica previa
           </p>
         </div>
 
@@ -102,7 +102,6 @@ const Services = () => {
               <div className="card-content card-content--collage">
                 <span className="service-number">{(index + 1).toString().padStart(2, '0')}</span>
                 <h3>{service.name}</h3>
-                {service.price ? <span className="service-price-preview">{service.price.split('·')[0].trim()}</span> : null}
                 <span className="learn-more">
                   Detalle <span className="learn-arrow">→</span>
                 </span>
@@ -167,9 +166,6 @@ const Services = () => {
                 <div className="modal-text">
                   <span className="subtitle">{servicesData[activeTab]?.title}</span>
                   <h2 id="modal-title">{selectedService.name}</h2>
-                  {selectedService.price ? (
-                    <p className="modal-price">{selectedService.price}</p>
-                  ) : null}
                   {SERVICE_DURATIONS[selectedService.name] ? (
                     <p className="modal-duration">
                       Duración: {formatDuration(SERVICE_DURATIONS[selectedService.name])}

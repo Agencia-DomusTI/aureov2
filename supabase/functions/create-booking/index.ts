@@ -63,7 +63,6 @@ Deno.serve(async (req) => {
   }
 
   const deposit = getServiceDeposit(settings, service);
-  const serviceOverride = settings.servicesConfig?.[service];
   const confirmationCode = await createUniqueConfirmationCode(supabase);
   const paymentRequired = deposit > 0;
 
@@ -113,7 +112,6 @@ Deno.serve(async (req) => {
           patientEmail: patient.email,
           bookingId: bookingRow.id,
           confirmationCode,
-          priceLabel: serviceOverride?.priceLabel,
         });
         if (checkout) {
           paymentUrl = checkout.url;
