@@ -20,11 +20,6 @@
     "react-day-picker": "^10.0.1",
     "react-dom": "^19.2.5"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "sharp"
-    ]
-  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.14",
