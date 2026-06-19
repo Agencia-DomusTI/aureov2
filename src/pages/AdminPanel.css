@@ -3183,6 +3183,59 @@
   color: #9a6b0a;
 }
 
+.adm-recent__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.adm-recent__bulk-btn {
+  flex-shrink: 0;
+  border: 1px solid rgba(14, 33, 56, 0.12);
+  background: #fff;
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.55rem 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.adm-recent__bulk-btn:hover:not(:disabled) {
+  background: rgba(14, 33, 56, 0.04);
+}
+
+.adm-recent__bulk-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.adm-recent__actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.adm-recent__action {
+  border: none;
+  background: transparent;
+  color: #1a6b47;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.15rem 0;
+}
+
+.adm-recent__action:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.adm-recent__action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @media (max-width: 1024px) {
   .adm-stats--analytics {
     grid-template-columns: repeat(2, 1fr);

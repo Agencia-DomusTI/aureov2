@@ -111,13 +111,15 @@ function DeleteConfirmModal({ apt, deleting, onCancel, onConfirm }) {
   );
 }
 
-function AppointmentModal({ apt, deletingId, onClose, onRequestDelete }) {
+function AppointmentModal({ apt, deletingId, resendingId, onClose, onRequestDelete, onResendEmail }) {
   useModalLock(apt ? onClose : null);
 
   if (!apt) return null;
 
   const waLink = apt.patientPhone ? waHref(apt.patientPhone) : null;
   const patient = apt.patientName || (apt.subtitle !== 'Sin paciente' ? apt.subtitle : '—');
+  const isPaidSite = apt.source === 'site' && (apt.depositPaid || apt.paymentStatus === 'paid');
+  const isResending = resendingId === apt.id;
 
   return (
     <div className="adm-modal-overlay" role="presentation" onClick={onClose}>
@@ -167,6 +169,16 @@ function AppointmentModal({ apt, deletingId, onClose, onRequestDelete }) {
         </div>
 
         <div className="adm-modal__actions">
+          {isPaidSite ? (
+            <button
+              type="button"
+              className="adm-modal__btn adm-modal__btn--ghost"
+              disabled={isResending || deletingId === apt.id}
+              onClick={() => onResendEmail?.(apt)}
+            >
+              {isResending ? 'Enviando…' : 'Reenviar correo al doctor'}
+            </button>
+          ) : null}
           {waLink ? (
             <a href={waLink} className="adm-modal__btn adm-modal__btn--ghost" target="_blank" rel="noopener noreferrer">WhatsApp</a>
           ) : null}
@@ -192,9 +204,11 @@ const AdminCalendarTab = ({
   monthOffset = 0,
   refreshing = false,
   deletingId = null,
+  resendingId = null,
   onRangeChange,
   onRefresh,
   onDelete,
+  onResendEmail,
 }) => {
   const [modalApt, setModalApt] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
@@ -278,8 +292,10 @@ const AdminCalendarTab = ({
       <AppointmentModal
         apt={modalApt}
         deletingId={deletingId}
+        resendingId={resendingId}
         onClose={() => setModalApt(null)}
         onRequestDelete={requestDelete}
+        onResendEmail={onResendEmail}
       />
 
       {statusError ? <p className="admin-toast admin-toast--err">{statusError}</p> : null}

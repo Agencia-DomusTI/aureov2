@@ -87,7 +87,20 @@ function PaymentRing({ paid, pending, total }) {
   );
 }
 
-const AdminAnalyticsTab = ({ status, statusError, refreshing, onRefresh, onGoCalendar }) => {
+const AdminAnalyticsTab = ({
+  status,
+  statusError,
+  refreshing,
+  resendingAll = false,
+  resendingId = null,
+  onRefresh,
+  onGoCalendar,
+  onResendAllPaid,
+  onResendBooking,
+}) => {
+  const paidBookings = (status?.bookings ?? []).filter(
+    (b) => b.depositPaid || b.paymentStatus === 'paid',
+  );
   const analytics = status?.analytics;
   const rangeLabel = status?.rangeLabel ?? 'Este mes';
 
@@ -250,7 +263,22 @@ const AdminAnalyticsTab = ({ status, statusError, refreshing, onRefresh, onGoCal
 
       {status?.bookings?.length > 0 ? (
         <section className="adm-panel-card adm-panel-card--wide adm-recent">
-          <h3 className="adm-panel-card__title">Últimas reservas</h3>
+          <div className="adm-recent__head">
+            <div>
+              <h3 className="adm-panel-card__title">Últimas reservas</h3>
+              <p className="adm-panel-card__desc">Reenvía al doctor los correos de citas ya pagadas.</p>
+            </div>
+            {paidBookings.length > 0 ? (
+              <button
+                type="button"
+                className="adm-recent__bulk-btn"
+                disabled={resendingAll || refreshing}
+                onClick={onResendAllPaid}
+              >
+                {resendingAll ? 'Enviando…' : 'Reenviar todos al doctor'}
+              </button>
+            ) : null}
+          </div>
           <div className="adm-recent__table-wrap">
             <table className="adm-recent__table">
               <thead>
@@ -259,33 +287,52 @@ const AdminAnalyticsTab = ({ status, statusError, refreshing, onRefresh, onGoCal
                   <th>Servicio</th>
                   <th>Fecha</th>
                   <th>Pago</th>
+                  <th aria-label="Acciones" />
                 </tr>
               </thead>
               <tbody>
-                {status.bookings.slice(0, 8).map((b) => (
-                  <tr key={b.id}>
-                    <td>{b.patient?.name ?? '—'}</td>
-                    <td>{b.service}</td>
-                    <td>
-                      {new Date(b.start).toLocaleDateString('es-MX', {
-                        day: 'numeric',
-                        month: 'short',
-                        timeZone: 'America/Mexico_City',
-                      })}
-                    </td>
-                    <td>
-                      <span
-                        className={`adm-recent__badge ${
-                          b.depositPaid || b.paymentStatus === 'paid'
-                            ? 'adm-recent__badge--ok'
-                            : 'adm-recent__badge--pending'
-                        }`}
-                      >
-                        {b.depositPaid || b.paymentStatus === 'paid' ? 'Pagado' : 'Pendiente'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {status.bookings.slice(0, 8).map((b) => {
+                  const isPaid = b.depositPaid || b.paymentStatus === 'paid';
+                  return (
+                    <tr key={b.id}>
+                      <td>{b.patient?.name ?? '—'}</td>
+                      <td>{b.service}</td>
+                      <td>
+                        {new Date(b.start).toLocaleDateString('es-MX', {
+                          day: 'numeric',
+                          month: 'short',
+                          timeZone: 'America/Mexico_City',
+                        })}
+                      </td>
+                      <td>
+                        <span
+                          className={`adm-recent__badge ${
+                            isPaid ? 'adm-recent__badge--ok' : 'adm-recent__badge--pending'
+                          }`}
+                        >
+                          {isPaid ? 'Pagado' : 'Pendiente'}
+                        </span>
+                      </td>
+                      <td className="adm-recent__actions">
+                        {isPaid ? (
+                          <button
+                            type="button"
+                            className="adm-recent__action"
+                            disabled={resendingId === b.id || resendingAll}
+                            onClick={() => onResendBooking?.({
+                              id: b.id,
+                              source: 'site',
+                              depositPaid: b.depositPaid,
+                              paymentStatus: b.paymentStatus,
+                            })}
+                          >
+                            {resendingId === b.id ? '…' : 'Reenviar'}
+                          </button>
+                        ) : null}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

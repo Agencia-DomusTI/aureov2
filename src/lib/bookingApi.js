@@ -30,6 +30,20 @@ export async function deleteAdminBooking({ source, id }) {
   });
 }
 
+export async function resendBookingEmail({ id, includePatient = false } = {}) {
+  return adminInvoke('admin-delete-booking', {
+    method: 'POST',
+    body: { action: 'resend-email', id, includePatient },
+  });
+}
+
+export async function resendAllPaidBookingEmails() {
+  return adminInvoke('admin-delete-booking', {
+    method: 'POST',
+    body: { action: 'resend-email', all: true },
+  });
+}
+
 export async function getAdminSettings() {
   return adminFetch('admin-settings');
 }

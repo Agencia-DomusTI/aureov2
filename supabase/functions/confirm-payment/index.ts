@@ -1,6 +1,6 @@
 import { createServiceClient, handleCors, json } from '../_shared/utils.ts';
 import { getCheckoutSession } from '../_shared/stripe.ts';
-import { sendBookingConfirmationEmail } from '../_shared/email.ts';
+import { sendPaidBookingEmails } from '../_shared/email.ts';
 
 /**
  * Verificación de respaldo del pago al volver de Stripe.
@@ -54,16 +54,9 @@ Deno.serve(async (req) => {
     .update({ deposit_paid: true, payment_status: 'paid' })
     .eq('id', booking.id);
 
-  await sendBookingConfirmationEmail({
-    service: booking.service as string,
-    startAt: booking.start_at as string,
-    endAt: booking.end_at as string,
-    patientName: booking.patient_name as string,
+  await sendPaidBookingEmails(booking, {
     patientEmail: (booking.patient_email as string | null) ??
       (session?.customer_details?.email as string | undefined) ?? null,
-    confirmationCode: booking.confirmation_code as string,
-    depositAmountMxn: booking.deposit_amount_mxn as number | null,
-    paid: true,
   });
 
   return json({ paid: true });

@@ -8,6 +8,8 @@ import {
   disconnectGoogleCalendar,
   getAdminDashboard,
   getAdminSettings,
+  resendAllPaidBookingEmails,
+  resendBookingEmail,
   saveAdminSettings,
   startGoogleConnect,
 } from '../lib/bookingApi';
@@ -47,6 +49,8 @@ const AdminPanel = () => {
   const [monthOffset, setMonthOffset] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [resendingId, setResendingId] = useState(null);
+  const [resendingAll, setResendingAll] = useState(false);
 
   const urlParams = new URLSearchParams(window.location.search);
   const urlError = urlParams.get('error');
@@ -101,6 +105,37 @@ const AdminPanel = () => {
       setDeletingId(null);
     }
   }, [loadStatus]);
+
+  const handleResendBookingEmail = useCallback(async (apt, { includePatient = false } = {}) => {
+    if (apt.source !== 'site') return;
+    setResendingId(apt.id);
+    try {
+      const data = await resendBookingEmail({ id: apt.id, includePatient });
+      alert(data.message || 'Correo reenviado');
+    } catch (err) {
+      alert(err.message || 'No se pudo reenviar el correo');
+      throw err;
+    } finally {
+      setResendingId(null);
+    }
+  }, []);
+
+  const handleResendAllPaidEmails = useCallback(async () => {
+    const ok = window.confirm(
+      '¿Reenviar correo al doctor para todas las reservas con anticipo pagado?',
+    );
+    if (!ok) return;
+
+    setResendingAll(true);
+    try {
+      const data = await resendAllPaidBookingEmails();
+      alert(data.message || 'Correos reenviados');
+    } catch (err) {
+      alert(err.message || 'No se pudieron reenviar los correos');
+    } finally {
+      setResendingAll(false);
+    }
+  }, []);
 
   const loadSettings = useCallback(async () => {
     const data = await getAdminSettings();
@@ -264,8 +299,12 @@ const AdminPanel = () => {
             status={status}
             statusError={statusError}
             refreshing={refreshing}
+            resendingAll={resendingAll}
+            resendingId={resendingId}
             onRefresh={handleRefresh}
             onGoCalendar={() => setTab('calendario')}
+            onResendAllPaid={handleResendAllPaidEmails}
+            onResendBooking={handleResendBookingEmail}
           />
         )}
 
@@ -276,9 +315,11 @@ const AdminPanel = () => {
             monthOffset={monthOffset}
             refreshing={refreshing}
             deletingId={deletingId}
+            resendingId={resendingId}
             onRangeChange={handleRangeChange}
             onRefresh={handleRefresh}
             onDelete={handleDeleteBooking}
+            onResendEmail={handleResendBookingEmail}
           />
         )}
 

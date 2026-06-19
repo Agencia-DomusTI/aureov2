@@ -1,5 +1,5 @@
 import { createServiceClient, handleCors, json } from '../_shared/utils.ts';
-import { sendBookingConfirmationEmail } from '../_shared/email.ts';
+import { sendPaidBookingEmails } from '../_shared/email.ts';
 
 async function verifyStripeSignature(
   payload: string,
@@ -100,16 +100,7 @@ Deno.serve(async (req) => {
 
         // El correo no debe tumbar el webhook si falla.
         try {
-          await sendBookingConfirmationEmail({
-            service: booking.service as string,
-            startAt: booking.start_at as string,
-            endAt: booking.end_at as string,
-            patientName: booking.patient_name as string,
-            patientEmail: customerEmail,
-            confirmationCode: booking.confirmation_code as string,
-            depositAmountMxn: booking.deposit_amount_mxn as number | null,
-            paid: true,
-          });
+          await sendPaidBookingEmails(booking, { patientEmail: customerEmail });
         } catch (mailErr) {
           console.error('stripe-webhook: error enviando correo:', (mailErr as Error).message);
         }
