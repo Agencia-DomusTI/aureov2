@@ -342,10 +342,10 @@ export const servicesData = {
 export const SERVICE_PROMOTIONS = [
   { product: 'Hilos', promo: '10% de descuento' },
   { product: 'Eliminación de tatuajes', promo: '50% de descuento' },
-  { product: 'Hollywood Peel', promo: '$2,000' },
-  { product: 'Rinomodelación', promo: '$5,500' },
-  { product: 'NAD (3 sesiones)', promo: '$10,000' },
-  { product: 'Endolifting facial / papada', promo: '$27,000' },
-  { product: 'Bichectomía', promo: '$7,000' },
-  { product: 'Blefaroplastia superior', promo: '$17,000' },
+  { product: 'Hollywood Peel', promo: 'Pregunta por descuento' },
+  { product: 'Rinomodelación', promo: 'Pregunta por descuento' },
+  { product: 'NAD (3 sesiones)', promo: 'Pregunta por descuento' },
+  { product: 'Endolifting facial / papada', promo: 'Pregunta por descuento' },
+  { product: 'Bichectomía', promo: 'Pregunta por descuento' },
+  { product: 'Blefaroplastia superior', promo: 'Pregunta por descuento' },
 ];
