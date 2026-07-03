@@ -1,7 +1,8 @@
 import { SERVICE_DURATIONS, formatDuration } from '../constants/booking';
 import { servicesData } from '../constants/services';
+import { getCustomServicesFromConfig } from './customServices';
 
-export function getAllBookableServices() {
+export function getAllBookableServices(servicesConfig = {}) {
   const services = Object.entries(servicesData).flatMap(([categoryKey, category]) =>
     category.items.map((item) => {
       const durationMinutes = SERVICE_DURATIONS[item.name] ?? 60;
@@ -17,7 +18,7 @@ export function getAllBookableServices() {
     }),
   );
 
-  return [
+  const catalog = [
     {
       id: 'Valoración médica',
       name: 'Valoración médica',
@@ -29,4 +30,7 @@ export function getAllBookableServices() {
     },
     ...services,
   ];
+
+  const custom = getCustomServicesFromConfig(servicesConfig);
+  return [...catalog, ...custom];
 }

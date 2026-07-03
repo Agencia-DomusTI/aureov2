@@ -28,10 +28,12 @@ Deno.serve(async (req) => {
     return json({ success: false, message: 'JSON inválido' }, 400);
   }
 
-  const { service, durationMinutes, start, end, patient } = body;
+  const { service, serviceId, durationMinutes, start, end, patient } = body;
   if (!service || !start || !end || !patient?.name || !patient?.phone) {
     return json({ success: false, message: 'Faltan campos requeridos' }, 400);
   }
+
+  const serviceKey = (typeof serviceId === 'string' && serviceId.trim()) || service;
 
   const supabase = createServiceClient();
 
@@ -54,7 +56,7 @@ Deno.serve(async (req) => {
 
   const settings = await getClinicSettings(supabase);
 
-  if (!isServiceActive(service, settings.servicesConfig)) {
+  if (!isServiceActive(serviceKey, settings.servicesConfig)) {
     return json({
       success: false,
       message: 'Este servicio no está disponible para reservas en línea.',
@@ -62,7 +64,7 @@ Deno.serve(async (req) => {
     }, 400);
   }
 
-  const deposit = getServiceDeposit(settings, service);
+  const deposit = getServiceDeposit(settings, serviceKey);
   const confirmationCode = await createUniqueConfirmationCode(supabase);
   const paymentRequired = deposit > 0;
 

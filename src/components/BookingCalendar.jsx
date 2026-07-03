@@ -71,7 +71,8 @@ function groupSlotsByPeriod(slots) {
 }
 
 const BookingCalendar = () => {
-  const services = useMemo(() => getAllBookableServices(), []);
+  const { servicesConfig, ready: servicesConfigReady } = useServicesConfig();
+  const services = useMemo(() => getAllBookableServices(servicesConfig), [servicesConfig]);
   const [bookingConfig, setBookingConfig] = useState(BOOKING_CONFIG);
   const [step, setStep] = useState(0);
   const [serviceId, setServiceId] = useState('');
@@ -86,8 +87,6 @@ const BookingCalendar = () => {
   const [form, setForm] = useState({ name: '', phone: '', email: '', notes: '' });
   const [touched, setTouched] = useState({ phone: false, email: false });
   const [redirectingPayment, setRedirectingPayment] = useState(false);
-
-  const { servicesConfig, ready: servicesConfigReady } = useServicesConfig();
 
   const visibleServices = useMemo(() => {
     return filterActiveServices(services, servicesConfig).map((s) =>
@@ -247,6 +246,7 @@ const BookingCalendar = () => {
 
     const payload = {
       service: selectedService.name,
+      serviceId: selectedService.id,
       durationMinutes: selectedService.durationMinutes,
       start: selectedSlot.start,
       end: selectedSlot.end,
