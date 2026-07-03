@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { SERVICE_DURATIONS, formatDuration } from '../constants/booking';
+import { CLINICS } from '../constants/clinics';
 import { SERVICE_PROMOTIONS, servicesData } from '../constants/services';
 import { useServicesConfig } from '../hooks/useServicesConfig';
 import { navigateToBooking } from '../utils/bookingNavigation';
@@ -131,12 +132,29 @@ const Services = () => {
         <div className="services-promos">
           <span className="services-promos__label">Promociones vigentes</span>
           <ul className="services-promos__list">
-            {SERVICE_PROMOTIONS.map((item) => (
-              <li key={item.product}>
-                <strong>{item.product}</strong>
-                <span>{item.promo}</span>
-              </li>
-            ))}
+            {SERVICE_PROMOTIONS.map((item) => {
+              const isWaPromo = item.promo === 'Pregunta por descuento';
+              const waText = encodeURIComponent(`Hola Áureo Clinique, me gustaría preguntar por el descuento en ${item.product}.`);
+              const waLink = `https://wa.me/${CLINICS.qro.phoneWa}?text=${waText}`;
+
+              return (
+                <li key={item.product}>
+                  <strong>{item.product}</strong>
+                  {isWaPromo ? (
+                    <a
+                      href={waLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="services-promos__wa-link"
+                    >
+                      {item.promo} <span className="wa-arrow">→</span>
+                    </a>
+                  ) : (
+                    <span>{item.promo}</span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>

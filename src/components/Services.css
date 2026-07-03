@@ -341,6 +341,32 @@
   color: var(--secondary);
 }
 
+.services-promos__wa-link {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--secondary);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: color 0.2s ease, transform 0.2s ease;
+  width: fit-content;
+}
+
+.services-promos__wa-link:hover {
+  color: #0066cc; /* Hover Blue */
+  transform: translateX(2px);
+}
+
+.services-promos__wa-link .wa-arrow {
+  transition: transform 0.2s ease;
+}
+
+.services-promos__wa-link:hover .wa-arrow {
+  transform: translateX(2px);
+}
+
 /* Ver más */
 .services-expand-wrap {
   display: flex;
