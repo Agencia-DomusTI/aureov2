@@ -196,6 +196,43 @@ export async function deleteGhlAppointment(appointmentId: string) {
   }
 }
 
+/** Registra/actualiza el contacto (lead) en GHL. Se hace siempre al reservar. */
+export async function upsertGhlContact(patient: Patient, service: string) {
+  if (!isGhlConfigured()) {
+    return { synced: false, contactId: null as string | null, reason: 'GHL_API_TOKEN no configurado' };
+  }
+  try {
+    const contactId = await upsertContact(patient, service);
+    return {
+      synced: Boolean(contactId),
+      contactId,
+      reason: contactId ? undefined : 'No se pudo crear contacto en GHL',
+    };
+  } catch (err) {
+    console.error('GHL contact error:', err);
+    return { synced: false, contactId: null as string | null, reason: (err as Error).message };
+  }
+}
+
+/** Crea la cita en GHL para un contacto ya existente. Se hace al confirmarse el pago. */
+export async function createBookingGhlAppointment(opts: {
+  contactId: string;
+  service: string;
+  start: string;
+  end: string;
+  patient: Patient;
+  confirmationCode?: string;
+  depositAmountMxn?: number;
+}) {
+  if (!isGhlConfigured() || !opts.contactId) return null;
+  try {
+    return await createGhlAppointment(opts);
+  } catch (err) {
+    console.error('GHL appointment error:', err);
+    return null;
+  }
+}
+
 export async function syncBookingToGhl(booking: {
   service: string;
   start: string;

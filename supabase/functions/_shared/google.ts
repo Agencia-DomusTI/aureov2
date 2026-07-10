@@ -174,6 +174,40 @@ export async function createCalendarEvent(
   return res.json();
 }
 
+function bookingRowToCalendarInput(booking: Record<string, unknown>) {
+  return {
+    service: booking.service as string,
+    durationMinutes: (booking.duration_minutes as number) ?? 0,
+    start: booking.start_at as string,
+    end: booking.end_at as string,
+    patient: {
+      name: booking.patient_name as string,
+      phone: booking.patient_phone as string,
+      email: (booking.patient_email as string | null) ?? undefined,
+      notes: (booking.patient_notes as string | null) ?? undefined,
+    },
+    confirmationCode: (booking.confirmation_code as string | null) ?? undefined,
+    depositAmountMxn: (booking.deposit_amount_mxn as number | null) ?? undefined,
+  };
+}
+
+/**
+ * Crea el evento en Google Calendar para una reserva y guarda el event_id, solo si
+ * aún no tiene uno. Idempotente: si la reserva ya tiene event_id no hace nada. Se
+ * llama al confirmarse el pago (o al reservar un servicio sin anticipo).
+ */
+export async function ensureCalendarEventForBooking(
+  supabase: SupabaseClient,
+  booking: Record<string, unknown>,
+): Promise<string | null> {
+  if (booking.event_id) return booking.event_id as string;
+  if (!(await isGoogleConnected(supabase))) return null;
+
+  const event = await createCalendarEvent(supabase, bookingRowToCalendarInput(booking));
+  await supabase.from('bookings').update({ event_id: event.id }).eq('id', booking.id);
+  return (event.id as string) ?? null;
+}
+
 export async function fetchCalendarEvents(
   supabase: SupabaseClient,
   timeMin: string,

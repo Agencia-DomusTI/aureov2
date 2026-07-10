@@ -1,5 +1,6 @@
 import { createServiceClient, handleCors, json } from '../_shared/utils.ts';
 import { fetchBusyPeriods, isGoogleConnected } from '../_shared/google.ts';
+import { fetchBookingBusyPeriods } from '../_shared/booking.ts';
 
 function parseRequest(req: Request) {
   const url = new URL(req.url);
@@ -49,12 +50,22 @@ Deno.serve(async (req) => {
     let busy: { start: string; end: string }[] = [];
     let googleConnected = false;
 
+    // Horarios apartados en la BD (reservas pagadas + pendientes recientes),
+    // aunque su evento en Google aún no exista por estar pendiente de pago.
+    const dbBusy = await fetchBookingBusyPeriods(supabase, date);
+
     if (await isGoogleConnected(supabase)) {
       busy = await fetchBusyPeriods(supabase, date);
       googleConnected = true;
     }
 
-    return json({ date, duration, busy, googleConnected, timezone: 'America/Mexico_City' });
+    return json({
+      date,
+      duration,
+      busy: [...busy, ...dbBusy],
+      googleConnected,
+      timezone: 'America/Mexico_City',
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error interno';
     return json({ error: message }, 500);

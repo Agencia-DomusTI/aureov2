@@ -1,9 +1,15 @@
 import { createServiceClient, getClinicSettings, handleCors, json } from '../_shared/utils.ts';
-import { createCalendarEvent, fetchBusyPeriods, isGoogleConnected } from '../_shared/google.ts';
-import { syncBookingToGhl } from '../_shared/ghl.ts';
+import { fetchBusyPeriods, isGoogleConnected } from '../_shared/google.ts';
+import { upsertGhlContact } from '../_shared/ghl.ts';
 import { createDepositCheckout, isStripeConfigured } from '../_shared/stripe.ts';
 import { sendBookingConfirmationEmail } from '../_shared/email.ts';
-import { createUniqueConfirmationCode, getServiceDeposit, isServiceActive } from '../_shared/booking.ts';
+import {
+  createUniqueConfirmationCode,
+  fetchBookingBusyPeriods,
+  finalizePaidBooking,
+  getServiceDeposit,
+  isServiceActive,
+} from '../_shared/booking.ts';
 
 const BUFFER_MS = 10 * 60 * 1000;
 
@@ -46,7 +52,13 @@ Deno.serve(async (req) => {
   }
 
   const dateStr = start.slice(0, 10);
-  const busy = await fetchBusyPeriods(supabase, dateStr);
+  // El horario se considera ocupado por Google (eventos ya confirmados) y por la
+  // tabla de reservas (citas pagadas + pendientes dentro de la ventana de apartado).
+  const [googleBusy, dbBusy] = await Promise.all([
+    fetchBusyPeriods(supabase, dateStr),
+    fetchBookingBusyPeriods(supabase, dateStr),
+  ]);
+  const busy = [...googleBusy, ...dbBusy];
   const slotStart = new Date(start).getTime();
   const slotEnd = new Date(end).getTime();
 
@@ -69,26 +81,17 @@ Deno.serve(async (req) => {
   const paymentRequired = deposit > 0;
 
   try {
-    const event = await createCalendarEvent(supabase, {
-      ...body,
-      confirmationCode,
-      depositAmountMxn: deposit,
-    });
-    const ghlSync = await syncBookingToGhl({
-      service,
-      start,
-      end,
-      patient,
-      confirmationCode,
-      depositAmountMxn: deposit,
-    });
+    // El lead se registra siempre en GHL. La cita en GHL y el evento en Google
+    // solo se crean cuando la reserva queda confirmada (pago recibido o servicio
+    // sin anticipo) — no antes.
+    const ghlContact = await upsertGhlContact(patient, service);
 
     let paymentUrl: string | null = null;
     let stripeSessionId: string | null = null;
-    let paymentStatus = paymentRequired ? 'pending' : 'waived';
+    const paymentStatus = paymentRequired ? 'pending' : 'waived';
 
-    const { data: bookingRow } = await supabase.from('bookings').insert({
-      event_id: event.id,
+    const { data: bookingRow, error: insertError } = await supabase.from('bookings').insert({
+      event_id: null,
       service,
       duration_minutes: durationMinutes,
       start_at: start,
@@ -97,14 +100,23 @@ Deno.serve(async (req) => {
       patient_phone: patient.phone,
       patient_email: patient.email || null,
       patient_notes: patient.notes || null,
-      ghl_contact_id: ghlSync.contactId ?? null,
-      ghl_appointment_id: ghlSync.appointmentId ?? null,
+      ghl_contact_id: ghlContact.contactId ?? null,
+      ghl_appointment_id: null,
       confirmation_code: confirmationCode,
       deposit_amount_mxn: deposit,
       payment_status: paymentStatus,
-    }).select('id').single();
+      deposit_paid: false,
+    }).select('*').single();
 
-    if (paymentRequired && bookingRow?.id) {
+    if (insertError || !bookingRow) {
+      throw new Error(insertError?.message ?? 'No se pudo guardar la reserva');
+    }
+
+    let eventId: string | null = null;
+
+    if (paymentRequired) {
+      // El horario queda apartado en la BD durante la ventana de pago. El evento en
+      // Google y la cita en GHL se crean al confirmarse el pago (confirm-payment/webhook).
       if (isStripeConfigured()) {
         const checkout = await createDepositCheckout({
           amountMxn: deposit,
@@ -125,20 +137,31 @@ Deno.serve(async (req) => {
       } else if (settings.paymentUrl) {
         paymentUrl = settings.paymentUrl;
       }
-    }
-
-    // Sin anticipo requerido: la cita queda confirmada de inmediato → correo.
-    if (!paymentRequired && patient.email) {
-      await sendBookingConfirmationEmail({
-        service,
-        startAt: start,
-        endAt: end,
-        patientName: patient.name,
-        patientEmail: patient.email,
-        confirmationCode,
-        depositAmountMxn: deposit,
-        paid: false,
+    } else {
+      // Sin anticipo: la cita queda confirmada de inmediato → evento, cita GHL y correo.
+      await finalizePaidBooking(supabase, bookingRow, {
+        patientEmail: patient.email || null,
+        sendEmails: false,
       });
+      const { data: refreshed } = await supabase
+        .from('bookings')
+        .select('event_id')
+        .eq('id', bookingRow.id)
+        .maybeSingle();
+      eventId = (refreshed?.event_id as string | null) ?? null;
+
+      if (patient.email) {
+        await sendBookingConfirmationEmail({
+          service,
+          startAt: start,
+          endAt: end,
+          patientName: patient.name,
+          patientEmail: patient.email,
+          confirmationCode,
+          depositAmountMxn: deposit,
+          paid: false,
+        });
+      }
     }
 
     const message = paymentRequired && paymentUrl
@@ -149,13 +172,13 @@ Deno.serve(async (req) => {
 
     return json({
       success: true,
-      eventId: event.id,
+      eventId,
       confirmationCode,
       paymentUrl,
       depositAmountMxn: deposit,
       paymentRequired,
       confirmed: !paymentRequired || !paymentUrl,
-      ghlSynced: ghlSync.synced,
+      ghlSynced: ghlContact.synced,
       message,
     });
   } catch (err) {

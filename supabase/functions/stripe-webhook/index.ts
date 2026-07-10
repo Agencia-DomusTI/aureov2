@@ -1,5 +1,5 @@
 import { createServiceClient, handleCors, json } from '../_shared/utils.ts';
-import { sendPaidBookingEmails } from '../_shared/email.ts';
+import { finalizePaidBooking } from '../_shared/booking.ts';
 
 async function verifyStripeSignature(
   payload: string,
@@ -73,11 +73,14 @@ Deno.serve(async (req) => {
 
       let booking: Record<string, unknown> | null = null;
 
+      // Reclamo idempotente: solo actualizamos reservas aún pendientes, de modo que
+      // el evento/cita y los correos se generen una sola vez (webhook o confirm-payment).
       if (metadata?.booking_id) {
         const { data } = await supabase
           .from('bookings')
           .update(update)
           .eq('id', metadata.booking_id)
+          .eq('payment_status', 'pending')
           .select('*')
           .maybeSingle();
         booking = data;
@@ -86,6 +89,7 @@ Deno.serve(async (req) => {
           .from('bookings')
           .update(update)
           .eq('confirmation_code', session.client_reference_id)
+          .eq('payment_status', 'pending')
           .select('*')
           .maybeSingle();
         booking = data;
@@ -98,14 +102,12 @@ Deno.serve(async (req) => {
           (session.customer_email as string | undefined) ||
           null;
 
-        // El correo no debe tumbar el webhook si falla.
-        try {
-          await sendPaidBookingEmails(booking, { patientEmail: customerEmail });
-        } catch (mailErr) {
-          console.error('stripe-webhook: error enviando correo:', (mailErr as Error).message);
-        }
+        // finalizePaidBooking tolera fallos internos (calendario/GHL/correo) y no
+        // lanza, así que el webhook no se cae por un error secundario.
+        await finalizePaidBooking(supabase, booking, { patientEmail: customerEmail });
       } else {
-        console.warn('stripe-webhook: no se encontró la reserva para actualizar.');
+        // Ya estaba confirmada (otro proceso la reclamó) o no existe.
+        console.warn('stripe-webhook: sin reserva pendiente para confirmar (ya procesada o inexistente).');
       }
     }
   } catch (err) {

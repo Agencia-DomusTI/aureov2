@@ -1,6 +1,6 @@
 import { createServiceClient, handleCors, json } from '../_shared/utils.ts';
 import { getCheckoutSession } from '../_shared/stripe.ts';
-import { sendPaidBookingEmails } from '../_shared/email.ts';
+import { finalizePaidBooking } from '../_shared/booking.ts';
 
 /**
  * Verificación de respaldo del pago al volver de Stripe.
@@ -49,15 +49,22 @@ Deno.serve(async (req) => {
     return json({ paid: false, message: 'El pago aún no se confirma' });
   }
 
-  await supabase
+  // Reclamo idempotente: solo el proceso que hace la transición pending→paid
+  // crea el evento/cita y envía correos (evita duplicados con el webhook).
+  const { data: claimed } = await supabase
     .from('bookings')
     .update({ deposit_paid: true, payment_status: 'paid' })
-    .eq('id', booking.id);
+    .eq('id', booking.id)
+    .eq('payment_status', 'pending')
+    .select('*')
+    .maybeSingle();
 
-  await sendPaidBookingEmails(booking, {
-    patientEmail: (booking.patient_email as string | null) ??
-      (session?.customer_details?.email as string | undefined) ?? null,
-  });
+  if (claimed) {
+    await finalizePaidBooking(supabase, claimed, {
+      patientEmail: (claimed.patient_email as string | null) ??
+        (session?.customer_details?.email as string | undefined) ?? null,
+    });
+  }
 
   return json({ paid: true });
 });
