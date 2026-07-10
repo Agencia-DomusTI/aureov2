@@ -19,8 +19,9 @@ const EMPTY_FORM = {
 function AddServiceModal({ categories, baseDeposit, onClose, onAdd }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const name = form.name.trim();
     const category = form.category.trim();
@@ -32,18 +33,26 @@ function AddServiceModal({ categories, baseDeposit, onClose, onAdd }) {
       setError('Indica la categoría.');
       return;
     }
-    onAdd({
-      id: createCustomServiceId(),
-      config: buildCustomServiceConfig({
-        name,
-        category,
-        durationMinutes: form.durationMinutes,
-        priceLabel: form.priceLabel,
-        depositMxn: form.depositMxn === '' ? undefined : form.depositMxn,
-        active: true,
-      }),
-    });
-    onClose();
+    setSaving(true);
+    setError('');
+    try {
+      await onAdd({
+        id: createCustomServiceId(),
+        config: buildCustomServiceConfig({
+          name,
+          category,
+          durationMinutes: form.durationMinutes,
+          priceLabel: form.priceLabel,
+          depositMxn: form.depositMxn === '' ? undefined : form.depositMxn,
+          active: true,
+        }),
+      });
+      onClose();
+    } catch (err) {
+      setError(err.message || 'No se pudo guardar el servicio.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -130,8 +139,8 @@ function AddServiceModal({ categories, baseDeposit, onClose, onAdd }) {
             <button type="button" className="adm-modal__btn adm-modal__btn--ghost" onClick={onClose}>
               Cancelar
             </button>
-            <button type="submit" className="adm-modal__btn adm-svc-add__submit">
-              Agregar servicio
+            <button type="submit" className="adm-modal__btn adm-svc-add__submit" disabled={saving}>
+              {saving ? 'Guardando…' : 'Agregar servicio'}
             </button>
           </div>
         </form>
@@ -140,11 +149,12 @@ function AddServiceModal({ categories, baseDeposit, onClose, onAdd }) {
   );
 }
 
-const AdminServicesTab = ({ settings, setSettings, onSave, saveMsg }) => {
+const AdminServicesTab = ({ settings, setSettings, onSave, onPersist, saveMsg }) => {
   const servicesConfig = settings?.servicesConfig ?? {};
   const baseDeposit = settings?.depositAmountMxn ?? 250;
   const [filter, setFilter] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [persisting, setPersisting] = useState(false);
 
   const allServices = useMemo(() => getAllBookableServices(servicesConfig), [servicesConfig]);
 
@@ -217,24 +227,42 @@ const AdminServicesTab = ({ settings, setSettings, onSave, saveMsg }) => {
     });
   };
 
-  const addCustomService = ({ id, config }) => {
-    setSettings((prev) => ({
-      ...prev,
+  const addCustomService = async ({ id, config }) => {
+    const next = {
+      ...settings,
       servicesConfig: {
-        ...prev.servicesConfig,
+        ...servicesConfig,
         [id]: config,
       },
-    }));
+    };
+    if (onPersist) {
+      setPersisting(true);
+      try {
+        await onPersist(next);
+      } finally {
+        setPersisting(false);
+      }
+    } else {
+      setSettings(next);
+    }
   };
 
-  const removeCustomService = (id) => {
+  const removeCustomService = async (id) => {
     if (!isCustomServiceId(id)) return;
     if (!window.confirm('¿Eliminar este servicio personalizado?')) return;
-    setSettings((prev) => {
-      const next = { ...prev.servicesConfig };
-      delete next[id];
-      return { ...prev, servicesConfig: next };
-    });
+    const nextConfig = { ...servicesConfig };
+    delete nextConfig[id];
+    const next = { ...settings, servicesConfig: nextConfig };
+    if (onPersist) {
+      setPersisting(true);
+      try {
+        await onPersist(next);
+      } finally {
+        setPersisting(false);
+      }
+    } else {
+      setSettings(next);
+    }
   };
 
   return (
@@ -257,14 +285,23 @@ const AdminServicesTab = ({ settings, setSettings, onSave, saveMsg }) => {
           </p>
         </div>
         <div className="adm-svc-apple__head-actions">
-          <button type="button" className="adm-svc-apple__add" onClick={() => setShowAddModal(true)}>
+          <button
+            type="button"
+            className="adm-svc-apple__add"
+            onClick={() => setShowAddModal(true)}
+            disabled={persisting}
+          >
             + Agregar servicio
           </button>
-          <button type="button" className="adm-svc-apple__save" onClick={onSave}>
-            Guardar cambios
+          <button type="button" className="adm-svc-apple__save" onClick={onSave} disabled={persisting}>
+            {persisting ? 'Guardando…' : 'Guardar cambios'}
           </button>
         </div>
       </header>
+
+      <p className="adm-svc-apple__hint">
+        Los servicios nuevos se guardan solos. Para cambios de duración o anticipo en el catálogo, pulsa Guardar cambios.
+      </p>
 
       {saveMsg ? (
         <p className={`admin-toast ${saveMsg.includes('Error') ? 'admin-toast--err' : 'admin-toast--ok'}`}>

@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     }
 
     const current = await getClinicSettings(supabase);
-    await supabase.from('clinic_settings').update({
+    const { error } = await supabase.from('clinic_settings').update({
       schedule: body.schedule ?? current.schedule,
       schedule_summary: body.scheduleSummary ?? current.scheduleSummary,
       slot_interval_minutes: body.slotIntervalMinutes ?? current.slotIntervalMinutes,
@@ -47,6 +47,11 @@ Deno.serve(async (req) => {
       services_config: body.servicesConfig ?? current.servicesConfig,
       updated_at: new Date().toISOString(),
     }).eq('id', 1);
+
+    if (error) {
+      console.error('admin-settings update:', error);
+      return json({ error: error.message }, 500);
+    }
 
     const updated = await getClinicSettings(supabase);
     return json({

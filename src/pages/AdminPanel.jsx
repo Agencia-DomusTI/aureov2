@@ -202,7 +202,9 @@ const AdminPanel = () => {
     e?.preventDefault?.();
     setSaveMsg('');
     try {
-      await saveAdminSettings(settings);
+      const data = await saveAdminSettings(settings);
+      if (data?.settings) setSettings(data.settings);
+      else await loadSettings();
       setSaveMsg('Guardado correctamente');
       await loadStatus();
       setTimeout(() => setSaveMsg(''), 3000);
@@ -210,6 +212,21 @@ const AdminPanel = () => {
       setSaveMsg(err.message || 'Error al guardar');
     }
   };
+
+  const persistSettings = useCallback(async (nextSettings) => {
+    setSaveMsg('');
+    setSettings(nextSettings);
+    try {
+      const data = await saveAdminSettings(nextSettings);
+      if (data?.settings) setSettings(data.settings);
+      else await loadSettings();
+      setSaveMsg('Guardado correctamente');
+      setTimeout(() => setSaveMsg(''), 3000);
+    } catch (err) {
+      setSaveMsg(err.message || 'Error al guardar');
+      throw err;
+    }
+  }, [loadSettings]);
 
   const oauthCallbackUrl = import.meta.env.VITE_SUPABASE_URL
     ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-google-callback`
@@ -328,6 +345,7 @@ const AdminPanel = () => {
             settings={settings}
             setSettings={setSettings}
             onSave={saveSettingsHandler}
+            onPersist={persistSettings}
             saveMsg={saveMsg}
           />
         )}

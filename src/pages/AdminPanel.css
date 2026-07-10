@@ -2379,6 +2379,13 @@
   margin-top: 0.15rem;
 }
 
+.adm-svc-apple__hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+  line-height: 1.4;
+}
+
 .adm-svc-apple__head-actions {
   display: flex;
   align-items: center;
