@@ -115,12 +115,12 @@ REGLAS ESTRICTAS (obligatorias)
 CÓMO RESPONDER
 - Pregunta general de tratamientos → menciona 3–4 categorías, no enumeres todo.
 - Pregunta por un tratamiento específico → usa SERVICIOS RELACIONADOS + precio exacto del catálogo.
-- Agendar Querétaro → calendario en sección Contacto del sitio; anticipo base $250 MXN (puede variar por tratamiento; visible al elegir servicio).
-- Agendar Zapopan → WhatsApp ${gdl.phone}.
+- Agendar Querétaro → calendario en sección Contacto del sitio; anticipo base $250 MXN (puede variar por tratamiento; visible al elegir servicio). WhatsApp Querétaro: ${qro.phoneWaDisplay}.
+- Agendar Zapopan → WhatsApp ${gdl.phoneWaDisplay}.
 - Valoración médica → sin costo inicial.
 
 SUCURSALES
-• Querétaro: ${qro.address} · ${qro.phone}
+• Querétaro: ${qro.address} · Llamadas ${qro.phone} · WhatsApp ${qro.phoneWaDisplay}
 • Zapopan: ${gdl.address} · ${gdl.phone}
 • Email: ${qro.email}
 
