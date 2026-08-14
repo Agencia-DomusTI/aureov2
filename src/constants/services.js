@@ -253,9 +253,21 @@ export const servicesData = {
         img: img(),
       },
       {
+        name: 'Suero Quelación',
+        price: 'Según valoración',
+        desc: 'Protocolo intravenoso para eliminación de metales pesados. Duración de la primera cita: 4 horas.',
+        img: img(),
+      },
+      {
+        name: 'Suero Neuro Hormonal',
+        price: 'Según valoración',
+        desc: 'Suero neuro hormonal para mujeres. Duración de la primera cita: 1 hora 30 min.',
+        img: img(),
+      },
+      {
         name: 'Glutatión',
         price: '$2,200',
-        desc: 'Antioxidante que protege células, refuerza el sistema inmune y desintoxica el hígado.',
+        desc: 'Antioxidante que protege células, refuerza el sistema inmune y desintoxica el hígado. Duración: 1 hora.',
         img: img(),
       },
       {
@@ -273,7 +285,7 @@ export const servicesData = {
       {
         name: 'Suero Detox',
         price: '$1,365',
-        desc: 'Desintoxicación, apoyo emocional y reparación hepática.',
+        desc: 'Desintoxicación, apoyo emocional y reparación hepática. Protocolo por droga: duración de la primera cita 3 horas.',
         img: img(),
       },
       {
@@ -333,6 +345,18 @@ export const servicesData = {
         name: 'Ice Pro Criolipólisis',
         price: 'Zona pequeña $5,900 · Mediana $8,100 · Grande $11,400 (paquete 3 sesiones)',
         desc: 'Elimina grasa resistente, reduce celulitis y esculpe el cuerpo. Temperatura -10 °C a 10 °C, 4 manerales, vacío ajustable, control térmico constante, pantalla táctil y tecnología de calor. Incluye báscula. Sin agujas ni recuperación.',
+        img: img(),
+      },
+      {
+        name: 'Depilación Láser',
+        price: 'Según zona y valoración',
+        desc: 'Depilación láser médica. Duración de la primera cita: ~35 min. Las sesiones siguientes las agenda la clínica.',
+        img: img(),
+      },
+      {
+        name: 'Hidrofacial',
+        price: 'Según valoración',
+        desc: 'Limpieza profunda, extracción e hidratación con hidrodermabrasión. Duración de la primera cita: 45 min. Las sesiones siguientes las agenda la clínica.',
         img: img(),
       },
     ],

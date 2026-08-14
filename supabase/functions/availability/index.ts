@@ -1,13 +1,13 @@
 import { createServiceClient, handleCors, json } from '../_shared/utils.ts';
-import { fetchBusyPeriods, isGoogleConnected } from '../_shared/google.ts';
-import { fetchBookingBusyPeriods } from '../_shared/booking.ts';
+import { fetchDayCapacity } from '../_shared/booking.ts';
 
 function parseRequest(req: Request) {
   const url = new URL(req.url);
-  let date = url.searchParams.get('date');
-  let duration = parseInt(url.searchParams.get('duration') || '60', 10);
+  const date = url.searchParams.get('date');
+  const duration = parseInt(url.searchParams.get('duration') || '60', 10);
+  const service = url.searchParams.get('service') || url.searchParams.get('serviceId') || '';
 
-  return { date, duration };
+  return { date, duration, service };
 }
 
 async function parsePostBody(req: Request) {
@@ -16,9 +16,10 @@ async function parsePostBody(req: Request) {
     return {
       date: body.date as string | undefined,
       duration: parseInt(String(body.duration ?? 60), 10),
+      service: String(body.service ?? body.serviceId ?? ''),
     };
   } catch {
-    return { date: undefined, duration: 60 };
+    return { date: undefined, duration: 60, service: '' };
   }
 }
 
@@ -29,15 +30,18 @@ Deno.serve(async (req) => {
   try {
     let date: string | null | undefined;
     let duration: number;
+    let service: string;
 
     if (req.method === 'POST') {
       const body = await parsePostBody(req);
       date = body.date;
       duration = body.duration;
+      service = body.service;
     } else if (req.method === 'GET') {
       const parsed = parseRequest(req);
       date = parsed.date;
       duration = parsed.duration;
+      service = parsed.service;
     } else {
       return json({ error: 'Method not allowed' }, 405);
     }
@@ -47,22 +51,14 @@ Deno.serve(async (req) => {
     }
 
     const supabase = createServiceClient();
-    let busy: { start: string; end: string }[] = [];
-    let googleConnected = false;
-
-    // Horarios apartados en la BD (reservas pagadas + pendientes recientes),
-    // aunque su evento en Google aún no exista por estar pendiente de pago.
-    const dbBusy = await fetchBookingBusyPeriods(supabase, date);
-
-    if (await isGoogleConnected(supabase)) {
-      busy = await fetchBusyPeriods(supabase, date);
-      googleConnected = true;
-    }
+    const { occupancy, hardBlocks, googleConnected } = await fetchDayCapacity(supabase, date);
 
     return json({
       date,
       duration,
-      busy: [...busy, ...dbBusy],
+      service,
+      occupancy,
+      hardBlocks,
       googleConnected,
       timezone: 'America/Mexico_City',
     });

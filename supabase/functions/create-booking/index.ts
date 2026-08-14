@@ -1,25 +1,16 @@
 import { createServiceClient, getClinicSettings, handleCors, json } from '../_shared/utils.ts';
-import { fetchBusyPeriods, isGoogleConnected } from '../_shared/google.ts';
+import { isGoogleConnected } from '../_shared/google.ts';
 import { upsertGhlContact } from '../_shared/ghl.ts';
 import { createDepositCheckout, isStripeConfigured } from '../_shared/stripe.ts';
 import { sendBookingConfirmationEmail } from '../_shared/email.ts';
 import {
   createUniqueConfirmationCode,
-  fetchBookingBusyPeriods,
+  fetchDayCapacity,
   finalizePaidBooking,
   getServiceDeposit,
   isServiceActive,
 } from '../_shared/booking.ts';
-
-const BUFFER_MS = 10 * 60 * 1000;
-
-function overlaps(start: number, end: number, busy: { start: string; end: string }[]) {
-  return busy.some((b) => {
-    const bStart = new Date(b.start).getTime();
-    const bEnd = new Date(b.end).getTime();
-    return start < bEnd + BUFFER_MS && end + BUFFER_MS > bStart;
-  });
-}
+import { canAccommodate, classifyService } from '../_shared/capacity.ts';
 
 Deno.serve(async (req) => {
   const cors = handleCors(req);
@@ -42,6 +33,7 @@ Deno.serve(async (req) => {
   const serviceKey = (typeof serviceId === 'string' && serviceId.trim()) || service;
 
   const supabase = createServiceClient();
+  const settings = await getClinicSettings(supabase);
 
   if (!(await isGoogleConnected(supabase))) {
     return json({
@@ -51,29 +43,31 @@ Deno.serve(async (req) => {
     }, 503);
   }
 
-  const dateStr = start.slice(0, 10);
-  // El horario se considera ocupado por Google (eventos ya confirmados) y por la
-  // tabla de reservas (citas pagadas + pendientes dentro de la ventana de apartado).
-  const [googleBusy, dbBusy] = await Promise.all([
-    fetchBusyPeriods(supabase, dateStr),
-    fetchBookingBusyPeriods(supabase, dateStr),
-  ]);
-  const busy = [...googleBusy, ...dbBusy];
-  const slotStart = new Date(start).getTime();
-  const slotEnd = new Date(end).getTime();
-
-  if (overlaps(slotStart, slotEnd, busy)) {
-    return json({ success: false, message: 'Ese horario ya no está disponible.' }, 409);
-  }
-
-  const settings = await getClinicSettings(supabase);
-
   if (!isServiceActive(serviceKey, settings.servicesConfig)) {
     return json({
       success: false,
       message: 'Este servicio no está disponible para reservas en línea.',
       code: 'SERVICE_INACTIVE',
     }, 400);
+  }
+
+  const dateStr = start.slice(0, 10);
+  const { occupancy, hardBlocks } = await fetchDayCapacity(supabase, dateStr);
+  const slotStart = new Date(start).getTime();
+  const slotEnd = new Date(end).getTime();
+  const resource = classifyService(service);
+  const bufferMs = (settings.bufferMinutes ?? 10) * 60 * 1000;
+
+  if (!canAccommodate({
+    pool: resource.pool,
+    machine: resource.machine,
+    slotStart,
+    slotEnd,
+    occupancy,
+    hardBlocks,
+    bufferMs,
+  })) {
+    return json({ success: false, message: 'Ese horario ya no está disponible.' }, 409);
   }
 
   const deposit = getServiceDeposit(settings, serviceKey);

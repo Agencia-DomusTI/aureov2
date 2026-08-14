@@ -5,8 +5,12 @@ export async function getBookingConfig() {
   return invokeFunction('booking-config', { method: 'POST', body: {} });
 }
 
-export async function getAvailability(date, durationMinutes) {
-  return fetchFunction('availability', { date, duration: String(durationMinutes) });
+export async function getAvailability(date, durationMinutes, service) {
+  return fetchFunction('availability', {
+    date,
+    duration: String(durationMinutes),
+    service: service || '',
+  });
 }
 
 export async function createBooking(payload) {

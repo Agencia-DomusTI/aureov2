@@ -1,7 +1,15 @@
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { ensureCalendarEventForBooking } from './google.ts';
+import { ensureCalendarEventForBooking, fetchCalendarEvents, isGoogleConnected } from './google.ts';
 import { createBookingGhlAppointment } from './ghl.ts';
 import { sendPaidBookingEmails } from './email.ts';
+import {
+  classifyService,
+  isSiteCreatedGoogleEvent,
+  parseServiceFromTitle,
+  toOccupancyItem,
+  type OccupancyItem,
+  type TimePeriod,
+} from './capacity.ts';
 
 export const DEFAULT_DEPOSIT_MXN = 250;
 
@@ -65,6 +73,26 @@ export async function createUniqueConfirmationCode(supabase: SupabaseClient): Pr
   return `AUREO-${Date.now().toString(36).toUpperCase().slice(-5)}`;
 }
 
+type BookingRow = {
+  id?: string;
+  event_id?: string | null;
+  service?: string | null;
+  start_at?: string;
+  end_at?: string;
+  payment_status?: string | null;
+  deposit_paid?: boolean | null;
+  created_at?: string | null;
+};
+
+function isActiveBooking(b: BookingRow, holdCutoff: string) {
+  const paid = Boolean(b.deposit_paid) ||
+    b.payment_status === 'paid' ||
+    b.payment_status === 'waived';
+  if (paid) return true;
+  return b.payment_status === 'pending' &&
+    typeof b.created_at === 'string' && b.created_at >= holdCutoff;
+}
+
 /**
  * Horarios ocupados según la tabla `bookings`: todas las citas pagadas/confirmadas
  * y las pendientes recientes (dentro de la ventana de apartado). Complementa el
@@ -74,29 +102,112 @@ export async function fetchBookingBusyPeriods(
   supabase: SupabaseClient,
   dateStr: string,
 ): Promise<{ start: string; end: string }[]> {
+  const occupancy = await fetchBookingOccupancy(supabase, dateStr);
+  return occupancy.map((b) => ({ start: String(b.start), end: String(b.end) }));
+}
+
+export async function fetchBookingOccupancy(
+  supabase: SupabaseClient,
+  dateStr: string,
+): Promise<OccupancyItem[]> {
   const dayStart = `${dateStr}T00:00:00-06:00`;
   const dayEnd = `${dateStr}T23:59:59-06:00`;
   const holdCutoff = new Date(Date.now() - PENDING_HOLD_MINUTES * 60 * 1000).toISOString();
 
   const { data } = await supabase
     .from('bookings')
-    .select('start_at, end_at, payment_status, deposit_paid, created_at')
+    .select('id, event_id, service, start_at, end_at, payment_status, deposit_paid, created_at')
     .gte('start_at', dayStart)
     .lte('start_at', dayEnd);
 
   if (!data) return [];
 
-  return data
-    .filter((b) => {
-      const paid = Boolean(b.deposit_paid) ||
-        b.payment_status === 'paid' ||
-        b.payment_status === 'waived';
-      if (paid) return true;
-      // Pendiente de pago: aparta el horario solo durante la ventana de pago.
-      return b.payment_status === 'pending' &&
-        typeof b.created_at === 'string' && b.created_at >= holdCutoff;
-    })
-    .map((b) => ({ start: b.start_at as string, end: b.end_at as string }));
+  return (data as BookingRow[])
+    .filter((b) => isActiveBooking(b, holdCutoff) && b.start_at && b.end_at)
+    .map((b) => toOccupancyItem(String(b.service ?? ''), b.start_at as string, b.end_at as string));
+}
+
+function isDuplicateGoogleEvent(
+  event: { id?: string; title?: string; start?: string; description?: string },
+  bookings: OccupancyItem[],
+  linkedEventIds: Set<string>,
+) {
+  if (event.id && linkedEventIds.has(event.id)) return true;
+  if (isSiteCreatedGoogleEvent(event.description)) return true;
+  if (!event.start) return false;
+
+  const eventStart = new Date(event.start).getTime();
+  const eventService = parseServiceFromTitle(event.title || '');
+  return bookings.some((b) => {
+    if (Math.abs(eventStart - toMs(b.start)) > 2 * 60 * 1000) return false;
+    const bookingService = String(b.service ?? '');
+    return !eventService || !bookingService ||
+      eventService.toLowerCase() === bookingService.toLowerCase();
+  });
+}
+
+function toMs(value: string | number) {
+  return typeof value === 'number' ? value : new Date(value).getTime();
+}
+
+function isClinicAppointmentEvent(title: string) {
+  const serviceName = parseServiceFromTitle(title);
+  const resource = classifyService(serviceName);
+  if (resource.machine || resource.pool === 'infusion') return true;
+  // Citas a mano con el formato del sitio: "Servicio — Paciente".
+  return /\s[-–—]\s/.test(String(title || ''));
+}
+
+/**
+ * Ocupación del día: reservas del sitio + citas manuales de Google (con servicio),
+ * y bloqueos duros (eventos de Google que no son un tratamiento).
+ */
+export async function fetchDayCapacity(
+  supabase: SupabaseClient,
+  dateStr: string,
+): Promise<{ occupancy: OccupancyItem[]; hardBlocks: TimePeriod[]; googleConnected: boolean }> {
+  const dayStart = `${dateStr}T00:00:00-06:00`;
+  const dayEnd = `${dateStr}T23:59:59-06:00`;
+  const holdCutoff = new Date(Date.now() - PENDING_HOLD_MINUTES * 60 * 1000).toISOString();
+
+  const { data } = await supabase
+    .from('bookings')
+    .select('id, event_id, service, start_at, end_at, payment_status, deposit_paid, created_at')
+    .gte('start_at', dayStart)
+    .lte('start_at', dayEnd);
+
+  const rows = (data ?? []) as BookingRow[];
+  const active = rows.filter((b) => isActiveBooking(b, holdCutoff) && b.start_at && b.end_at);
+  const occupancy: OccupancyItem[] = active.map((b) =>
+    toOccupancyItem(String(b.service ?? ''), b.start_at as string, b.end_at as string),
+  );
+  const linkedEventIds = new Set(
+    rows.map((b) => b.event_id).filter((id): id is string => Boolean(id)),
+  );
+
+  let googleConnected = false;
+  const hardBlocks: TimePeriod[] = [];
+
+  if (await isGoogleConnected(supabase)) {
+    googleConnected = true;
+    const events = await fetchCalendarEvents(supabase, dayStart, dayEnd);
+
+    for (const event of events) {
+      if (!event.start || !event.end) continue;
+      if (isDuplicateGoogleEvent(event, occupancy, linkedEventIds)) continue;
+
+      // Evento de día completo → el doctor no está.
+      const allDay = /^\d{4}-\d{2}-\d{2}$/.test(event.start);
+      if (allDay || !isClinicAppointmentEvent(event.title)) {
+        hardBlocks.push({ start: event.start, end: event.end });
+        continue;
+      }
+
+      occupancy.push(toOccupancyItem(parseServiceFromTitle(event.title), event.start, event.end));
+    }
+  }
+
+  return { occupancy, hardBlocks, googleConnected };
 }
 
 /**

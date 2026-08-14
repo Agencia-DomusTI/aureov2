@@ -1,4 +1,5 @@
 import { BOOKING_CONFIG as DEFAULT_CONFIG } from '../constants/booking';
+import { canAccommodate, classifyService } from '../constants/bookingCapacity';
 
 const MX_OFFSET = '-06:00';
 
@@ -61,7 +62,18 @@ export function getTodayInMexico(config) {
   return new Date().toLocaleDateString('en-CA', { timeZone: cfg.timezone });
 }
 
-export function generateTimeSlots(dateStr, durationMinutes, busyPeriods = [], config) {
+/**
+ * Genera horarios disponibles.
+ * Con `serviceName` usa capacidad paralela (3 sueros/ozono + 2 consultorios).
+ * Sin servicio, `occupancy` se trata como bloqueo exclusivo (compatibilidad).
+ */
+export function generateTimeSlots(
+  dateStr,
+  durationMinutes,
+  occupancy = [],
+  config,
+  options = {},
+) {
   const cfg = getConfig(config);
   if (!isDateBookableOnline(dateStr, cfg)) return [];
 
@@ -70,6 +82,9 @@ export function generateTimeSlots(dateStr, durationMinutes, busyPeriods = [], co
   const bufferMs = bufferMinutes * 60 * 1000;
   const minStart = Date.now() + minAdvanceHours * 60 * 60 * 1000;
   const slots = [];
+  const serviceName = options.serviceName;
+  const resource = serviceName ? classifyService(serviceName) : null;
+  const hardBlocks = options.hardBlocks ?? [];
 
   for (const [startHour, endHour] of windows) {
     let cursorMinutes = startHour * 60;
@@ -82,13 +97,27 @@ export function generateTimeSlots(dateStr, durationMinutes, busyPeriods = [], co
       const slotEnd = new Date(slotStart.getTime() + durationMinutes * 60 * 1000);
 
       if (slotStart.getTime() >= minStart) {
-        const busy = busyPeriods.some((period) => {
-          const bStart = new Date(period.start).getTime();
-          const bEnd = new Date(period.end).getTime();
-          return overlaps(slotStart.getTime(), slotEnd.getTime(), bStart, bEnd, bufferMs);
-        });
+        const available = resource
+          ? canAccommodate({
+            pool: resource.pool,
+            machine: resource.machine,
+            slotStart: slotStart.getTime(),
+            slotEnd: slotEnd.getTime(),
+            occupancy,
+            hardBlocks,
+            bufferMs,
+          })
+          : !occupancy.some((period) => {
+            const bStart = new Date(period.start).getTime();
+            const bEnd = new Date(period.end).getTime();
+            return overlaps(slotStart.getTime(), slotEnd.getTime(), bStart, bEnd, bufferMs);
+          }) && !hardBlocks.some((period) => {
+            const bStart = new Date(period.start).getTime();
+            const bEnd = new Date(period.end).getTime();
+            return overlaps(slotStart.getTime(), slotEnd.getTime(), bStart, bEnd, bufferMs);
+          });
 
-        if (!busy) {
+        if (available) {
           slots.push({
             start: slotStart.toISOString(),
             end: slotEnd.toISOString(),

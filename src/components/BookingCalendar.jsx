@@ -195,15 +195,27 @@ const BookingCalendar = () => {
     setLoadingSlots(true);
     setSelectedSlot(null);
 
-    let busy = [];
+    let occupancy = [];
+    let hardBlocks = [];
     try {
-      const data = await getAvailability(selectedDate, selectedService.durationMinutes);
-      busy = data.busy ?? [];
+      const data = await getAvailability(
+        selectedDate,
+        selectedService.durationMinutes,
+        selectedService.id,
+      );
+      occupancy = data.occupancy ?? [];
+      hardBlocks = data.hardBlocks ?? [];
     } catch {
       /* sin Supabase: solo horario de clínica */
     }
 
-    setSlots(generateTimeSlots(selectedDate, selectedService.durationMinutes, busy, bookingConfig));
+    setSlots(generateTimeSlots(
+      selectedDate,
+      selectedService.durationMinutes,
+      occupancy,
+      bookingConfig,
+      { serviceName: selectedService.id, hardBlocks },
+    ));
     setLoadingSlots(false);
   }, [selectedDate, selectedService, bookingConfig]);
 
@@ -497,7 +509,7 @@ const BookingCalendar = () => {
           <section className="bk-panel" key="service">
             <header className="bk-panel__head">
               <h3>Elige tu servicio</h3>
-              <p>Selecciona el tratamiento o valoración que deseas agendar.</p>
+              <p>Selecciona el tratamiento. En línea se agenda la primera cita; las siguientes las confirma la clínica.</p>
             </header>
 
             <div className="bk-search-wrap">
@@ -564,7 +576,7 @@ const BookingCalendar = () => {
           <section className="bk-panel" key="date">
             <header className="bk-panel__head">
               <h3>Selecciona una fecha</h3>
-              <p>{selectedService.name} · {selectedService.durationLabel}</p>
+              <p>{selectedService.name} · {selectedService.durationLabel} · primera cita</p>
             </header>
 
             <div className="bk-cal">
@@ -596,7 +608,7 @@ const BookingCalendar = () => {
 
             <p className="bk-note">
               <span className="bk-note__icon">ℹ</span>
-              Domingos disponibles solo con cita previa por WhatsApp.
+              En línea se agenda la primera cita. Las siguientes las confirma la clínica (pueden durar menos).
             </p>
 
             <footer className="bk-panel__foot bk-panel__foot--split">
