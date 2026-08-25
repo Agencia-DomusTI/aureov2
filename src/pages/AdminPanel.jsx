@@ -337,6 +337,7 @@ const AdminPanel = () => {
             onRefresh={handleRefresh}
             onDelete={handleDeleteBooking}
             onResendEmail={handleResendBookingEmail}
+            onReconnectGoogle={connectCalendar}
           />
         )}
 

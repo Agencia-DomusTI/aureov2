@@ -209,6 +209,7 @@ const AdminCalendarTab = ({
   onRefresh,
   onDelete,
   onResendEmail,
+  onReconnectGoogle,
 }) => {
   const [modalApt, setModalApt] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
@@ -299,6 +300,20 @@ const AdminCalendarTab = ({
       />
 
       {statusError ? <p className="admin-toast admin-toast--err">{statusError}</p> : null}
+
+      {status?.calendar?.needsReauth ? (
+        <p className="admin-toast admin-toast--err">
+          {status.calendar.error || 'Google Calendar está desconectado. Las citas del sitio sí aparecen; las de Google no hasta reconectar.'}
+          {onReconnectGoogle ? (
+            <>
+              {' '}
+              <button type="button" className="gcal-pill__btn gcal-pill__btn--primary" onClick={onReconnectGoogle}>
+                Reconectar Google
+              </button>
+            </>
+          ) : null}
+        </p>
+      ) : null}
 
       <section className="adm-apple-cal adm-apple-cal--month">
         <header className="adm-apple-cal__head">

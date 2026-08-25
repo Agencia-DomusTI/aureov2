@@ -1,5 +1,5 @@
 import { createServiceClient } from '../_shared/utils.ts';
-import { exchangeCodeForTokens, fetchGoogleEmail } from '../_shared/google.ts';
+import { exchangeCodeForTokens, fetchGoogleEmail, getStoredConnection } from '../_shared/google.ts';
 
 Deno.serve(async (req) => {
   const url = new URL(req.url);
@@ -27,16 +27,26 @@ Deno.serve(async (req) => {
 
   try {
     const tokens = await exchangeCodeForTokens(code);
+    if (!tokens.access_token) {
+      throw new Error('Google no devolvió un access token');
+    }
+
+    const existing = await getStoredConnection(supabase);
+    const refreshToken = tokens.refresh_token || existing?.refresh_token;
+    if (!refreshToken) {
+      throw new Error('Google no devolvió un refresh token. Vuelve a conectar aceptando todos los permisos.');
+    }
+
     const email = await fetchGoogleEmail(tokens.access_token);
     const expiresAt = new Date(Date.now() + (tokens.expires_in ?? 3600) * 1000).toISOString();
 
     await supabase.from('google_calendar_connection').upsert({
       id: 1,
-      refresh_token: tokens.refresh_token,
+      refresh_token: refreshToken,
       access_token: tokens.access_token,
       expires_at: expiresAt,
       email,
-      calendar_id: 'primary',
+      calendar_id: existing?.calendar_id || 'primary',
       connected_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });

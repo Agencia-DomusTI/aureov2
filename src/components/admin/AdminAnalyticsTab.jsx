@@ -142,7 +142,7 @@ const AdminAnalyticsTab = ({
   const todayCount = status?.stats?.today ?? 0;
   const sitePaidMonth = totals.sitePaidThisMonth ?? status?.stats?.fromSite ?? 0;
   const googleMonth = totals.fromGoogle ?? status?.stats?.fromGoogle ?? 0;
-  const googleConnected = status?.calendar?.connected;
+  const googleConnected = status?.calendar?.connected && !status?.calendar?.needsReauth;
 
   return (
     <div className="adm-dash adm-dash--apple adm-analytics">

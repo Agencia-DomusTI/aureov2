@@ -112,18 +112,39 @@ const AdminConfigTab = ({
 
         <section className="adm-config__block">
           <h3>Google Calendar</h3>
-          <div className={`gcal-pill ${status?.calendar?.connected ? 'gcal-pill--on' : 'gcal-pill--off'}`}>
+          <div className={`gcal-pill ${status?.calendar?.needsReauth ? 'gcal-pill--warn' : status?.calendar?.connected ? 'gcal-pill--on' : 'gcal-pill--off'}`}>
             <span className="gcal-pill__dot" />
             <div>
-              <strong>{status?.calendar?.connected ? status.calendar.email : 'Sin conectar'}</strong>
+              <strong>
+                {status?.calendar?.needsReauth
+                  ? 'Hay que reconectar Google'
+                  : status?.calendar?.connected
+                    ? status.calendar.email
+                    : 'Sin conectar'}
+              </strong>
+              {status?.calendar?.needsReauth ? (
+                <p>{status.calendar.error || 'La sesión caducó. Conecta de nuevo para traer las citas.'}</p>
+              ) : status?.calendar?.connected ? (
+                <p>Calendario activo · se renueva solo</p>
+              ) : (
+                <p>Conecta la cuenta donde están las citas de la clínica</p>
+              )}
             </div>
-            {status?.calendar?.connected ? (
+            {status?.calendar?.connected && !status?.calendar?.needsReauth ? (
               <button type="button" className="gcal-pill__btn" onClick={onDisconnect}>Desconectar</button>
             ) : (
-              <button type="button" className="gcal-pill__btn gcal-pill__btn--primary" onClick={onConnect}>Conectar</button>
+              <button type="button" className="gcal-pill__btn gcal-pill__btn--primary" onClick={onConnect}>
+                {status?.calendar?.needsReauth ? 'Reconectar' : 'Conectar'}
+              </button>
             )}
           </div>
-          <p className="adm-muted">Redirect URI: <code>{oauthCallbackUrl}</code></p>
+          <p className="adm-muted">
+            Redirect URI: <code>{oauthCallbackUrl}</code>
+          </p>
+          <p className="adm-muted">
+            En Google Cloud, el consentimiento OAuth debe estar en <strong>Producción</strong>.
+            Si queda en Testing, Google mata la sesión a los 7 días y hay que reconectar.
+          </p>
         </section>
 
         <button type="submit" className="btn-primary">Guardar configuración</button>

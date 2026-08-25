@@ -6,6 +6,23 @@ const SCOPES = [
   'https://www.googleapis.com/auth/userinfo.email',
 ].join(' ');
 
+export type GoogleAuth = {
+  token: string;
+  calendarId: string;
+};
+
+type StoredConnection = {
+  refresh_token?: string | null;
+  access_token?: string | null;
+  expires_at?: string | null;
+  calendar_id?: string | null;
+  email?: string | null;
+  connected_at?: string | null;
+};
+
+/** Evita que dos refrescos en paralelo invaliden el refresh_token. */
+let refreshInFlight: Promise<GoogleAuth | null> | null = null;
+
 export function getRedirectUri() {
   return `${Deno.env.get('SUPABASE_URL')}/functions/v1/admin-google-callback`;
 }
@@ -18,6 +35,7 @@ export function buildGoogleAuthUrl(state: string) {
     scope: SCOPES,
     access_type: 'offline',
     prompt: 'consent',
+    include_granted_scopes: 'true',
     state,
   });
   return `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
@@ -50,15 +68,38 @@ export async function fetchGoogleEmail(accessToken: string) {
 
 export async function getStoredConnection(supabase: SupabaseClient) {
   const { data } = await supabase.from('google_calendar_connection').select('*').eq('id', 1).single();
-  return data;
+  return data as StoredConnection | null;
 }
 
-export async function refreshAccessToken(supabase: SupabaseClient) {
+function calendarIdOf(stored: StoredConnection | null) {
+  return stored?.calendar_id || 'primary';
+}
+
+function googleErrorMessage(body: string) {
+  try {
+    const parsed = JSON.parse(body) as { error?: string; error_description?: string };
+    if (parsed.error === 'invalid_grant') {
+      return 'La sesión de Google caducó o fue revocada. Vuelve a conectar el calendario.';
+    }
+    return parsed.error_description || parsed.error || body.slice(0, 200);
+  } catch {
+    return body.slice(0, 200);
+  }
+}
+
+async function refreshAccessTokenInner(
+  supabase: SupabaseClient,
+  opts?: { force?: boolean },
+): Promise<GoogleAuth | null> {
   const stored = await getStoredConnection(supabase);
   if (!stored?.refresh_token) return null;
 
-  if (stored.access_token && stored.expires_at && new Date(stored.expires_at) > new Date(Date.now() + 60_000)) {
-    return { token: stored.access_token, calendarId: stored.calendar_id || 'primary' };
+  const stillValid = stored.access_token &&
+    stored.expires_at &&
+    new Date(stored.expires_at).getTime() > Date.now() + 60_000;
+
+  if (!opts?.force && stillValid) {
+    return { token: stored.access_token as string, calendarId: calendarIdOf(stored) };
   }
 
   const res = await fetch(TOKEN_URL, {
@@ -72,18 +113,43 @@ export async function refreshAccessToken(supabase: SupabaseClient) {
     }),
   });
 
-  if (!res.ok) return null;
-  const data = await res.json();
+  if (!res.ok) {
+    const body = await res.text();
+    console.error('Google token refresh failed:', res.status, body);
+    return null;
+  }
+
+  const data = await res.json() as {
+    access_token?: string;
+    expires_in?: number;
+    refresh_token?: string;
+  };
+  if (!data.access_token) {
+    console.error('Google token refresh: sin access_token');
+    return null;
+  }
+
   const expiresAt = new Date(Date.now() + (data.expires_in ?? 3600) * 1000).toISOString();
 
   await supabase.from('google_calendar_connection').update({
     access_token: data.access_token,
     expires_at: expiresAt,
-    refresh_token: data.refresh_token ?? stored.refresh_token,
+    refresh_token: data.refresh_token || stored.refresh_token,
     updated_at: new Date().toISOString(),
   }).eq('id', 1);
 
-  return { token: data.access_token, calendarId: stored.calendar_id || 'primary' };
+  return { token: data.access_token, calendarId: calendarIdOf(stored) };
+}
+
+export async function refreshAccessToken(
+  supabase: SupabaseClient,
+  opts?: { force?: boolean },
+): Promise<GoogleAuth | null> {
+  if (refreshInFlight) return refreshInFlight;
+  refreshInFlight = refreshAccessTokenInner(supabase, opts).finally(() => {
+    refreshInFlight = null;
+  });
+  return refreshInFlight;
 }
 
 export async function isGoogleConnected(supabase: SupabaseClient) {
@@ -91,16 +157,34 @@ export async function isGoogleConnected(supabase: SupabaseClient) {
   return Boolean(stored?.refresh_token);
 }
 
+async function googleApiFetch(
+  supabase: SupabaseClient,
+  url: string,
+  init: RequestInit = {},
+  retried = false,
+): Promise<Response> {
+  const auth = await refreshAccessToken(supabase, { force: retried });
+  if (!auth) {
+    return new Response(JSON.stringify({ error: 'Google Calendar no conectado' }), { status: 401 });
+  }
+
+  const headers = new Headers(init.headers);
+  headers.set('Authorization', `Bearer ${auth.token}`);
+
+  const res = await fetch(url, { ...init, headers });
+  if (res.status === 401 && !retried) {
+    return googleApiFetch(supabase, url, init, true);
+  }
+  return res;
+}
+
 export async function fetchBusyPeriods(supabase: SupabaseClient, dateStr: string) {
   const auth = await refreshAccessToken(supabase);
   if (!auth) return [];
 
-  const res = await fetch('https://www.googleapis.com/calendar/v3/freeBusy', {
+  const res = await googleApiFetch(supabase, 'https://www.googleapis.com/calendar/v3/freeBusy', {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${auth.token}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       timeMin: `${dateStr}T00:00:00-06:00`,
       timeMax: `${dateStr}T23:59:59-06:00`,
@@ -146,14 +230,12 @@ export async function createCalendarEvent(
     'Reservado desde aureoclinique.com',
   ].filter(Boolean).join('\n');
 
-  const res = await fetch(
+  const res = await googleApiFetch(
+    supabase,
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(auth.calendarId)}/events`,
     {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${auth.token}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         summary: `${service} — ${patient.name}`,
         description,
@@ -208,6 +290,25 @@ export async function ensureCalendarEventForBooking(
   return (event.id as string) ?? null;
 }
 
+type GoogleEventItem = {
+  id: string;
+  summary?: string;
+  description?: string;
+  start?: { dateTime?: string; date?: string };
+  end?: { dateTime?: string; date?: string };
+};
+
+function mapCalendarEvent(ev: GoogleEventItem) {
+  return {
+    id: ev.id,
+    title: ev.summary ?? 'Sin título',
+    description: ev.description ?? '',
+    start: ev.start?.dateTime ?? ev.start?.date,
+    end: ev.end?.dateTime ?? ev.end?.date,
+    source: 'google' as const,
+  };
+}
+
 export async function fetchCalendarEvents(
   supabase: SupabaseClient,
   timeMin: string,
@@ -216,44 +317,47 @@ export async function fetchCalendarEvents(
   const auth = await refreshAccessToken(supabase);
   if (!auth) return [];
 
-  const params = new URLSearchParams({
-    timeMin,
-    timeMax,
-    singleEvents: 'true',
-    orderBy: 'startTime',
-    maxResults: '100',
-  });
+  const items: GoogleEventItem[] = [];
+  let pageToken = '';
 
-  const res = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(auth.calendarId)}/events?${params}`,
-    { headers: { Authorization: `Bearer ${auth.token}` } },
-  );
+  do {
+    const params = new URLSearchParams({
+      timeMin,
+      timeMax,
+      singleEvents: 'true',
+      orderBy: 'startTime',
+      maxResults: '2500',
+      showDeleted: 'false',
+    });
+    if (pageToken) params.set('pageToken', pageToken);
 
-  if (!res.ok) return [];
-  const data = await res.json();
-  return (data.items ?? []).map((ev: {
-    id: string;
-    summary?: string;
-    description?: string;
-    start?: { dateTime?: string; date?: string };
-    end?: { dateTime?: string; date?: string };
-  }) => ({
-    id: ev.id,
-    title: ev.summary ?? 'Sin título',
-    description: ev.description ?? '',
-    start: ev.start?.dateTime ?? ev.start?.date,
-    end: ev.end?.dateTime ?? ev.end?.date,
-    source: 'google' as const,
-  }));
+    const res = await googleApiFetch(
+      supabase,
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(auth.calendarId)}/events?${params}`,
+    );
+
+    if (!res.ok) {
+      const body = await res.text();
+      console.error('Google events list failed:', res.status, body);
+      break;
+    }
+
+    const data = await res.json() as { items?: GoogleEventItem[]; nextPageToken?: string };
+    items.push(...(data.items ?? []));
+    pageToken = data.nextPageToken ?? '';
+  } while (pageToken);
+
+  return items.map(mapCalendarEvent);
 }
 
 export async function deleteCalendarEvent(supabase: SupabaseClient, eventId: string) {
   const auth = await refreshAccessToken(supabase);
   if (!auth) throw new Error('Google Calendar no conectado');
 
-  const res = await fetch(
+  const res = await googleApiFetch(
+    supabase,
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(auth.calendarId)}/events/${encodeURIComponent(eventId)}`,
-    { method: 'DELETE', headers: { Authorization: `Bearer ${auth.token}` } },
+    { method: 'DELETE' },
   );
 
   if (!res.ok && res.status !== 404) {
@@ -264,11 +368,48 @@ export async function deleteCalendarEvent(supabase: SupabaseClient, eventId: str
 
 export async function getCalendarStatus(supabase: SupabaseClient) {
   const stored = await getStoredConnection(supabase);
-  if (!stored?.refresh_token) return { connected: false };
-  return {
+  if (!stored?.refresh_token) {
+    return { connected: false, healthy: false, needsReauth: false };
+  }
+
+  const base = {
     connected: true,
     email: stored.email,
-    calendarId: stored.calendar_id,
+    calendarId: calendarIdOf(stored),
     connectedAt: stored.connected_at,
+  };
+
+  const auth = await refreshAccessToken(supabase);
+  if (!auth) {
+    return {
+      ...base,
+      healthy: false,
+      needsReauth: true,
+      error: 'La sesión de Google caducó. Vuelve a conectar el calendario para ver las citas.',
+    };
+  }
+
+  const ping = await googleApiFetch(
+    supabase,
+    'https://www.googleapis.com/calendar/v3/users/me/calendarList?maxResults=1',
+  );
+
+  if (!ping.ok) {
+    const body = await ping.text();
+    console.error('Google calendar ping failed:', ping.status, body);
+    return {
+      ...base,
+      healthy: false,
+      needsReauth: ping.status === 401,
+      error: ping.status === 401
+        ? 'La sesión de Google caducó. Vuelve a conectar el calendario para ver las citas.'
+        : `Google Calendar no respondió (${ping.status}). ${googleErrorMessage(body)}`,
+    };
+  }
+
+  return {
+    ...base,
+    healthy: true,
+    needsReauth: false,
   };
 }

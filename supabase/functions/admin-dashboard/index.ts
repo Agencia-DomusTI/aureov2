@@ -309,7 +309,7 @@ Deno.serve(async (req) => {
   }> = [];
   let analyticsGoogleEvents: typeof googleEvents = [];
 
-  if (calendar.connected) {
+  if (calendar.connected && !calendar.needsReauth) {
     [googleEvents, analyticsGoogleEvents] = await Promise.all([
       fetchCalendarEvents(supabase, rangeStartIso, rangeEndIso),
       fetchCalendarEvents(supabase, analyticsRangeStartIso, analyticsRangeEndIso),

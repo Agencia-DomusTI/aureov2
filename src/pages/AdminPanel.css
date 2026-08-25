@@ -1124,6 +1124,14 @@
   background: rgba(76, 140, 106, 0.08);
 }
 
+.gcal-pill--warn {
+  background: rgba(196, 140, 60, 0.12);
+}
+
+.gcal-pill--warn .gcal-pill__dot {
+  background: #c48c3c;
+}
+
 .gcal-pill__dot {
   width: 10px;
   height: 10px;
