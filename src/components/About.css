@@ -116,6 +116,27 @@
   line-height: 1.35;
 }
 
+.founder-credential__frame {
+  position: relative;
+  display: block;
+  border-radius: 4px;
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+/* Sombra de hover en un pseudo-elemento: solo se anima su opacidad */
+.founder-credential__frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
 .founder-credential__img {
   display: block;
   width: 100%;
@@ -123,12 +144,23 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.founder-credential:hover .founder-credential__img {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
+@media (hover: hover) {
+  .founder-credential:hover .founder-credential__frame {
+    transform: translate3d(0, -4px, 0);
+  }
+
+  .founder-credential:hover .founder-credential__frame::after {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .founder-credential__frame,
+  .founder-credential__frame::after {
+    transition: none;
+  }
 }
 
 @media (max-width: 992px) {

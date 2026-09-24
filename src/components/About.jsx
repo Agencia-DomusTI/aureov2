@@ -65,14 +65,16 @@ const About = () => {
                     rel="noopener noreferrer"
                     className="founder-credential"
                   >
-                    <OptimizedImage
-                      src={`/cedulas/cedula-${numero}.png`}
-                      alt={`Cédula profesional ${numero} — ${titulo}`}
-                      className="founder-credential__img"
-                      loading="lazy"
-                      width={935}
-                      height={1210}
-                    />
+                    <span className="founder-credential__frame">
+                      <OptimizedImage
+                        src={`/cedulas/cedula-${numero}-thumb.png`}
+                        alt={`Cédula profesional ${numero} — ${titulo}`}
+                        className="founder-credential__img"
+                        loading="lazy"
+                        width={480}
+                        height={621}
+                      />
+                    </span>
                     <span>
                       {titulo}
                       <br />
