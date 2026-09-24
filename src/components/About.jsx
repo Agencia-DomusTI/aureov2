@@ -51,6 +51,10 @@ const About = () => {
                 Fundada por el <strong>Dr. Demetrio Quintero Mármol Cisneros</strong>, con más de 11 años
                 de experiencia en medicina estética y regenerativa.
               </p>
+              <ul className="founder-credentials">
+                <li>Médico Cirujano y Partero — IPN · Céd. Prof. 8256410</li>
+                <li>Maestría en Medicina Estética y Longevidad · Céd. Prof. 10805093</li>
+              </ul>
             </div>
           </div>
         </div>

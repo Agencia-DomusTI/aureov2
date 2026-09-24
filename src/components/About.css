@@ -99,6 +99,19 @@
   color: var(--text);
 }
 
+.founder-credentials {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--text-light, var(--text));
+  opacity: 0.85;
+}
+
+.founder-credentials li + li {
+  margin-top: 0.25rem;
+}
+
 @media (max-width: 992px) {
   .about-grid {
     grid-template-columns: 1fr;
