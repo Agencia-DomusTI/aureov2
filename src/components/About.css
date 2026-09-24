@@ -100,16 +100,35 @@
 }
 
 .founder-credentials {
-  list-style: none;
-  margin: 0.75rem 0 0;
-  padding: 0;
-  font-size: 0.85rem;
-  color: var(--text-light, var(--text));
-  opacity: 0.85;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 160px));
+  gap: 1rem;
+  margin-top: 1.25rem;
 }
 
-.founder-credentials li + li {
-  margin-top: 0.25rem;
+.founder-credential {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--text);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.founder-credential__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.founder-credential:hover .founder-credential__img {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
 }
 
 @media (max-width: 992px) {

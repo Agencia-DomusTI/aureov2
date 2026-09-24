@@ -2,6 +2,11 @@ import { useReveal } from '../hooks/useReveal';
 import OptimizedImage from './OptimizedImage';
 import './About.css';
 
+const CEDULAS = [
+  { numero: '8256410', titulo: 'Médico Cirujano y Partero — IPN' },
+  { numero: '10805093', titulo: 'Maestría en Medicina Estética y Longevidad' },
+];
+
 const About = () => {
   const revealRef = useReveal();
 
@@ -51,10 +56,31 @@ const About = () => {
                 Fundada por el <strong>Dr. Demetrio Quintero Mármol Cisneros</strong>, con más de 11 años
                 de experiencia en medicina estética y regenerativa.
               </p>
-              <ul className="founder-credentials">
-                <li>Médico Cirujano y Partero — IPN · Céd. Prof. 8256410</li>
-                <li>Maestría en Medicina Estética y Longevidad · Céd. Prof. 10805093</li>
-              </ul>
+              <div className="founder-credentials">
+                {CEDULAS.map(({ numero, titulo }) => (
+                  <a
+                    key={numero}
+                    href={`/cedulas/cedula-${numero}.png`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="founder-credential"
+                  >
+                    <OptimizedImage
+                      src={`/cedulas/cedula-${numero}.png`}
+                      alt={`Cédula profesional ${numero} — ${titulo}`}
+                      className="founder-credential__img"
+                      loading="lazy"
+                      width={935}
+                      height={1210}
+                    />
+                    <span>
+                      {titulo}
+                      <br />
+                      Céd. Prof. {numero}
+                    </span>
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </div>
