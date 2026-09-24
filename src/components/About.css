@@ -101,9 +101,9 @@
 
 .founder-credentials {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 160px));
-  gap: 1rem;
-  margin-top: 1.25rem;
+  grid-template-columns: repeat(2, minmax(0, 240px));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
 }
 
 .founder-credential {
@@ -112,7 +112,7 @@
   gap: 0.5rem;
   text-decoration: none;
   color: var(--text);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   line-height: 1.35;
 }
 
