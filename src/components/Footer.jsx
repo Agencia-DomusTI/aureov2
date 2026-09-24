@@ -92,10 +92,6 @@ const Footer = () => {
           <a href="#">Aviso de Privacidad</a>
           <a href="#">Términos y Condiciones</a>
         </div>
-
-        <p className="medical-credentials">
-          Dr. Demetrio Quintero Mármol Cisneros · Médico Cirujano, Céd. Prof. 8256410 · Maestría en Medicina Estética y Longevidad, Céd. Prof. 10805093
-        </p>
       </div>
     </footer>
   );

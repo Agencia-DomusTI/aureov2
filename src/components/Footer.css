@@ -119,12 +119,6 @@
   color: var(--secondary);
 }
 
-.footer-bottom .medical-credentials {
-  grid-column: 1 / -1;
-  text-align: center;
-  margin-top: 18px;
-}
-
 @media (max-width: 900px) {
   .footer-grid {
     grid-template-columns: 1fr;
