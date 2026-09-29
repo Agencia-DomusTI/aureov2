@@ -194,9 +194,8 @@ const Services = () => {
                     type="button"
                     className="btn-primary"
                     onClick={() => {
-                      const name = selectedService.name;
                       setSelectedService(null);
-                      navigateToBooking(name);
+                      navigateToBooking();
                     }}
                   >
                     Agendar valoración

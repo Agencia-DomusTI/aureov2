@@ -1,15 +1,8 @@
-/** Navega a la agenda con un servicio preseleccionado (#contacto?servicio=...) */
-export function navigateToBooking(serviceName) {
-  if (!serviceName) return;
-
-  const encoded = encodeURIComponent(serviceName);
-  const hash = `contacto?servicio=${encoded}`;
-  const path = `${window.location.pathname}#${hash}`;
-
-  if (window.location.hash !== `#${hash}`) {
-    window.history.pushState(null, '', path);
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+/** Lleva al calendario de Doctoralia en la sección de contacto (#agenda). */
+export function navigateToBooking() {
+  if (window.location.hash !== '#agenda') {
+    window.history.pushState(null, '', `${window.location.pathname}#agenda`);
   }
 
-  document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('agenda')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }

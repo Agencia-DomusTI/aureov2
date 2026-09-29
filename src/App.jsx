@@ -9,6 +9,10 @@ import Footer from './components/Footer';
 import FloatingWhatsApp from './components/FloatingWhatsApp';
 import ChatAssistant from './components/ChatAssistant';
 import AdminPanel from './pages/AdminPanel';
+import AdminIdle from './pages/AdminIdle';
+
+/** Las citas ahora se gestionan en Doctoralia; poner en false para reactivar el panel. */
+const ADMIN_IDLE = true;
 
 function PublicSite() {
   return (
@@ -33,7 +37,7 @@ function App() {
   const isAdmin = window.location.pathname === '/admin' || window.location.pathname.startsWith('/admin/');
 
   if (isAdmin) {
-    return <AdminPanel />;
+    return ADMIN_IDLE ? <AdminIdle /> : <AdminPanel />;
   }
 
   return <PublicSite />;

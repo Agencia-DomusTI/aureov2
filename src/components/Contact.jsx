@@ -135,7 +135,7 @@ const Contact = () => {
           </div>
         </div>
 
-        <div className="contact-form-container contact-booking-wrap">
+        <div className="contact-form-container contact-booking-wrap" id="agenda">
           <span className="form-kicker">Agenda tu cita</span>
           <DoctoraliaWidget />
         </div>
