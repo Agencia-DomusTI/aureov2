@@ -1,5 +1,5 @@
 import { CLINICS } from '../constants/clinics';
-import BookingCalendar from './BookingCalendar';
+import DoctoraliaWidget from './DoctoraliaWidget';
 import './Contact.css';
 
 const { qro, gdl } = CLINICS;
@@ -136,8 +136,8 @@ const Contact = () => {
         </div>
 
         <div className="contact-form-container contact-booking-wrap">
-          <span className="form-kicker">Agenda en Querétaro</span>
-          <BookingCalendar />
+          <span className="form-kicker">Agenda tu cita</span>
+          <DoctoraliaWidget />
         </div>
       </div>
     </section>

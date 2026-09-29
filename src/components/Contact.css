@@ -196,9 +196,14 @@
   overflow: visible;
 }
 
-.contact-booking-wrap .booking-calendar,
-.contact-booking-wrap .bk-widget {
+.contact-booking-wrap .doctoralia-widget {
   min-height: 520px;
+}
+
+.contact-booking-wrap .doctoralia-widget iframe {
+  width: 100% !important;
+  max-width: 100%;
+  border: 0;
 }
 
 @media (max-width: 992px) {
