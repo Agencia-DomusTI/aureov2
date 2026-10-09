@@ -1,4 +1,5 @@
 .services {
+  scroll-margin-top: 80px;
   background-color: var(--bg-soft);
   overflow-x: clip;
   max-width: 100%;
@@ -293,78 +294,6 @@
   color: rgba(250, 246, 238, 0.88);
   margin-top: 0.25rem;
   line-height: 1.35;
-}
-
-.services-promos {
-  margin-top: 3rem;
-  padding: 1.5rem 1.75rem;
-  border-radius: 1rem;
-  background: var(--white);
-  box-shadow: 0 0 0 1px rgba(14, 33, 56, 0.06);
-}
-
-.services-promos__label {
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--secondary);
-  display: block;
-  margin-bottom: 1rem;
-}
-
-.services-promos__list {
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.65rem 1.5rem;
-}
-
-.services-promos__list li {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  font-size: 0.88rem;
-  color: var(--text-muted);
-}
-
-.services-promos__list strong {
-  color: var(--primary);
-  font-weight: 600;
-  font-size: 0.92rem;
-}
-
-.services-promos__list span {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  color: var(--secondary);
-}
-
-.services-promos__wa-link {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  color: var(--secondary);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  transition: color 0.2s ease, transform 0.2s ease;
-  width: fit-content;
-}
-
-.services-promos__wa-link:hover {
-  color: #0066cc; /* Hover Blue */
-  transform: translateX(2px);
-}
-
-.services-promos__wa-link .wa-arrow {
-  transition: transform 0.2s ease;
-}
-
-.services-promos__wa-link:hover .wa-arrow {
-  transform: translateX(2px);
 }
 
 /* Ver más */

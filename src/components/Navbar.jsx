@@ -27,10 +27,11 @@ const Navbar = () => {
         </a>
 
         <div className="nav-links">
+          <a href="#servicios">Servicios</a>
+          <a href="#nosotros">Nosotros</a>
           <a href="/WELLNESS.pdf" download="Wellness_Aureo.pdf">Wellness</a>
           <a href="/REGENERATIVA.pdf" download="Regenerativa_Aureo.pdf">Regenerativa</a>
           <a href="/ESTETICA.pdf" download="Estetica_Aureo.pdf">Estética</a>
-          <a href="#nosotros">Nosotros</a>
           <a href="#contacto" className="btn-primary">Agendar</a>
         </div>
       </div>

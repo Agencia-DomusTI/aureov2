@@ -15,6 +15,10 @@ export default defineConfig({
       exclude: /\.pdf$/i,
     }),
   ],
+  server: {
+    host: true,
+    port: 5173,
+  },
   build: {
     rollupOptions: {
       output: {
