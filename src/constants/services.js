@@ -27,14 +27,34 @@ export const servicesData = {
     items: [
       {
         name: 'Toxina Botulínica (Linurase)',
-        price: 'Desde $3,500 por zona',
-        desc: 'Relaja temporalmente los músculos faciales para suavizar líneas de expresión con aspecto natural. Incluye unidades necesarias y revisión a los 7 días con retoque sin costo. Aplicaciones: frente, entrecejo y periocular; sonrisa gingival; bruxismo; rictus de amargura; líneas platismales (efecto Nefertiti); hiperhidrosis (axilas, manos y pies).',
+        summary: 'Relaja temporalmente los músculos de expresión para suavizar las líneas y conservar un aspecto natural.',
+        desc: `La toxina botulínica relaja temporalmente los músculos faciales para que no se contraigan y la piel se vea lisa y tersa. Reduce considerablemente las líneas de expresión y conserva el aspecto natural del rostro. Contamos con dos marcas: Botox y Linurase. Incluye una revisión de seguimiento a los 7 días para evaluar que el resultado haya salido según lo esperado.
+Zonas de aplicación:
+- Frente, entrecejo y periocular
+- Sonrisa gingival
+- Bruxismo (rechinar y desgastar los dientes)
+- Rictus de amargura (expresión de tristeza en la boca)
+- Líneas platismales del cuello (efecto Nefertiti)
+- Hiperhidrosis (sudoración excesiva en axilas, manos y pies)
+Opción Full Face: tratamiento conjunto de frente, entrecejo y periocular; sonrisa gingival; bruxismo; rictus de amargura; y líneas platismales del cuello. No incluye hiperhidrosis.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
         name: 'Toxina Botulínica (Botox)',
-        price: '$5,500',
-        desc: 'Aplicación de toxina botulínica tipo Botox para suavizar líneas de expresión, tratar bruxismo o hiperhidrosis. Duración aproximada: 30 min.',
+        summary: 'Relaja temporalmente los músculos de expresión para suavizar las líneas y conservar un aspecto natural.',
+        desc: `La toxina botulínica relaja temporalmente los músculos faciales para que no se contraigan y la piel se vea lisa y tersa. Reduce considerablemente las líneas de expresión y conserva el aspecto natural del rostro. Contamos con dos marcas: Botox y Linurase. Incluye una revisión de seguimiento a los 7 días para evaluar que el resultado haya salido según lo esperado.
+Zonas de aplicación:
+- Frente, entrecejo y periocular
+- Sonrisa gingival
+- Bruxismo (rechinar y desgastar los dientes)
+- Rictus de amargura (expresión de tristeza en la boca)
+- Líneas platismales del cuello (efecto Nefertiti)
+- Hiperhidrosis (sudoración excesiva en axilas, manos y pies)
+Opción Full Face: tratamiento conjunto de frente, entrecejo y periocular; sonrisa gingival; bruxismo; rictus de amargura; y líneas platismales del cuello. No incluye hiperhidrosis.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
@@ -45,20 +65,33 @@ export const servicesData = {
       },
       {
         name: 'Rinomodelación',
-        price: '$6,825 (Stylage)',
-        desc: 'Nariz más armónica, perfilada y estética en minutos, sin bisturí y con resultados inmediatos. Procedimiento seguro con ácido hialurónico, realizado por médicos especialistas. Ideal para corregir imperfecciones, levantar la punta o mejorar el perfil sin incapacidad.',
+        summary: 'Perfila y arma la nariz con ácido hialurónico, sin bisturí y con resultados inmediatos.',
+        desc: `La rinomodelación con ácido hialurónico logra una nariz más armónica, perfilada y estética en minutos, sin bisturí y con resultados inmediatos. Permite corregir imperfecciones, levantar la punta o mejorar el perfil sin tiempo de incapacidad. Es un procedimiento realizado exclusivamente por médicos especialistas.
+- Valoración médica personalizada
+- Técnicas avanzadas y productos de alta calidad
+- Resultados naturales en una clínica premium
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
         name: 'Marcaje Mandibular',
-        price: '$5,500 (My Filler)',
-        desc: 'Definición del contorno inferior del rostro mediante relleno de ácido hialurónico. Duración aproximada: 1 hr.',
+        summary: 'Define la mandíbula y el mentón de forma natural con un bioestimulador de colágeno.',
+        desc: `El marcaje mandibular se realiza con Radiesse, un bioestimulador que define la mandíbula y el mentón de forma natural, estimula colágeno, mejora la firmeza y logra un perfil elegante y estructurado. El resultado mejora con el tiempo. Cada aplicación se realiza bajo valoración y protocolo médico personalizado. Duración aproximada: 2 años.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
         name: 'Armonización Facial & Arabian Face',
-        price: 'Según valoración',
-        desc: 'Conjunto de procedimientos para equilibrar proporciones del rostro, mejorar simetría, definir contornos y rejuvenecer con resultados naturales.',
+        summary: 'Procedimientos personalizados para equilibrar las proporciones del rostro y realzar tus rasgos.',
+        desc: `La armonización facial es un conjunto de procedimientos personalizados que buscan equilibrar las proporciones del rostro, realzar los rasgos naturales y lograr una apariencia fresca y simétrica sin necesidad de cirugía.
+- Equilibra proporciones faciales y mejora la simetría
+- Resalta los rasgos sin alterar la expresión
+- Define pómulos, mandíbula y mentón
+Ideal para quienes buscan un rejuvenecimiento global y natural, sin cirugía. Requiere valoración personalizada.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
@@ -69,20 +102,27 @@ export const servicesData = {
       },
       {
         name: 'Bioestimuladores (Sculptra / Ellansé)',
-        price: 'Sculptra $12,600 · Ellansé $13,125',
-        desc: 'Tratamientos inyectables que activan la producción natural de colágeno para firmeza y rejuvenecimiento progresivo. Duración aproximada: 1 hr.',
+        summary: 'Estimulan la producción natural de colágeno para mejorar la calidad de la piel desde adentro.',
+        desc: `Los bioestimuladores como Sculptra y Ellansé no son solo rellenos: son una inversión en la calidad de tu piel. Estimulan la producción natural de colágeno y mejoran la firmeza, la elasticidad y la textura desde adentro, con un rejuvenecimiento progresivo, elegante y natural. No cambian tu rostro, lo regeneran. Trabajamos con protocolos personalizados.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
         name: 'Bioregeneradores (Profhilo)',
-        price: '$7,350',
-        desc: 'Hidratación profunda y firmeza mediante bioregeneradores de última generación. Duración aproximada: 40 min.',
+        summary: 'Bioremodelación con ácido hialurónico para una piel hidratada, firme y luminosa.',
+        desc: `Profhilo no es un relleno convencional. Es una tecnología de bioremodelación con ácido hialurónico que rejuvenece la piel desde adentro, con hidratación profunda, firmeza y luminosidad de aspecto natural. Su fórmula de alta pureza estimula colágeno y elastina, y mejora la calidad de la piel, la flacidez fina y el aspecto cansado del rostro, el cuello y otras zonas corporales. Generalmente se recomiendan 2 sesiones iniciales separadas por aproximadamente 4 semanas.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
         name: 'Hilos Tensores Faciales',
-        price: '$1,400 por hilo',
-        desc: 'Colocación de hilos biocompatibles para elevar, tensar la piel y estimular colágeno. Lifting mecánico inmediato. Duración aproximada: 1 hr.',
+        summary: 'Tratamiento mínimamente invasivo que eleva y redefine el rostro sin cirugía.',
+        desc: `Los hilos tensores son un tratamiento mínimamente invasivo para tensar y rejuvenecer el rostro. Elevan y redefinen sin cirugía, con efecto lifting inmediato, y estimulan colágeno para mejorar la firmeza con el tiempo. El resultado es natural y dura de 18 a 24 meses. Los hilos son reabsorbibles y el cuerpo los elimina de forma segura. El procedimiento dura aproximadamente 1 hora y la cantidad de hilos depende de cada paciente.
+Zonas de aplicación: óvalo facial, mejillas, cejas y papada.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
@@ -99,20 +139,26 @@ export const servicesData = {
       },
       {
         name: 'NCTF',
-        price: '$2,625 sesión · Paquete 3 sesiones $7,000',
-        desc: 'Cóctel biorevitalizante con vitaminas y minerales para contorno de ojos y rejuvenecimiento. Duración aproximada: 45 min.',
+        summary: 'Biorevitalizador que mejora la calidad de la piel.',
+        desc: `Biorevitalizador que mejora la calidad de la piel.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
         name: 'PDRN de Salmón',
-        price: '$4,200 sesión · Paquete 2 sesiones $7,500',
-        desc: 'Tratamiento regenerador basado en ADN de salmón para mejorar textura, luminosidad y calidad de la piel. Duración aproximada: 1 hr.',
+        summary: 'Tratamiento regenerador con polinucleótidos de salmón.',
+        desc: `Tratamiento regenerador con polinucleótidos de salmón.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
         name: 'AGF Dermal / Capilar',
-        price: '$3,150 sesión · Paquete 3 sesiones $8,000',
-        desc: 'Factores de crecimiento biomiméticos para regeneración facial o estimulación biotecnológica del cabello. Duración aproximada: 1 hr.',
+        summary: 'Tratamiento con factores de crecimiento autólogos, para piel y cabello.',
+        desc: `Tratamiento con factores de crecimiento autólogos, para piel y cabello.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
@@ -123,26 +169,41 @@ export const servicesData = {
       },
       {
         name: 'Hollywood Peel (Pico Láser)',
-        price: '$4,000 sesión · Paquete 3 sesiones $10,000',
-        desc: 'Glow inmediato, limpieza profunda, reducción de poros, mejora de acné y estimulación de colágeno con tecnología pico láser.',
+        summary: 'Combina carbón activado médico y láser de picosegundo para renovar e iluminar la piel.',
+        desc: `El Hollywood Peel combina carbón activado médico y tecnología de láser de picosegundo para renovar, iluminar y perfeccionar la piel. Logra una limpieza profunda de poros, estimulación de colágeno y una textura visiblemente más refinada desde la primera sesión.
+- Ilumina la piel
+- Reduce poros dilatados
+- Mejora manchas y tono irregular
+- Estimula la producción de colágeno
+- Ayuda a controlar grasa y acné
+- Deja la piel más firme, suave y refinada
+Realizado por médicos especialistas con títulos, certificaciones y cédulas profesionales.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
         name: 'Melasma (Pico Segundo)',
-        price: '$4,500 sesión · Paquete 4 sesiones $14,000',
-        desc: 'Tratamiento médico del melasma con tecnología Pico Segundo de alta precisión. Fragmenta la melanina sin exceso de calor. Incluye valoración personalizada, protocolos combinados y cuidado de la barrera cutánea.',
+        summary: 'Tecnología de picosegundo de alta precisión para tratar el melasma.',
+        desc: `Tratamiento con tecnología de picosegundo de alta precisión para tratar el melasma sin dañar la piel. Requiere valoración médica.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
         name: 'Eliminación de Microblading',
-        price: '$1,800 sesión · Paquete 3 sesiones $4,500',
-        desc: 'Eliminación de pigmento de cejas con pico láser de alta precisión. Resultados progresivos, menor daño a la piel. Realizado por médicos certificados.',
+        summary: 'Eliminación de maquillaje permanente en cejas con pico láser.',
+        desc: `También conocido como eliminación de tatuaje en ceja, maquillaje permanente en cejas o micropigmentación. Usa tecnología de pico láser para lograr resultados progresivos y naturales. No se realiza eliminación de delineado de ojos por seguridad médica.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
         name: 'Eliminación de Manchas en Manos',
-        price: '$3,000 sesión · Paquete 5 sesiones $10,000',
-        desc: 'Tratamiento con láser picosegundo. Frecuencia: 1 sesión por mes. Requiere valoración previa.',
+        summary: 'Picosegundo de alta precisión para manchas de pigmentación.',
+        desc: `Tratamiento con tecnología de picosegundo de alta precisión para manchas de pigmentación en manos y cara. Frecuencia: 1 sesión por mes. Requiere valoración previa.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
@@ -197,13 +258,7 @@ export const servicesData = {
         name: 'Lifting de Cuello (Endolifting / K-Laser)',
         price: '$26,250',
         desc: 'Tratamiento de papada y flacidez de cuello con tecnología endolifting. Duración aproximada: 2 hrs.',
-        img: img(),
-      },
-      {
-        name: 'Pellet de Testosterona',
-        price: '$8,000',
-        desc: 'Implante subcutáneo que libera testosterona de forma continua por 4 a 6 meses.',
-        img: img(),
+        img: '/multimedia/g.jpg',
       },
       {
         name: 'Facial Médico',
@@ -218,8 +273,16 @@ export const servicesData = {
     items: [
       {
         name: 'Células Madre',
-        price: '25M $30,000 · 50M $48,000 · 100M $85,000',
-        desc: 'Regeneración celular, efecto antinflamatorio, mejora inmunológica y circulatoria, apoyo en neuropatías, cicatrización, metabolismo, recuperación funcional y antienvejecimiento. Requiere valoración personalizada.',
+        summary: 'Terapia de medicina regenerativa con enfoque preventivo y de longevidad.',
+        desc: `Terapia de medicina regenerativa que se administra por vía capilar o intravenosa. La concentración y el plan se definen en la valoración médica.
+Enfoque preventivo y de longevidad:
+- Puede ayudar a retrasar el envejecimiento celular
+- Preservar la función de órganos y articulaciones
+- Mejorar energía, claridad mental y rendimiento físico
+Cuando la salud ya se ha visto comprometida: enfermedades inflamatorias y autoinmunes, desgaste articular y dolor crónico, recuperación de lesiones, fatiga persistente.
+La diferencia Áureo Clinique: procedimientos realizados por médicos especialistas certificados, protocolos personalizados de medicina regenerativa, estándares médicos de alto nivel, discreción y enfoque integral. Requiere valoración personalizada.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
@@ -242,8 +305,10 @@ export const servicesData = {
       },
       {
         name: 'Ozonoterapia',
-        price: '$700 por pie · Paquete 10 sesiones $6,000',
-        desc: 'Ozonoterapia embolsada para cicatrización de heridas y pie diabético. También disponible por vía intravenosa (autohemoterapia), rectal o vaginal. Ayuda en cicatrización y lesiones.',
+        summary: 'Apoyo en cicatrización, pie diabético y lesiones.',
+        desc: `Ayuda en cicatrización, pie diabético y lesiones. Disponible en versión intravenosa, embolsada y articular (rodilla, hombro o cadera).
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
@@ -272,8 +337,10 @@ export const servicesData = {
       },
       {
         name: 'Ácido Hialurónico en Rodilla',
-        price: '$13,000',
-        desc: 'Lubricación intraarticular para reducir dolor, mejorar movilidad y posiblemente evitar cirugía.',
+        summary: 'Infiltración que ayuda a reducir el dolor y mejorar la movilidad.',
+        desc: `Infiltración de ácido hialurónico que ayuda a reducir el dolor y mejorar la movilidad. Ideal para pacientes con gonartrosis y desgaste articular. Duración aproximada: 1 año por aplicación. Antes de agendar se requieren radiografías o resonancia magnética de la rodilla.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
@@ -301,6 +368,14 @@ export const servicesData = {
         img: img(),
       },
       {
+        name: 'Pellet de Testosterona',
+        summary: 'Terapia de liberación prolongada para mantener niveles hormonales estables.',
+        desc: `Implante subcutáneo de liberación prolongada para mantener niveles hormonales estables en pacientes con indicación médica. Duración del efecto: 6 meses. Beneficios posibles: más energía y vitalidad; mayor deseo sexual; mejor recuperación física y apoyo en el mantenimiento de la masa muscular; mayor claridad mental y concentración; mejor sensación de bienestar. Requiere valoración médica integral y estudios previos (perfil hormonal masculino y antígeno prostático). Incluye seguimiento médico.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
+        img: img(),
+      },
+      {
         name: 'Exosomas',
         price: 'Según valoración',
         desc: 'Mensajeros biológicos para regeneración de piel y folículo piloso.',
@@ -324,15 +399,30 @@ export const servicesData = {
     title: 'Corporal y Láser',
     items: [
       {
+        name: 'Depilación Láser',
+        summary: 'Depilación con tecnología de diodo médico, para todo el cuerpo, en mujeres y hombres.',
+        desc: `Depilación láser con tecnología de diodo médico (cuatridiodo, 4 diodos), realizada por personal médico especializado. Sin tiempo de recuperación y con resultados visibles desde las primeras sesiones.
+Zonas: abdomen, axilas, bigote, bikini, brazos, cara, dedos, espalda, media cara, media pierna, nuca, oídos, patilla, pecho (hombre), piernas completas y cuerpo completo.
+Se recomiendan de 6 a 8 sesiones para depilación y de 8 a 12 para rejuvenecimiento, con citas cada 5 semanas aproximadamente. Hay opciones de paquete por zona y combos de 3 zonas, 5 zonas y cuerpo completo.
+Preparación: rasurarse un día antes con rastrillo, no usar cremas el día de la cita y, en axilas, no usar desodorante.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
+        img: img(),
+      },
+      {
         name: 'Eliminación de Tatuajes (Pico Láser)',
-        price: 'Pequeño $5,000 · Mediano $7,500 · Grande $10,000 · Extra grande $15,000 (paquete 5 sesiones)',
-        desc: 'Eliminación de tatuajes con pico láser. Todos los paquetes incluyen garantía de eliminación. Tamaños: pequeño (1–5 cm), mediano (6–9 cm), grande (10–20 cm), extra grande (20+ cm).',
+        summary: 'El láser de picosegundo fragmenta la tinta para que tu cuerpo la elimine de forma natural.',
+        desc: `El láser de picosegundo fragmenta la tinta en partículas microscópicas y el cuerpo las elimina de forma natural, sesión tras sesión. El número de sesiones depende de la potencia aplicada, que se define en la valoración médica según el tipo de piel y las características del tatuaje.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
         name: 'Criolipólisis',
-        price: 'Desde $1,200 por sesión',
-        desc: 'Tratamiento no invasivo que elimina grasa localizada mediante enfriamiento controlado. Sin agujas ni recuperación. Zonas: brazos, abdomen, espalda baja, bajo del glúteo y papada. Requiere valoración previa.',
+        summary: 'Elimina grasa localizada mediante enfriamiento controlado, sin cirugía ni agujas.',
+        desc: `Tratamiento avanzado no invasivo que elimina grasa localizada mediante enfriamiento controlado, destruyendo las células grasas para que el cuerpo las elimine de forma natural. Sin cirugía, sin agujas y sin tiempo de recuperación. Zonas: abdomen, flancos, espalda alta y baja, brazos, muslos, entrepierna, bajo del glúteo, rodillas y rollito axilar. Utilizamos tecnología de alta gama y protocolos personalizados. No todos los pacientes son candidatos, por eso se requiere valoración previa. También disponible con tecnología ICE PRO.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
         img: img(),
       },
       {
@@ -348,12 +438,6 @@ export const servicesData = {
         img: img(),
       },
       {
-        name: 'Depilación Láser',
-        price: 'Según zona y valoración',
-        desc: 'Depilación láser médica. Duración de la primera cita: ~35 min. Las sesiones siguientes las agenda la clínica.',
-        img: img(),
-      },
-      {
         name: 'Hidrofacial',
         price: 'Según valoración',
         desc: 'Limpieza profunda, extracción e hidratación con hidrodermabrasión. Duración de la primera cita: 45 min. Las sesiones siguientes las agenda la clínica.',
@@ -364,4 +448,3 @@ export const servicesData = {
 };
 
 export const SERVICE_PROMOTIONS = [];
-
