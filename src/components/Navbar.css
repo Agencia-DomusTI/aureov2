@@ -79,14 +79,15 @@
 
 .navbar-container {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 1.5rem;
 }
 
 .logo-container {
   display: flex;
   align-items: center;
   height: clamp(42px, 8vh, 55px);
+  flex-shrink: 0;
 }
 
 .logo-img {
@@ -99,7 +100,8 @@
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 2.25rem;
+  gap: 2rem;
+  margin-left: auto;
 }
 
 .nav-links a {

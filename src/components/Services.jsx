@@ -39,6 +39,26 @@ const Services = () => {
       setActiveTab(visibleTabs[0][0]);
     }
   }, [visibleTabs, activeTab]);
+
+  useEffect(() => {
+    const handleSelectService = (e) => {
+      const { service, tabKey } = e.detail || {};
+      if (tabKey) {
+        setActiveTab(tabKey);
+        setExpanded(true);
+      }
+      if (service) {
+        setSelectedService(service);
+      }
+      const el = document.getElementById('servicios');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+    window.addEventListener('aureo:select-service', handleSelectService);
+    return () => window.removeEventListener('aureo:select-service', handleSelectService);
+  }, []);
+
   const hasMore = items.length > PREVIEW_COUNT;
   const visibleItems = expanded || !hasMore ? items : items.slice(0, PREVIEW_COUNT);
   const remaining = Math.max(0, items.length - PREVIEW_COUNT);

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import OptimizedImage from './OptimizedImage';
+import ServiceSearch from './ServiceSearch';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -34,6 +35,8 @@ const Navbar = () => {
           <a href="/ESTETICA.pdf" download="Estetica_Aureo.pdf">Estética</a>
           <a href="#contacto" className="btn-primary">Agendar</a>
         </div>
+
+        <ServiceSearch />
       </div>
     </nav>
   );

@@ -443,6 +443,17 @@ Sujeto a valoración médica previa. Los resultados pueden variar en cada pacien
         desc: 'Limpieza profunda, extracción e hidratación con hidrodermabrasión. Duración de la primera cita: 45 min. Las sesiones siguientes las agenda la clínica.',
         img: img(),
       },
+      {
+        name: 'Masaje linfático (abdomen)',
+        summary: 'Maniobras suaves en la zona del estómago para un momento de cuidado y bienestar.',
+        desc: `Dale a la zona del estómago un momento de cuidado y bienestar. En Áureo Clinique, nuestro masaje linfático en el abdomen se realiza con maniobras suaves que pueden ayudar a movilizar líquidos y aliviar temporalmente la sensación de hinchazón o pesadez relacionada con la retención de líquidos. Además, es un momento relajante para consentirte.
+Este masaje se ofrece únicamente en la zona del abdomen.
+No reduce grasa ni es un tratamiento para bajar de peso. Los resultados varían.
+Pregunta si es adecuado para ti.
+
+Sujeto a valoración médica previa. Los resultados pueden variar en cada paciente.`,
+        img: img(),
+      },
     ],
   },
 };
